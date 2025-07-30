@@ -378,16 +378,17 @@
             }
 
             // Weight difference
-            const weightDiff = Math.abs(targetWeight - currentWeight);
-            if (weightDiff > 0) {
-                const weeks = Math.ceil(weightDiff / 0.5);
-                recommendations.push(• เป้าหมายของคุณต้องใช้เวลาประมาณ ${weeks} สัปดาห์);
-            }
+const weightDiff = Math.abs(targetWeight - currentWeight);
+if (weightDiff > 0) {
+    const weeks = Math.ceil(weightDiff / 0.5);
+    recommendations.push(`• เป้าหมายของคุณต้องใช้เวลาประมาณ ${weeks} สัปดาห์`);
+}
 
-            recommendations.push('• ดื่มน้ำให้เพียงพอ 8-10 แก้วต่อวัน');
-            recommendations.push('• นอนหลับให้เพียงพอ 7-9 ชั่วโมงต่อคืน');
+recommendations.push('• ดื่มน้ำให้เพียงพอ 8-10 แก้วต่อวัน');
+recommendations.push('• นอนหลับให้เพียงพอ 7-9 ชั่วโมงต่อคืน');
 
-            return recommendations.join('<br>');
+return recommendations.join('<br>');
+
         }
 
         // Reset form
