@@ -368,27 +368,6 @@
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-.fun-message {
-  position: absolute;
-  bottom: 20px; left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255,255,255,0.95);
-  padding: 14px 20px;
-  border-radius: 14px;
-  font-size: 14px;
-  color: #374151;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  text-align: center;
-  max-width: 90%;
-  line-height: 1.2;
-}
-.fun-message strong {
-  color: #cc1e0f;
-  display: block;
-  margin-bottom: 4px;
-}
-
-
 /* ====== Updated Fun Message Style ====== */
 .fun-message {
   position: absolute;
@@ -402,7 +381,7 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   text-align: center;
   max-width: 90%;
-  line-height: 1.5;
+  line-height: 1.2;
 }
 .fun-message strong {
   color: #cc1e0f;
@@ -437,7 +416,11 @@
         <!-- หน้าถ่ายรูป (หน้าแรก) -->
         <div id="cameraPage">
             <div class="header">
-                <h1><i class="fi fi-tr-camera-viewfinder" style="margin-right:8px;color:#cc1e0f;"></i> Food Tracker</h1>
+                <h1 style="text-align:center; color:#cc1e0f;">
+  Food Tracker
+  <br>
+  <i class="fi fi-tr-camera-viewfinder" style="font-size:64px; color:#cc1e0f; margin-top:10px;"></i>
+</h1>
             </div>
             <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment" onchange="previewImage(event)">
             <input type="file" id="galleryInput" class="file-input" accept="image/*" onchange="previewImage(event)">
