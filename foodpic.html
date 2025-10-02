@@ -610,36 +610,23 @@
             document.querySelector('.container').classList.add('no-frame');
             
             const resultHTML = `
-                <!-- ชื่ออาหารและแคลอรี่ในกรอบเดียว -->
-                <div class="dish-calories-card">
-                    <div class="dish-name">${output.dish}</div>
-                    <div class="calories-display">
-                        <span class="calories-icon">🔥</span>
-                        <span class="calories-text">${output.calories} Calories</span>
-                    </div>
-                    <div class="tip-text">${output.tip_th}</div>
-                </div>
-                
-                <!-- ปุ่มโภชนาการบนรูป -->
-                <div class="nutrition-summary">
-                    <div class="nutrient-circle">
-                        <div class="nutrient-icon">💪</div>
-                        <div class="nutrient-value">${output.protein}g</div>
-                        <div class="nutrient-label">Protein</div>
-                    </div>
-                    <div class="nutrient-circle">
-                        <div class="nutrient-icon">🥑</div>
-                        <div class="nutrient-value">${output.fat}g</div>
-                        <div class="nutrient-label">Fat</div>
-                    </div>
-                    <div class="nutrient-circle">
-                        <div class="nutrient-icon">🍞</div>
-                        <div class="nutrient-value">${output.carbs}g</div>
-                        <div class="nutrient-label">Carbs</div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('resultContent').innerHTML = resultHTML;
+  <div class="result-food-image-container">
+    <img id="resultFoodImage" class="result-food-image" src="${resultImage.src}" alt="${output.dish}">
+
+    <!-- Calorie Bubble -->
+    <div class="calorie-bubble">${output.calories} Cal</div>
+
+    <!-- Macro Bubbles -->
+    <div class="macro-bubble" style="top: 80px; right: 20px;">${output.protein} g<br>Protein</div>
+    <div class="macro-bubble" style="top: 150px; right: 20px;">${output.fat} g<br>Fat</div>
+    <div class="macro-bubble" style="top: 220px; right: 20px;">${output.carbs} g<br>Carbs</div>
+
+    <!-- Fun Message -->
+    <div class="fun-message">${output.tip_th}</div>
+  </div>
+`;
+document.getElementById('resultContent').innerHTML = resultHTML;
+
             
             // Add save/skip buttons outside the image
             const saveButtonsHTML = `
@@ -723,6 +710,54 @@
     </script>
 
     <style>
+        .result-food-image-container {
+  position: relative;
+}
+
+.result-food-image {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.calorie-bubble {
+  position: absolute;
+  top: 20px; left: 20px;
+  background: white;
+  color: #cc1e0f;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.macro-bubble {
+  position: absolute;
+  right: 20px;
+  background: white;
+  color: #111827;
+  padding: 8px 12px;
+  border-radius: 50px;
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.3;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.fun-message {
+  position: absolute;
+  bottom: 20px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.9);
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #374151;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-align: center;
+  max-width: 90%;
+}
+
         .toast-error {
             background-color: #e9e2d0 !important;
             color: #cc1e0f !important;
@@ -737,3 +772,4 @@
     </style>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97ae9b7f141e26c9',t:'MTc1NzE2ODQzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
