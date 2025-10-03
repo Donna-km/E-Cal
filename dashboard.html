@@ -694,7 +694,7 @@ if (profile.pictureUrl) {
 
                 // Always show daily summary
                 summaryDiv.classList.remove('hidden');
-                document.getElementById('summaryIcon').textContent = '<i class="fi fi-rr-chart-line-up" style="font-size:28px;"></i>';
+                document.getElementById('summaryIcon').innerHTML = '<i class="fi fi-rr-chart-line-up" style="font-size:28px;"></i>';
                 document.getElementById('summaryTitle').textContent = 'สรุปการกินวันนี้';
                 document.getElementById('avgCalories').textContent = Math.round(totals.calories);
                 document.getElementById('avgProtein').textContent = Math.round(totals.protein) + 'g';
@@ -792,7 +792,7 @@ if (profile.pictureUrl) {
 
             // Update period-specific content
             if (currentPeriod === 'weekly') {
-                document.getElementById('summaryIcon').textContent = '<i class="fi fi-rr-chart-line-up" style="font-size:28px;"></i>';
+                document.getElementById('summaryIcon').innerHTML = '<i class="fi fi-rr-chart-line-up" style="font-size:28px;"></i>';
                 document.getElementById('summaryTitle').textContent = 'สรุปผลรายสัปดาห์ (ค่าเฉลี่ยต่อวัน)';
                 document.getElementById('summaryText').innerHTML = `คุณบันทึกอาหารไปแล้ว <span class="font-semibold">${totalDays}</span> วัน ในสัปดาห์นี้`;
             } else if (currentPeriod === 'monthly') {
