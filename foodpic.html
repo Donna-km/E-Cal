@@ -623,21 +623,27 @@
         }
 
         async function submitPhoto() {
-            if (!selectedImage) {
-                showToast('กรุณาเลือกรูปภาพก่อน', 'error');
-                return;
-            }
+    if (!selectedImage) {
+        showToast('กรุณาเลือกรูปภาพก่อน', 'error');
+        return;
+    }
 
-            showPage('loadingPage');
+    showPage('loadingPage');
 
-            try {
-                const formData = new FormData();
-                formData.append('image', selectedImage);
+    try {
+        const formData = new FormData();
+        formData.append('image', selectedImage);
 
-                const response = await fetch('https://primary-production-49d9.up.railway.app/webhook-test/ecal-image', {
-                    method: 'POST',
-                    body: formData
-                });
+        // ✅ เพิ่มบรรทัดนี้
+        if (currentUser && currentUser.userId) {
+            formData.append('line_user_id', currentUser.userId);
+        }
+
+        const response = await fetch('https://primary-production-49d9.up.railway.app/webhook-test/ecal-image', {
+            method: 'POST',
+            body: formData
+        });
+
 
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
