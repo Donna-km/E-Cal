@@ -96,20 +96,20 @@
             <div class="bg-white rounded-xl p-4 card-shadow">
                 <div class="flex flex-wrap gap-1 mb-4">
                     <button onclick="changePeriod('daily')" class="period-btn px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 bg-orange-800 text-white" data-period="daily">
-                        📅 รายวัน
+                        <i class="fi fi-rr-daily-calendar"></i> รายวัน
                     </button>
                     <button onclick="changePeriod('weekly')" class="period-btn px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 bg-orange-100 text-orange-800 hover:bg-orange-200" data-period="weekly">
-                        📊 รายสัปดาห์
+                        <i class="fi fi-rr-calendar-clock"></i> รายสัปดาห์
                     </button>
                     <button onclick="changePeriod('monthly')" class="period-btn px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 bg-orange-100 text-orange-800 hover:bg-orange-200" data-period="monthly">
-                        📈 รายเดือน
+                        <i class="fi fi-rr-calendar-days"></i> รายเดือน
                     </button>
                 </div>
                 
                 <!-- Period Summary -->
                 <div id="periodSummary" class="hidden bg-white rounded-lg p-4 border border-gray-100">
                     <div class="flex items-start space-x-3">
-                        <div class="text-2xl" id="summaryIcon">📊</div>
+                        <div class="text-2xl" id="summaryIcon"><i class="fi fi-rr-chart-line-up"></i></div>
                         <div class="flex-1">
                             <h4 class="font-semibold text-orange-800 mb-2" id="summaryTitle">สรุปผลรายสัปดาห์</h4>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
