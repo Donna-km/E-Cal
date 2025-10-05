@@ -532,7 +532,12 @@
                     userId: profile.userId,
                     displayName: profile.displayName
                 };
-
+// ✅ เพิ่มตรงนี้
+if (profile?.userId) {
+    localStorage.setItem('line_user_id', profile.userId);
+    sessionStorage.setItem('line_user_id', profile.userId);
+}
+// ✅ จบตรงนี้
                 console.log("LINE user logged in:", currentUser);
                 showToast("LINE login successful!", "success");
             } catch (error) {
