@@ -781,36 +781,56 @@ const response = await fetch('https://primary-production-49d9.up.railway.app/web
         }
 
         async function saveToDatabase() {
-            if (!analysisResult || !currentUser) {
-                showToast('ไม่สามารถบันทึกข้อมูลได้', 'error');
-                return;
+    if (!analysisResult || !currentUser) {
+        showToast('ไม่สามารถบันทึกข้อมูลได้', 'error');
+        return;
+    }
+
+    try {
+        // ⬇️⬇️⬇️ เพิ่มตรงนี้
+        // ✅ ดึงค่าที่แก้จาก popup (ถ้ามี)
+        const editedDish = document.getElementById('editDish')?.value?.trim();
+        const editedAmount = parseInt(document.getElementById('editAmount')?.value) || null;
+        const editedNote = document.getElementById('editNote')?.value?.trim();
+
+        // ✅ ถ้ามีค่าใหม่ ให้ update analysisResult.output
+        if (analysisResult?.output) {
+            if (editedDish) analysisResult.output.dish = editedDish;
+            if (editedAmount && analysisResult.output.calories) {
+                const ratio = editedAmount / 300;
+                analysisResult.output.calories = Math.round(analysisResult.output.calories * ratio);
+                analysisResult.output.protein = Math.round(analysisResult.output.protein * ratio);
+                analysisResult.output.fat = Math.round(analysisResult.output.fat * ratio);
+                analysisResult.output.carbs = Math.round(analysisResult.output.carbs * ratio);
             }
+            if (editedNote) analysisResult.output.note = editedNote;
+        }
+        // ⬆️⬆️⬆️ จบส่วนที่เพิ่ม
 
-            try {
-                const foodLog = {
-                    line_userid: currentUser.userId,
-                    date: analysisResult.date,
-                    food_name: analysisResult.output.dish,
-                    calories: analysisResult.output.calories,
-                    protein_g: analysisResult.output.protein,
-                    fat_g: analysisResult.output.fat,
-                    carbs_g: analysisResult.output.carbs,
-                    created_at: new Date().toISOString()
-                };
+        const foodLog = {
+            line_userid: currentUser.userId,
+            date: analysisResult.date,
+            food_name: analysisResult.output.dish,
+            calories: analysisResult.output.calories,
+            protein_g: analysisResult.output.protein,
+            fat_g: analysisResult.output.fat,
+            carbs_g: analysisResult.output.carbs,
+            created_at: new Date().toISOString()
+        };
 
-                if (supabase) {
-                    const { data, error } = await supabase
-                        .from('food_logs')
-                        .insert([foodLog]);
+        if (supabase) {
+            const { data, error } = await supabase
+                .from('food_logs')
+                .insert([foodLog]);
 
-                    if (error) {
-                        throw error;
-                    }
-                }
+            if (error) {
+                throw error;
+            }
+        }
 
-                console.log('Food log saved:', foodLog);
-                showPage('successPage');
-                showToast('บันทึกข้อมูลสำเร็จ!', 'success');
+        console.log('Food log saved:', foodLog);
+        showPage('successPage');
+        showToast('บันทึกข้อมูลสำเร็จ!', 'success');
 
             } catch (error) {
                 console.error('Error saving to database:', error);
