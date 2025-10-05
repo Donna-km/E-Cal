@@ -941,36 +941,64 @@ async function reAnalyze(){
     formData.append('dish', name);
     formData.append('amount', amount);
     formData.append('note', note);
-    if (window.currentUser?.userId) formData.append('line_user_id', window.currentUser.userId);
+
+    // ✅ แนบ line_user_id เสมอ (กันหลุด)
+    const lineId =
+      window.currentUser?.userId ||
+      localStorage.getItem('line_user_id') ||
+      sessionStorage.getItem('line_user_id');
+    if (lineId) {
+      formData.append('line_user_id', lineId);
+    } else {
+      console.warn('⚠️ ไม่มี line_user_id ถูกแนบไป');
+    }
 
     // attach image (prefer selectedImage; fallback to result image src -> blob)
     if (window.selectedImage) {
       formData.append('image', window.selectedImage);
     } else {
-      const src = document.getElementById('resultFoodImage')?.src || document.getElementById('previewImage')?.src;
+      const src =
+        document.getElementById('resultFoodImage')?.src ||
+        document.getElementById('previewImage')?.src;
       if (src) {
         try {
-          const blob = await fetch(src).then(r=>r.blob());
+          const blob = await fetch(src).then((r) => r.blob());
           formData.append('image', blob, 'food.jpg');
-        } catch(e){ /* ignore */ }
+        } catch (e) {
+          console.warn('⚠️ โหลดภาพไม่สำเร็จ', e);
+        }
       }
     }
 
-    const res = await fetch('https://primary-production-49d9.up.railway.app/webhook-test/ecal-image', { method:'POST', body: formData });
-    const data = await res.json().catch(()=>({}));
+    // ✅ ส่งข้อมูลไป webhook
+    const res = await fetch(
+      'https://primary-production-49d9.up.railway.app/webhook-test/ecal-image',
+      { method: 'POST', body: formData }
+    );
+
+    const data = await res.json().catch(() => ({}));
+    console.log('📤 ส่งข้อมูลไป webhook:', [...formData.entries()]);
 
     // normalize
-    window.analysisResult = Array.isArray(data) ? data[0] : (data?.output ? data : { output: data });
-    if (!window.analysisResult.date) window.analysisResult.date = new Date().toISOString().split('T')[0];
+    window.analysisResult = Array.isArray(data)
+      ? data[0]
+      : data?.output
+      ? data
+      : { output: data };
+    if (!window.analysisResult.date)
+      window.analysisResult.date = new Date().toISOString().split('T')[0];
 
-    if (typeof displayResult === 'function') displayResult(window.analysisResult);
+    if (typeof displayResult === 'function')
+      displayResult(window.analysisResult);
     if (typeof showPage === 'function') showPage('resultPage');
-  }catch(err){
-    console.error('reAnalyze error', err);
-    if (typeof showToast === 'function') showToast('Re-Analyze failed', 'error');
+  } catch (err) {
+    console.error('❌ reAnalyze error:', err);
+    if (typeof showToast === 'function')
+      showToast('Re-Analyze failed', 'error');
     if (typeof showPage === 'function') showPage('resultPage');
   }
 }
+
 </script>
 
 </body>
