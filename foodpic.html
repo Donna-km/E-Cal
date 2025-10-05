@@ -1023,6 +1023,9 @@ async function reAnalyze(){
     if (!window.analysisResult.date)
       window.analysisResult.date = new Date().toISOString().split('T')[0];
 
+      // ✅ เพิ่มบรรทัดนี้
+analysisResult = window.analysisResult;
+
     if (typeof displayResult === 'function')
       displayResult(window.analysisResult);
     if (typeof showPage === 'function') showPage('resultPage');
