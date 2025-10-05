@@ -658,12 +658,13 @@
                 // ✅ attach LINE user id so n8n can read it
                 if (currentUser && currentUser.userId) {
                     formData.append('line_user_id', currentUser.userId);
+                     // ✅ เพิ่มฟิลด์ว่างไว้เสมอ
+                    formData.append('dish', '');
+                    formData.append('amount', '');
+                    formData.append('note', '');
                 }
                 
-    // ✅ เพิ่มฟิลด์ว่างไว้เสมอ
-    formData.append('dish', '');
-    formData.append('amount', '');
-    formData.append('note', '');
+                  
 const response = await fetch('https://primary-production-49d9.up.railway.app/webhook/ecal-image', {
                     method: 'POST',
                     body: formData
