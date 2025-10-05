@@ -938,12 +938,15 @@ async function reAnalyze(){
     if (typeof showPage === 'function') showPage('loadingPage');
 
     const formData = new FormData();
-    formData.append('dish', name);
-    formData.append('amount', amount);
-    formData.append('note', note);
-    if (window.currentUser?.userId) formData.append('line_user_id', window.currentUser.userId);
+formData.append('dish', name);
+formData.append('amount', amount);
+formData.append('note', note);
 
-    // attach image (prefer selectedImage; fallback to result image src -> blob)
+// ✅ แนบ line_user_id เสมอ (ดึงจาก currentUser หรือ storage)
+let lineId = window.currentUser?.userId || localStorage.getItem('line_user_id') || sessionStorage.getItem('line_user_id');
+if (lineId) formData.append('line_user_id', lineId);
+
+ // attach image (prefer selectedImage; fallback to result image src -> blob)
     if (window.selectedImage) {
       formData.append('image', window.selectedImage);
     } else {
