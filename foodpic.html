@@ -502,6 +502,12 @@
         let currentUser = null;
         let analysisResult = null;
         let selectedImage = null;
+        // ✅ โหลด LINE ID จาก storage ถ้ามีอยู่แล้ว
+const savedLineId = localStorage.getItem('line_user_id') || sessionStorage.getItem('line_user_id');
+if (savedLineId) {
+    currentUser = { userId: savedLineId };
+    console.log('🔁 Loaded stored LINE ID:', savedLineId);
+}
 
         // Initialize LIFF
         async function initializeLIFF() {
