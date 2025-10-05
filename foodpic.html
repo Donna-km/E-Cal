@@ -938,15 +938,18 @@ async function reAnalyze(){
     if (typeof showPage === 'function') showPage('loadingPage');
 
     const formData = new FormData();
-formData.append('dish', name);
-formData.append('amount', amount);
-formData.append('note', note);
+    formData.append('dish', name);
+    formData.append('amount', amount);
+    formData.append('note', note);
 
-// ✅ แนบ line_user_id เสมอ (ดึงจาก currentUser หรือ storage)
-let lineId = window.currentUser?.userId || localStorage.getItem('line_user_id') || sessionStorage.getItem('line_user_id');
-if (lineId) formData.append('line_user_id', lineId);
+    // ✅ แนบ line_user_id เสมอ (ดึงจาก currentUser หรือ storage)
+👉  let lineId = window.currentUser?.userId 
+👉      || localStorage.getItem('line_user_id') 
+👉      || sessionStorage.getItem('line_user_id');
+👉  console.log('📌 lineId ที่ส่งไป:', lineId); // เพิ่ม debug ดูว่ามีไหม
+👉  if (lineId) formData.append('line_user_id', lineId);
 
- // attach image (prefer selectedImage; fallback to result image src -> blob)
+    // attach image (prefer selectedImage; fallback to result image src -> blob)
     if (window.selectedImage) {
       formData.append('image', window.selectedImage);
     } else {
@@ -960,7 +963,9 @@ if (lineId) formData.append('line_user_id', lineId);
     }
 
     const res = await fetch('https://primary-production-49d9.up.railway.app/webhook-test/ecal-image', { method:'POST', body: formData });
+👉  console.log('📤 ส่งข้อมูลไป webhook:', [...formData.entries()]);
     const data = await res.json().catch(()=>({}));
+
 
     // normalize
     window.analysisResult = Array.isArray(data) ? data[0] : (data?.output ? data : { output: data });
