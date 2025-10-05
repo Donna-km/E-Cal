@@ -556,6 +556,12 @@ if (profile?.userId) {
                 showToast("Using demo mode", "success");
             }
         }
+// ✅ โหลด LINE ID จาก storage ทันทีตอนเปิดหน้า
+const savedLineId = localStorage.getItem('line_user_id') || sessionStorage.getItem('line_user_id');
+if (savedLineId && !currentUser) {
+    currentUser = { userId: savedLineId, displayName: 'Stored User' };
+    console.log('🔁 Loaded stored LINE ID:', savedLineId);
+}
 
         // Initialize Supabase (Replace with your actual Supabase credentials)
         const supabaseUrl = 'https://lvtdqeerzxpznnayccmb.supabase.co';
