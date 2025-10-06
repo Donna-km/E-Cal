@@ -442,8 +442,6 @@
   transform: translateY(-1px);
 }
 
-
-
 </style>
 
 <style>
@@ -464,6 +462,85 @@
 .btn-primary-red { background:#cc1e0f; color:#fff; border:1px solid #cc1e0f; }
 .modal-close { background: transparent; border: 0; font-size: 20px; color: #cc1e0f; cursor: pointer; }
 </style>
+/* === เพิ่มมิติ โทนขาวแดง modern === */
+
+/* กล่องหลัก */
+.container {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border: 1px solid rgba(255,255,255,0.5);
+  transition: all 0.3s ease;
+}
+
+.container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+/* ปุ่มพื้นฐาน */
+.btn {
+  border-radius: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  transition: all 0.25s ease;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+
+/* ปุ่มแดงหลัก */
+.btn-primary, .btn-success {
+  background: linear-gradient(180deg, #e63b2e 0%, #cc1e0f 100%);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(204,30,15,0.3);
+}
+.btn-primary:hover, .btn-success:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(204,30,15,0.4);
+}
+
+/* ปุ่มขาวขอบแดง */
+.btn-secondary, .btn-danger {
+  background: #fff;
+  color: #cc1e0f;
+  border: 1.5px solid #cc1e0f;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.btn-secondary:hover, .btn-danger:hover {
+  background: #fff5f4;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(204,30,15,0.25);
+}
+
+/* พื้นหลังทั้งหน้า */
+body {
+  background: linear-gradient(to bottom, #fafafa 0%, #f2f2f2 100%);
+}
+
+/* ส่วนหัว */
+.header h1 {
+  color: #cc1e0f;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* เพิ่มมุมมนให้รูปตัวอย่าง */
+.preview-image {
+  border-radius: 18px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+/* เพิ่มความนุ่มให้ toast */
+.toast {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid rgba(204,30,15,0.5);
+}
+
+/* ปรับสีและฟอนต์รวมให้ดู modern */
+body, button, h1, p {
+  font-family: 'Inter', 'Prompt', sans-serif;
+}
 
 </head>
 <body>
