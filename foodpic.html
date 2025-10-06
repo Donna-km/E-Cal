@@ -441,27 +441,6 @@
 .mode-btn:hover {
   transform: translateY(-1px);
 }
-
-</style>
-
-<style>
-/* ====== Edit Modal (Popup) ====== */
-.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45);
-  display: none; align-items: center; justify-content: center; z-index: 9999; }
-.modal-backdrop.show { display: flex; }
-.modal { width: 92%; max-width: 420px; background: #fff; border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25); overflow: hidden; border: 1px solid #f3f4f6; }
-.modal-header { padding: 14px 18px; background: #e9e2d0; color: #cc1e0f; font-weight: 700;
-  display: flex; align-items: center; justify-content: space-between; }
-.modal-body { padding: 16px 18px; }
-.modal-footer { padding: 14px 18px; background: #fafafa; display: flex; gap: 10px; justify-content: flex-end; }
-.modal label { color: #cc1e0f; font-weight: 600; font-size: 14px; }
-.modal .input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #cc1e0f; margin: 6px 0 12px; }
-.modal .note { font-size: 12px; color: #6b7280; margin-top: -8px; margin-bottom: 8px; }
-.btn-outline { background:#fff; color:#cc1e0f; border:1px solid #cc1e0f; }
-.btn-primary-red { background:#cc1e0f; color:#fff; border:1px solid #cc1e0f; }
-.modal-close { background: transparent; border: 0; font-size: 20px; color: #cc1e0f; cursor: pointer; }
-</style>
 /* === เพิ่มมิติ โทนขาวแดง modern === */
 
 /* กล่องหลัก */
@@ -541,6 +520,27 @@ body {
 body, button, h1, p {
   font-family: 'Inter', 'Prompt', sans-serif;
 }
+</style>
+
+<style>
+/* ====== Edit Modal (Popup) ====== */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  display: none; align-items: center; justify-content: center; z-index: 9999; }
+.modal-backdrop.show { display: flex; }
+.modal { width: 92%; max-width: 420px; background: #fff; border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25); overflow: hidden; border: 1px solid #f3f4f6; }
+.modal-header { padding: 14px 18px; background: #e9e2d0; color: #cc1e0f; font-weight: 700;
+  display: flex; align-items: center; justify-content: space-between; }
+.modal-body { padding: 16px 18px; }
+.modal-footer { padding: 14px 18px; background: #fafafa; display: flex; gap: 10px; justify-content: flex-end; }
+.modal label { color: #cc1e0f; font-weight: 600; font-size: 14px; }
+.modal .input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #cc1e0f; margin: 6px 0 12px; }
+.modal .note { font-size: 12px; color: #6b7280; margin-top: -8px; margin-bottom: 8px; }
+.btn-outline { background:#fff; color:#cc1e0f; border:1px solid #cc1e0f; }
+.btn-primary-red { background:#cc1e0f; color:#fff; border:1px solid #cc1e0f; }
+.modal-close { background: transparent; border: 0; font-size: 20px; color: #cc1e0f; cursor: pointer; }
+</style>
+
 
 </head>
 <body>
