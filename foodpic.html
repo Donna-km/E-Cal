@@ -408,19 +408,39 @@
   background: #cc1e0f;
   color: #fff;
 }
-        .mode-btn {
-  background: #fff;
-  border: 1px solid #cc1e0f;
-  color: #cc1e0f;
-  padding: 6px 12px;
+        .mode-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0 28px;
+}
+
+.mode-btn {
+  font-size: 15px;
+  font-weight: 500;
+  border: 1.5px solid #cc1e0f;
+  padding: 12px 20px;
   border-radius: 9999px;
-  font-size: 14px;
   cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background-color: #fff;
+  color: #cc1e0f;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
+
 .mode-btn.active {
-  background: #cc1e0f;
+  background-color: #cc1e0f;
   color: #fff;
+  box-shadow: 0 2px 6px rgba(204,30,15,0.3);
 }
+
+.mode-btn:hover {
+  transform: translateY(-1px);
+}
+
 
 
 </style>
@@ -458,10 +478,11 @@
 
             </div>
              <!-- ✅ เพิ่มส่วนเลือกโหมดตรงนี้ -->
-      <div class="flex justify-center gap-2 mb-4">
-        <button id="btnFood" class="mode-btn active" onclick="setMode('food')">🍱 วิเคราะห์อาหาร</button>
-        <button id="btnBody" class="mode-btn" onclick="setMode('body')">💪 วิเคราะห์รูปร่าง</button>
-      </div>
+     <div class="mode-toggle">
+  <button id="btnFood" class="mode-btn active" onclick="setMode('food')">🍱 วิเคราะห์อาหาร</button>
+  <button id="btnBody" class="mode-btn" onclick="setMode('body')">💪 วิเคราะห์รูปร่าง</button>
+</div>
+
       <!-- ✅ จบส่วนโหมด -->
             
             <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment" onchange="previewImage(event)">
