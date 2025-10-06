@@ -945,6 +945,9 @@ function closeEditModal(){ var m=document.getElementById('editModal'); if(m) m.c
               <button class="btn btn-success" onclick="saveToDatabase()">✅ Save</button>
               <button class="btn btn-danger" onclick="goHome()">❌ Skip</button>
             </div>
+            <div style="margin-top:10px;">
+  <button class="btn btn-share" onclick="shareResult()">📣 แชร์ไป Social</button>
+</div>
           </div>
         `);
       }
@@ -1037,6 +1040,41 @@ analysisResult = window.analysisResult;
   }
 }
 
+</script>
+<!-- เพิ่ม library สำหรับ capture หน้าจอ -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<script>
+async function shareResult() {
+  // 1. เลือก element ทั้งหมดที่ต้องการแคป (เช่น container ที่แสดงรูป + ข้อความ)
+  const target = document.querySelector('.food-result') || document.body;
+
+  // 2. แคปหน้าจอเป็นภาพ
+  const canvas = await html2canvas(target, { backgroundColor: '#ffffff', scale: 2 });
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
+  const file = new File([blob], 'ECalResult.jpg', { type: 'image/jpeg' });
+
+  // 3. ถ้าเบราว์เซอร์รองรับการแชร์ (มือถือส่วนใหญ่ได้)
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        title: 'E-Cal Result 🍳',
+        text: 'ใช้ E-Cal แล้วรู้แคลก่อนกิน! 😋 www.e-calbot.com',
+        files: [file]
+      });
+    } catch (err) {
+      console.error('❌ Share failed:', err);
+      alert('แชร์ไม่สำเร็จค่ะ ลองอีกครั้งนะ ❤️');
+    }
+  } else {
+    // 4. ถ้าแชร์ไม่ได้ ให้ดาวน์โหลดภาพแทน
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ECalResult.jpg';
+    a.click();
+    alert('บันทึกภาพเรียบร้อย แชร์เองได้เลยนะคะ ❤️');
+  }
+}
 </script>
 
 </body>
