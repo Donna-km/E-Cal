@@ -408,6 +408,20 @@
   background: #cc1e0f;
   color: #fff;
 }
+        .mode-btn {
+  background: #fff;
+  border: 1px solid #cc1e0f;
+  color: #cc1e0f;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.mode-btn.active {
+  background: #cc1e0f;
+  color: #fff;
+}
+
 
 </style>
 
@@ -443,6 +457,13 @@
 </h1>
 
             </div>
+             <!-- ✅ เพิ่มส่วนเลือกโหมดตรงนี้ -->
+      <div class="flex justify-center gap-2 mb-4">
+        <button id="btnFood" class="mode-btn active" onclick="setMode('food')">🍱 วิเคราะห์อาหาร</button>
+        <button id="btnBody" class="mode-btn" onclick="setMode('body')">💪 วิเคราะห์รูปร่าง</button>
+      </div>
+      <!-- ✅ จบส่วนโหมด -->
+            
             <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment" onchange="previewImage(event)">
             <input type="file" id="galleryInput" class="file-input" accept="image/*" onchange="previewImage(event)">
             <button class="btn btn-primary" onclick="openCamera()">
@@ -1035,6 +1056,14 @@ analysisResult = window.analysisResult;
       showToast('Re-Analyze failed', 'error');
     if (typeof showPage === 'function') showPage('resultPage');
   }
+}
+    let mode = 'food'; // โหมดเริ่มต้น
+
+function setMode(newMode) {
+  mode = newMode;
+  document.getElementById('btnFood').classList.toggle('active', mode === 'food');
+  document.getElementById('btnBody').classList.toggle('active', mode === 'body');
+  showToast(mode === 'food' ? '🍱 โหมดวิเคราะห์อาหาร' : '💪 โหมดวิเคราะห์รูปร่าง');
 }
 
 </script>
