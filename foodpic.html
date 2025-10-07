@@ -699,17 +699,29 @@ if (profile?.userId) {
 
 
 
-        function goHome() {
-            showPage('cameraPage');
-            // Reset states
-            analysisResult = null;
-            selectedImage = null;
-            document.getElementById('cameraInput').value = '';
-            document.getElementById('galleryInput').value = '';
-            document.getElementById('previewContainer').classList.add('hidden');
-            // Reset container frame
-            document.querySelector('.container').classList.remove('no-frame');
-        }
+        // ✅ ปรับให้กลับหน้าแรกได้จริงโดยไม่ค้างหน้า loading
+function goHome() {
+  // ซ่อนทุกหน้า
+  ['successPage','resultPage','resultBodyPage','loadingPage','loadingBodyPage'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
+
+  // แสดงหน้าแรก
+  const camera = document.getElementById('cameraPage');
+  if (camera) camera.classList.remove('hidden');
+
+  // reset ค่า
+  analysisResult = null;
+  selectedImage = null;
+  const preview = document.getElementById('previewContainer');
+  if (preview) preview.classList.add('hidden');
+  const input = document.getElementById('cameraInput');
+  if (input) input.value = '';
+
+  showToast('🏠 กลับสู่หน้าแรกแล้ว');
+}
+
 
         function openCamera() {
             console.log('openCamera called');
@@ -1160,9 +1172,18 @@ analysisResult = window.analysisResult;
 
 function setMode(newMode) {
   mode = newMode;
-  document.getElementById('btnFood').classList.toggle('active', mode === 'food');
-  document.getElementById('btnBody').classList.toggle('active', mode === 'body');
-  showToast(mode === 'food' ? '🍱 โหมดวิเคราะห์อาหาร' : '💪 โหมดวิเคราะห์รูปร่าง');
+
+  // reset class
+  document.getElementById('btnFood').classList.remove('active');
+  document.getElementById('btnBody').classList.remove('active');
+
+  if (mode === 'food') {
+    document.getElementById('btnFood').classList.add('active');
+    showToast('🍱 โหมดวิเคราะห์อาหาร');
+  } else {
+    document.getElementById('btnBody').classList.add('active');
+    showToast('💪 โหมดวิเคราะห์รูปร่าง');
+  }
 }
 
 </script>
@@ -1341,7 +1362,7 @@ function setMode(newMode) {
     container.appendChild(d);
   }
 })();
-    // ✅ ให้ปุ่มโหมดอาหารและรูปร่าง เปิดกล้องหรือเลือกไฟล์ได้ทันที
+    // ✅ ให้ปุ่มอาหาร/รูปร่าง เปิดกล้องหรือเลือกภาพทันที
 document.addEventListener("DOMContentLoaded", () => {
   const foodBtn = document.getElementById("btnFood");
   const bodyBtn = document.getElementById("btnBody");
@@ -1350,19 +1371,24 @@ document.addEventListener("DOMContentLoaded", () => {
   if (foodBtn && cameraInput) {
     foodBtn.addEventListener("click", () => {
       setMode("food");
-      showToast("📸 เลือกหรือถ่ายภาพอาหาร");
-      cameraInput.click();
+      setTimeout(() => {
+        showToast("📸 เลือกหรือถ่ายภาพอาหาร");
+        cameraInput.click();
+      }, 200);
     });
   }
 
   if (bodyBtn && cameraInput) {
     bodyBtn.addEventListener("click", () => {
       setMode("body");
-      showToast("💪 เลือกหรือถ่ายภาพรูปร่าง");
-      cameraInput.click();
+      setTimeout(() => {
+        showToast("💪 เลือกหรือถ่ายภาพรูปร่าง");
+        cameraInput.click();
+      }, 200);
     });
   }
 });
+
 
 </script>
 <!-- ===== /E-CAL BODY SCRIPTS ===== -->
