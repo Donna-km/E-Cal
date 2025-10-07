@@ -570,17 +570,15 @@ body, button, h1, p {
 
       <!-- ✅ จบส่วนโหมด -->
             
-            <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment" onchange="previewImage(event)">
-            <input type="file" id="galleryInput" class="file-input" accept="image/*" onchange="previewImage(event)">
-            <button class="btn btn-primary" onclick="openCamera()">
-                Take Photo
-            </button>
-            <button class="btn btn-secondary" onclick="openGallery()">
-                Choose Image
-            </button>
-            
-
-            
+           <input 
+  type="file"
+  id="cameraInput"
+  class="file-input"
+  accept="image/*"
+  capture="environment"
+  onchange="mode === 'body' ? previewBodyImage(event) : previewImage(event)">
+         
+           
             <div id="previewContainer" class="preview-container hidden">
                 <img id="previewImage" class="preview-image" alt="Preview">
                 <button class="btn btn-success" onclick="submitPhoto()">
