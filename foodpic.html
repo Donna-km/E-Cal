@@ -1295,7 +1295,7 @@ async function analyzeBodyImages() {
     }
 
     // ✅ ส่งข้อมูลไป n8n webhook
-    const response = await fetch("https://your-n8n-webhook-url/analyze-body", {
+    const response = await fetch("https://primary-production-49d9.up.railway.app/webhook-test/body", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
