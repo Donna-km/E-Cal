@@ -705,16 +705,21 @@ if (profile?.userId) {
 
 
         function goHome() {
-            showPage('cameraPage');
-            // Reset states
-            analysisResult = null;
-            selectedImage = null;
-            document.getElementById('cameraInput').value = '';
-            document.getElementById('galleryInput').value = '';
-            document.getElementById('previewContainer').classList.add('hidden');
-            // Reset container frame
-            document.querySelector('.container').classList.remove('no-frame');
-        }
+  // ✅ กลับไปหน้าแรกจริง ๆ
+  document.getElementById('cameraPage').classList.remove('hidden');
+  document.getElementById('successPage').classList.add('hidden');
+
+  // Reset states
+  analysisResult = null;
+  selectedImage = null;
+  document.getElementById('cameraInput').value = '';
+  document.getElementById('galleryInput').value = '';
+  document.getElementById('previewContainer').classList.add('hidden');
+
+  // Reset container frame
+  document.querySelector('.container').classList.remove('no-frame');
+}
+
 
         function openCamera() {
             console.log('openCamera called');
