@@ -606,43 +606,55 @@ body, button, h1, p {
 </head>
 <body>
     <div class="container">
-        <!-- หน้าถ่ายรูป (หน้าแรก) -->
-        <div id="cameraPage">
-            <div class="header">
-                <h1 style="text-align:center; color:#cc1e0f;">
-  Food Tracker
-  <br>
-  <i class="fi fi-tr-camera-viewfinder" style="font-size:64px; color:#cc1e0f; margin-top:18px; display:block;"></i>
-</h1>
+<!-- หน้าถ่ายรูป (หน้าแรก) -->
+<div id="cameraPage">
+  <div class="header">
+    <h1 style="text-align:center; color:#cc1e0f;">
+      Food Tracker
+      <br>
+      <i class="fi fi-tr-camera-viewfinder" style="font-size:64px; color:#cc1e0f; margin-top:18px; display:block;"></i>
+    </h1>
+  </div>
 
-            </div>
-             <!-- ✅ เพิ่มส่วนเลือกโหมดตรงนี้ -->
-     <div class="mode-toggle">
-  <button id="btnFood" class="mode-btn active" onclick="setMode('food')">
-    <i class="fi fi-rr-salad" style="font-size:28px"></i> วิเคราะห์อาหาร
+  <!-- ✅ ปุ่มสลับโหมด -->
+  <div class="mode-toggle">
+    <button id="btnFood" class="mode-btn active" onclick="setMode('food')">
+      🍱 วิเคราะห์อาหาร
+    </button>
+    <button id="btnBody" class="mode-btn" onclick="setMode('body')">
+      💪 วิเคราะห์รูปร่าง
+    </button>
+  </div>
+
+  <!-- ✅ input ถ่ายรูป -->
+  <input 
+    type="file" 
+    id="cameraInput" 
+    class="file-input" 
+    accept="image/*" 
+    capture="environment" 
+    onchange="mode === 'body' ? previewBodyImage(event) : previewImage(event)">
+
+  <!-- ✅ input จากแกลเลอรี -->
+  <input 
+    type="file" 
+    id="galleryInput" 
+    class="file-input" 
+    accept="image/*" 
+    onchange="previewImage(event)">
+
+  <!-- ✅ ปุ่มถ่ายรูป -->
+  <button class="btn btn-primary" onclick="openCamera()">
+    Take Photo
   </button>
-  <button id="btnBody" class="mode-btn" onclick="setMode('body')">
-    <i class="fi fi-rr-user-crown" style="font-size:28px"></i> วิเคราะห์รูปร่าง
+
+  <!-- ✅ ปุ่มเลือกภาพ -->
+  <button class="btn btn-secondary" onclick="openGallery()">
+    Choose Image
   </button>
 </div>
 
-      <!-- ✅ จบส่วนโหมด -->
-            <input 
-  type="file" 
-  id="cameraInput" 
-  class="file-input" 
-  accept="image/*" 
-  capture="environment" 
-  onchange="mode === 'body' ? previewBodyImage(event) : previewImage(event)">
-
-                Take Photo
-            </button>
-            <button class="btn btn-secondary" onclick="openGallery()">
-                Choose Image
-            </button>
-            
-
-            
+                       
             <div id="previewContainer" class="preview-container hidden">
                 <img id="previewImage" class="preview-image" alt="Preview">
                 <button class="btn btn-success" onclick="submitPhoto()">
