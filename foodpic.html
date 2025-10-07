@@ -572,16 +572,9 @@ body, button, h1, p {
             
             <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment" onchange="previewImage(event)">
             <input type="file" id="galleryInput" class="file-input" accept="image/*" onchange="previewImage(event)">
-            <button class="btn btn-primary" onclick="openCamera()">
-                Take Photo
-            </button>
-            <button class="btn btn-secondary" onclick="openGallery()">
-                Choose Image
-            </button>
-            
+                      
 
-            
-            <div id="previewContainer" class="preview-container hidden">
+               <div id="previewContainer" class="preview-container hidden">
                 <img id="previewImage" class="preview-image" alt="Preview">
                 <button class="btn btn-success" onclick="submitPhoto()">
                     ✨ Analyze Food
@@ -1348,6 +1341,29 @@ function setMode(newMode) {
     container.appendChild(d);
   }
 })();
+    // ✅ ให้ปุ่มโหมดอาหารและรูปร่าง เปิดกล้องหรือเลือกไฟล์ได้ทันที
+document.addEventListener("DOMContentLoaded", () => {
+  const foodBtn = document.getElementById("btnFood");
+  const bodyBtn = document.getElementById("btnBody");
+  const cameraInput = document.getElementById("cameraInput");
+
+  if (foodBtn && cameraInput) {
+    foodBtn.addEventListener("click", () => {
+      setMode("food");
+      showToast("📸 เลือกหรือถ่ายภาพอาหาร");
+      cameraInput.click();
+    });
+  }
+
+  if (bodyBtn && cameraInput) {
+    bodyBtn.addEventListener("click", () => {
+      setMode("body");
+      showToast("💪 เลือกหรือถ่ายภาพรูปร่าง");
+      cameraInput.click();
+    });
+  }
+});
+
 </script>
 <!-- ===== /E-CAL BODY SCRIPTS ===== -->
 
