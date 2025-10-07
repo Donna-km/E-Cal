@@ -660,6 +660,16 @@ body, button, h1, p {
             </div>
         </div>
 
+        <!-- ===== BODY LOADING PAGE ===== -->
+<div id="loadingBodyPage" class="hidden">
+  <div class="loading">
+    <div class="spinner"></div>
+    <p>กำลังวิเคราะห์รูปร่างของคุณ...</p>
+    <p style="font-size:13px; color:#888;">E-Cal AI Coach จะประเมิน Body Fat / Muscle / Score 💪</p>
+  </div>
+</div>
+
+
         <!-- หน้าผลลัพธ์ -->
         <div id="resultPage" class="hidden">
             <!-- แสดงรูปอาหารที่ส่ง -->
@@ -712,6 +722,12 @@ body, button, h1, p {
         let currentUser = null;
         let analysisResult = null;
         let selectedImage = null;
+
+        // ✅ เพิ่มตัวแปรสำหรับโหมด body
+let mode = 'food';
+let bodyImages = { front: null, side: null };
+let bodyStep = 'front';
+        
         // ✅ โหลด LINE ID จาก storage ถ้ามีอยู่แล้ว
 const savedLineId = localStorage.getItem('line_user_id') || sessionStorage.getItem('line_user_id');
 if (savedLineId) {
@@ -802,24 +818,43 @@ if (profile?.userId) {
         }
 
         function openCamera() {
-            console.log('openCamera called');
-            showToast('Opening camera...', 'success');
-            
-            // Use setTimeout to ensure the toast shows before opening camera
-            setTimeout(() => {
-                const cameraInput = document.getElementById('cameraInput');
-                cameraInput.value = '';
-                
-                // Create a new click event
-                const event = new MouseEvent('click', {
-                    view: window,
-                    bubbles: true,
-                    cancelable: true
-                });
-                
-                cameraInput.dispatchEvent(event);
-            }, 100);
-        }
+  console.log('openCamera called');
+
+  if (mode === 'body') {
+    // 🧍‍♀️ ถ้าเป็นโหมดวิเคราะห์รูปร่าง
+    bodyStep = 'front';
+    showToast("📸 กรุณาถ่ายรูปด้านหน้า");
+
+    setTimeout(() => {
+      const cameraInput = document.getElementById("cameraInput");
+      cameraInput.value = '';
+
+      // trigger click event
+      const event = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+      });
+      cameraInput.dispatchEvent(event);
+    }, 100);
+  } else {
+    // 🍱 โหมดอาหาร (ของเดิม)
+    showToast('Opening camera...', 'success');
+
+    setTimeout(() => {
+      const cameraInput = document.getElementById('cameraInput');
+      cameraInput.value = '';
+
+      const event = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+      });
+      cameraInput.dispatchEvent(event);
+    }, 100);
+  }
+}
+
 
         function openGallery() {
             console.log('openGallery called');
@@ -862,6 +897,58 @@ if (profile?.userId) {
                 showToast('No image selected', 'error');
             }
         }
+
+        function previewBodyImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    if (bodyStep === 'front') {
+      bodyImages.front = reader.result;
+      showToast("✅ ด้านหน้าพร้อมแล้ว ต่อไปถ่ายด้านข้าง");
+      bodyStep = 'side';
+      document.getElementById("cameraInput").click();
+    } else if (bodyStep === 'side') {
+      bodyImages.side = reader.result;
+      showToast("✅ ได้ครบทั้ง 2 มุมแล้ว เริ่มวิเคราะห์เลย...");
+      analyzeBodyImages();
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+        async function analyzeBodyImages() {
+  showBodyLoading(); // 👈 ใช้หน้า loading ใหม่ของ body
+  try {
+    const lineUserId = localStorage.getItem("line_user_id") || window.lineUserId || null;
+    if (!lineUserId) {
+      alert("⚠️ ไม่พบ LINE User ID กรุณาเข้าสู่ระบบใหม่");
+      return;
+    }
+
+    const response = await fetch("https://YOUR_N8N_URL/analyze-body", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: "body",
+        line_user_id: lineUserId,
+        images: [bodyImages.front, bodyImages.side]
+      }),
+    });
+
+    const result = await response.json();
+    showBodyResult(result);
+  } catch (err) {
+    console.error("❌ Body analysis failed:", err);
+    alert("❌ วิเคราะห์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+  }
+}
+// ✅ วางฟังก์ชันนี้ตรงนี้เลย (ใต้ analyzeBodyImages)
+function showBodyLoading() {
+  document.getElementById("cameraPage").classList.add("hidden");
+  document.getElementById("loadingBodyPage").classList.remove("hidden");
+}
 
         async function submitPhoto() {
             if (!selectedImage) {
