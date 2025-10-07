@@ -1295,32 +1295,42 @@ function setMode(newMode) {
   };
 
   window.showBodyResult = function(result){
-    var lb = document.getElementById('loadingBodyPage');
-    var rp = document.getElementById('resultBodyPage');
-    if (lb) lb.classList.add('hidden');
-    if (rp) rp.classList.remove('hidden');
+  var lb = document.getElementById('loadingBodyPage');
+  var rp = document.getElementById('resultBodyPage');
+  if (lb) lb.classList.add('hidden');
+  if (rp) rp.classList.remove('hidden');
 
-    var imgF = document.getElementById('bodyImageFront');
-    var imgS = document.getElementById('bodyImageSide');
-    if (imgF) imgF.src = __ecalBody.images.front || '';
-    if (imgS) imgS.src = __ecalBody.images.side || '';
+  var imgF = document.getElementById('bodyImageFront');
+  var imgS = document.getElementById('bodyImageSide');
+  if (imgF) imgF.src = __ecalBody.images.front || '';
+  if (imgS) imgS.src = __ecalBody.images.side || '';
 
-    var setText = (id, val)=>{ var el=document.getElementById(id); if(el) el.textContent = (val ?? '–'); };
-    setText('bodyScore',   result.body_score);
-    setText('bodyFat',     result.body_fat);
-    setText('muscleMass',  result.muscle_mass);
-    setText('bodyFocus',   result.focus || '');
-    setText('bodyTip',     result.tip_th ? ('โค้ชแนะนำ: ' + result.tip_th) : '');
+  var setText = (id, val)=>{ var el=document.getElementById(id); if(el) el.textContent = (val ?? '–'); };
+  setText('bodyScore',   result.body_score);
+  setText('bodyFat',     result.body_fat);
+  setText('muscleMass',  result.muscle_mass);
+  setText('bodyFocus',   result.focus || '');
+  setText('bodyTip',     result.tip_th ? ('โค้ชแนะนำ: ' + result.tip_th) : '');
 
-    var of = document.getElementById('overlayFront');
-    var os = document.getElementById('overlaySide');
-    if (of) of.innerHTML='';
-    if (os) os.innerHTML='';
-    var labels = Array.isArray(result.labels) ? result.labels : [];
-    var mid = Math.ceil(labels.length/2);
-    labels.slice(0,mid).forEach(l=> addOverlay(of, l));
-    labels.slice(mid).forEach(l=> addOverlay(os, l));
-  };
+  var of = document.getElementById('overlayFront');
+  var os = document.getElementById('overlaySide');
+  if (of) of.innerHTML='';
+  if (os) os.innerHTML='';
+
+  // ✅ รองรับกรณีที่ labels เป็น JSON string จาก Supabase
+  var labels = [];
+  try {
+    labels = Array.isArray(result.labels)
+      ? result.labels
+      : JSON.parse(result.labels || '[]');
+  } catch (e) {
+    console.warn('❌ Parse labels failed', e);
+  }
+
+  var mid = Math.ceil(labels.length/2);
+  labels.slice(0, mid).forEach(l => addOverlay(of, l));
+  labels.slice(mid).forEach(l => addOverlay(os, l));
+};
 
   function addOverlay(container, l){
     if (!container || !l) return;
