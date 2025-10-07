@@ -1165,9 +1165,19 @@ analysisResult = window.analysisResult;
 
 function setMode(newMode) {
   mode = newMode;
+
+  // toggle ปุ่ม active
   document.getElementById('btnFood').classList.toggle('active', mode === 'food');
   document.getElementById('btnBody').classList.toggle('active', mode === 'body');
+
+  // แจ้งเตือนโหมดที่เลือก
   showToast(mode === 'food' ? '🍱 โหมดวิเคราะห์อาหาร' : '💪 โหมดวิเคราะห์รูปร่าง');
+
+  // ✅ เปิดกล้อง/แกลเลอรีอัตโนมัติ
+  setTimeout(() => {
+    const input = document.getElementById('cameraInput');
+    if (input) input.click();
+  }, 500);
 }
 
 </script>
