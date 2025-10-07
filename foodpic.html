@@ -627,11 +627,14 @@ body, button, h1, p {
 </div>
 
       <!-- ✅ จบส่วนโหมด -->
-            
-            <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment" onchange="previewImage(event)">
-            <input type="file" id="galleryInput" class="file-input" accept="image/*" onchange="previewImage(event)">
-            <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment" onchange="previewBodyImage(event)">
-            <button class="btn btn-primary" onclick="openCamera()">
+            <input 
+  type="file" 
+  id="cameraInput" 
+  class="file-input" 
+  accept="image/*" 
+  capture="environment" 
+  onchange="mode === 'body' ? previewBodyImage(event) : previewImage(event)">
+
                 Take Photo
             </button>
             <button class="btn btn-secondary" onclick="openGallery()">
