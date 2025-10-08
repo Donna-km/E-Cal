@@ -1362,10 +1362,9 @@ function setMode(newMode) {
     container.appendChild(d);
   }
 })();
-    // ✅ ให้ปุ่มอาหาร/รูปร่าง เปิดกล้องหรือเลือกภาพทันที
+    // ✅ ให้ปุ่มอาหารเปิดกล้องหรือเลือกภาพได้ (ไม่ยุ่งกับรูปร่าง)
 document.addEventListener("DOMContentLoaded", () => {
   const foodBtn = document.getElementById("btnFood");
-  const bodyBtn = document.getElementById("btnBody");
   const cameraInput = document.getElementById("cameraInput");
 
   if (foodBtn && cameraInput) {
@@ -1377,17 +1376,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 200);
     });
   }
-
-  if (bodyBtn && cameraInput) {
-    bodyBtn.addEventListener("click", () => {
-      setMode("body");
-      setTimeout(() => {
-        showToast("💪 เลือกหรือถ่ายภาพรูปร่าง");
-        cameraInput.click();
-      }, 200);
-    });
-  }
 });
+
 
 
 </script>
