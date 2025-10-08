@@ -570,7 +570,14 @@ body, button, h1, p {
 
       <!-- ✅ จบส่วนโหมด -->
             
-            <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment" onchange="previewImage(event)">
+            <input 
+  type="file" 
+  id="cameraInput"
+  class="file-input"
+  accept="image/*"
+  capture="environment"
+  multiple
+  onchange="mode === 'body' ? previewBodyImages(event) : previewImage(event)">
             <input type="file" id="galleryInput" class="file-input" accept="image/*" onchange="previewImage(event)">
                       
 
@@ -699,29 +706,36 @@ if (profile?.userId) {
 
 
 
-        // ✅ ปรับให้กลับหน้าแรกได้จริงโดยไม่ค้างหน้า loading
+        // ✅ กลับหน้าแรกจริง ไม่ค้างหน้า loading
 function goHome() {
+  const pages = [
+    'successPage',
+    'resultPage',
+    'resultBodyPage',
+    'loadingPage',
+    'loadingBodyPage'
+  ];
+  
   // ซ่อนทุกหน้า
-  ['successPage','resultPage','resultBodyPage','loadingPage','loadingBodyPage'].forEach(id => {
+  pages.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.add('hidden');
   });
 
   // แสดงหน้าแรก
-  const camera = document.getElementById('cameraPage');
-  if (camera) camera.classList.remove('hidden');
+  const home = document.getElementById('cameraPage');
+  if (home) home.classList.remove('hidden');
 
   // reset ค่า
   analysisResult = null;
   selectedImage = null;
-  const preview = document.getElementById('previewContainer');
-  if (preview) preview.classList.add('hidden');
-  const input = document.getElementById('cameraInput');
-  if (input) input.value = '';
-
-  showToast('🏠 กลับสู่หน้าแรกแล้ว');
+  if (document.getElementById('cameraInput'))
+    document.getElementById('cameraInput').value = '';
+  if (document.getElementById('previewContainer'))
+    document.getElementById('previewContainer').classList.add('hidden');
+  
+  showToast("🏠 กลับสู่หน้าแรกแล้ว");
 }
-
 
         function openCamera() {
             console.log('openCamera called');
