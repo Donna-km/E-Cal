@@ -1450,15 +1450,19 @@ window.analyzeBodyImages = async function(){
   } catch (e) {
     console.warn('❌ Parse labels failed', e);
   }
+var mid = Math.ceil(labels.length / 2);
 
-  var mid = Math.ceil(labels.length/2);
-  // ✅ ให้ overlay ฝั่งหน้า (Front) โผล่ทีละจุด
-labels.slice(0, mid).forEach((l, i) => addOverlay(of, l, i));
-
-// ✅ และฝั่งข้าง (Side) ต่อจากนั้น (ไม่ซ้ำ delay)
-labels.slice(mid).forEach((l, i) => addOverlay(os, l, i + mid));
+// ✅ ถ้ามีแค่รูปเดียว (ไม่มี side)
+if (!os || !__ecalBody.images.side) {
+  labels.forEach((l, i) => addOverlay(of, l, i));
+} else {
+  // ✅ ถ้ามีสองรูป (front + side)
+  labels.slice(0, mid).forEach((l, i) => addOverlay(of, l, i));
+  labels.slice(mid).forEach((l, i) => addOverlay(os, l, i + mid));
+}
 };
 
+  
 function addOverlay(container, l, index = 0) {
   if (!container || !l) return;
 
