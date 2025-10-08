@@ -1243,70 +1243,86 @@ function setMode(newMode) {
   });
 
   window.startBodyCapture = function(){
-    __ecalBody.images = {front:null, side:null};
-    __ecalBody.step = 'front';
-    toast('📸 กรุณาถ่ายรูปด้านหน้า');
-    var input = document.getElementById('cameraInputBody');
-    if (!input) { alert('ไม่พบ input สำหรับโหมดรูปร่าง'); return; }
-    input.value = '';
-    input.click();
-  };
+  __ecalBody.images = {front:null, side:null};
+  __ecalBody.step = 'front';
+  
+  toast('📸 เลือกหรือถ่ายรูป 1–2 ภาพ (ด้านหน้าและ/หรือด้านข้าง)');
+  
+  var input = document.getElementById('cameraInputBody');
+  if (!input) { 
+    alert('ไม่พบ input สำหรับโหมดรูปร่าง'); 
+    return; 
+  }
+  
+  input.value = '';
+  input.multiple = true; // ✅ เลือกได้หลายรูป
+  input.click();
+};
 
-  window.previewBodyImage = function(ev){
-    var f = ev && ev.target && ev.target.files && ev.target.files[0];
-    if (!f) return;
-    var rd = new FileReader();
-    rd.onload = function(e){
-      if (__ecalBody.step === 'front'){
-        __ecalBody.images.front = e.target.result;
-        __ecalBody.step = 'side';
-        toast('✅ ด้านหน้าพร้อมแล้ว ต่อไปถ่ายด้านข้าง');
-        setTimeout(function(){
-          var input = document.getElementById('cameraInputBody');
-          input.value = '';
-          input.click();
-        }, 250);
-      } else {
-        __ecalBody.images.side = e.target.result;
-        toast('✅ ได้ครบแล้ว กำลังวิเคราะห์...');
-        analyzeBodyImages();
-      }
+window.previewBodyImage = function(ev){
+  var files = ev && ev.target && ev.target.files;
+  if (!files || files.length === 0) return;
+
+  // ✅ รีเซ็ตค่าเริ่มต้น
+  __ecalBody.images = {front:null, side:null};
+  __ecalBody.step = 'done';
+
+  // ✅ โหลดรูปทั้งหมด (สูงสุด 2 รูป)
+  var readers = [];
+  for (let i = 0; i < Math.min(files.length, 2); i++) {
+    readers.push(new Promise(resolve => {
+      const rd = new FileReader();
+      rd.onload = e => resolve(e.target.result);
+      rd.readAsDataURL(files[i]);
+    }));
+  }
+
+  Promise.all(readers).then(results => {
+    __ecalBody.images.front = results[0] || null;
+    __ecalBody.images.side  = results[1] || null;
+    toast('✅ ได้รูปครบแล้ว กำลังวิเคราะห์...');
+    analyzeBodyImages();
+  });
+};
+
+window.showBodyLoading = function(){
+  var cam = document.getElementById('cameraPage');
+  var lb  = document.getElementById('loadingBodyPage');
+  if (cam) cam.classList.add('hidden');
+  if (lb)  lb.classList.remove('hidden');
+};
+
+window.analyzeBodyImages = async function(){
+  try{
+    showBodyLoading();
+    var lineUserId = window.lineUserId 
+      || (window.liff && liff.getContext && liff.getContext()?.userId) 
+      || localStorage.getItem('line_user_id') 
+      || null;
+
+    var payload = {
+      mode: 'body',
+      line_user_id: lineUserId,
+      images: [__ecalBody.images.front, __ecalBody.images.side].filter(Boolean)
     };
-    rd.readAsDataURL(f);
-  };
 
-  window.showBodyLoading = function(){
-    var cam = document.getElementById('cameraPage');
+    var res = await fetch('https://primary-production-49d9.up.railway.app/webhook-test/body', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    var data = await res.json().catch(()=>({}));
+    showBodyResult(data || {});
+  }catch(err){
+    console.error(err);
+    alert('❌ วิเคราะห์รูปร่างไม่สำเร็จ');
     var lb  = document.getElementById('loadingBodyPage');
-    if (cam) cam.classList.add('hidden');
-    if (lb)  lb.classList.remove('hidden');
-  };
-
-  window.analyzeBodyImages = async function(){
-    try{
-      showBodyLoading();
-      var lineUserId = window.lineUserId || (window.liff && liff.getContext && liff.getContext()?.userId) || localStorage.getItem('line_user_id') || null;
-      var payload = {
-        mode: 'body',
-        line_user_id: lineUserId,
-        images: [__ecalBody.images.front, __ecalBody.images.side]
-      };
-      var res = await fetch('https://primary-production-49d9.up.railway.app/webhook-test/body', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      var data = await res.json().catch(()=>({}));
-      showBodyResult(data || {});
-    }catch(err){
-      console.error(err);
-      alert('❌ วิเคราะห์รูปร่างไม่สำเร็จ');
-      var lb  = document.getElementById('loadingBodyPage');
-      var cam = document.getElementById('cameraPage');
-      if (lb)  lb.classList.add('hidden');
-      if (cam) cam.classList.remove('hidden');
-    }
-  };
+    var cam = document.getElementById('cameraPage');
+    if (lb)  lb.classList.add('hidden');
+    if (cam) cam.classList.remove('hidden');
+  }
+};
 
   window.showBodyResult = function(result){
   var lb = document.getElementById('loadingBodyPage');
