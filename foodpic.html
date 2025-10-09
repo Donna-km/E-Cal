@@ -585,11 +585,11 @@ body, button, h1, p {
             </div>
         </div>
 
-        <!-- ===== E-CAL FOOD: Loading with Scan Effect ===== -->
-<div id="loadingFoodPage" class="hidden" style="text-align:center; padding:40px 20px;">
+        <!-- ===== E-CAL FOOD: Loading (with Scan Animation) ===== -->
+<div id="loadingPage" class="hidden" style="text-align:center; padding:40px 20px;">
 
   <div class="scan-area" id="scanAreaFood" style="max-width:280px;margin:0 auto 16px;position:relative;">
-    <!-- 🔹 ภาพอาหารจากผู้ใช้ -->
+    <!-- 🔹 ภาพจากผู้ใช้จะถูกใส่เข้ามาทาง JS -->
     <img id="scanImageFood"
          src="https://via.placeholder.com/280x280?text=Analyzing+Food..."
          alt="กำลังวิเคราะห์อาหาร..."
@@ -601,14 +601,12 @@ body, button, h1, p {
   <p style="color:#cc1e0f;font-weight:600;">กำลังวิเคราะห์อาหารของคุณ...</p>
 
   <style>
-    /* ===== Scan Animation Style ===== */
     .scan-area {
       position: relative;
       overflow: hidden;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-
     .scan-line {
       position: absolute;
       top: -100%;
@@ -625,7 +623,6 @@ body, button, h1, p {
       border-radius: 4px;
       box-shadow: 0 0 12px rgba(204,30,15,0.5);
     }
-
     @keyframes scanMove {
       0% { top: -10%; }
       50% { top: 100%; }
@@ -825,6 +822,23 @@ function goHome() {
                 showToast('No image selected', 'error');
             }
         }
+        window.showFoodLoading = function() {
+  const cam = document.getElementById('cameraPage');
+  const lb  = document.getElementById('loadingPage'); // ✅ ใช้ loadingPage เดิม
+  if (cam) cam.classList.add('hidden');
+  if (lb)  lb.classList.remove('hidden');
+
+  // 🖼️ ใส่ภาพจริงของอาหารที่ผู้ใช้อัปโหลด
+  const img = document.getElementById('scanImageFood');
+  const userImage = window.selectedImage || null;
+
+  if (img) {
+    img.src = userImage
+      ? (typeof userImage === 'string' ? userImage : URL.createObjectURL(userImage))
+      : "https://via.placeholder.com/280x280?text=Analyzing+Food...";
+  }
+};
+
 
         async function submitPhoto() {
             if (!selectedImage) {
