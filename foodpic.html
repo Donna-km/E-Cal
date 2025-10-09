@@ -1625,7 +1625,17 @@ window.showFoodLoading = function() {
       : "https://via.placeholder.com/280x280?text=Analyzing+Food...";
   }
 };
-
+// ✅ เพิ่ม trigger ปิด loading หลังเวลาเล็กน้อย (กันติด)
+  setTimeout(() => {
+    const lbCheck = document.getElementById('loadingFoodPage');
+    if (lbCheck && lbCheck.classList.contains('hidden')) return;
+    // เผื่อกรณี webhook ตอบช้า จะค่อยๆ fade out loading
+    lbCheck.style.opacity = '1';
+    lbCheck.style.transition = 'opacity 0.4s ease';
+    lbCheck.style.opacity = '0';
+    setTimeout(() => lbCheck.classList.add('hidden'), 400);
+  }, 8000);
+};
 
 </script>
 <!-- ===== /E-CAL BODY SCRIPTS ===== -->
