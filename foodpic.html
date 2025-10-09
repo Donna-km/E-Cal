@@ -585,14 +585,55 @@ body, button, h1, p {
             </div>
         </div>
 
-        <!-- หน้าโหลด -->
-        <div id="loadingPage" class="hidden">
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>Analyzing your food...</p>
-                <p>Please wait a moment</p>
-            </div>
-        </div>
+        <!-- ===== E-CAL FOOD: Loading with Scan Effect ===== -->
+<div id="loadingFoodPage" class="hidden" style="text-align:center; padding:40px 20px;">
+
+  <div class="scan-area" id="scanAreaFood" style="max-width:280px;margin:0 auto 16px;position:relative;">
+    <!-- 🔹 ภาพอาหารจากผู้ใช้ -->
+    <img id="scanImageFood"
+         src="https://via.placeholder.com/280x280?text=Analyzing+Food..."
+         alt="กำลังวิเคราะห์อาหาร..."
+         style="width:100%;border-radius:12px;object-fit:cover;">
+    <!-- 🔹 เส้นสแกน -->
+    <div class="scan-line"></div>
+  </div>
+
+  <p style="color:#cc1e0f;font-weight:600;">กำลังวิเคราะห์อาหารของคุณ...</p>
+
+  <style>
+    /* ===== Scan Animation Style ===== */
+    .scan-area {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .scan-line {
+      position: absolute;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0) 0%,
+        rgba(204,30,15,0.55) 50%,
+        rgba(255,255,255,0) 100%
+      );
+      animation: scanMove 2.2s linear infinite;
+      border-radius: 4px;
+      box-shadow: 0 0 12px rgba(204,30,15,0.5);
+    }
+
+    @keyframes scanMove {
+      0% { top: -10%; }
+      50% { top: 100%; }
+      100% { top: -10%; }
+    }
+  </style>
+</div>
+
 
         <!-- หน้าผลลัพธ์ -->
         <div id="resultPage" class="hidden">
