@@ -804,24 +804,25 @@ function goHome() {
 
 
         function previewImage(event) {
-            console.log('previewImage called', event);
-            const file = event.target.files[0];
-            console.log('Selected file:', file);
-            
-            if (file) {
-                selectedImage = file;
-                showToast('Image selected successfully!', 'success');
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('previewImage').src = e.target.result;
-                    document.getElementById('previewContainer').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            } else {
-                showToast('No image selected', 'error');
-            }
-        }
+  const file = event.target.files[0];
+  if (file) {
+    selectedImage = file;
+    // ✅ เก็บภาพไว้ใช้ในหน้า Loading
+    window.__ecalFoodImage = URL.createObjectURL(file);
+
+    showToast('Image selected successfully!', 'success');
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('previewImage').src = e.target.result;
+      document.getElementById('previewContainer').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  } else {
+    showToast('No image selected', 'error');
+  }
+}
+
         window.showFoodLoading = function() {
   const cam = document.getElementById('cameraPage');
   const lb  = document.getElementById('loadingPage');
