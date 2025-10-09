@@ -731,7 +731,8 @@ if (profile?.userId) {
 
         // Page navigation functions
         function showPage(pageId) {
-            const pages = ['cameraPage', 'loadingPage', 'resultPage', 'successPage'];
+            const pages = ['cameraPage', 'loadingPage','loadingFoodPage',
+    'loadingBodyPage', 'resultPage', 'successPage'];
             pages.forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
