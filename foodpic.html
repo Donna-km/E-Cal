@@ -1606,6 +1606,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+    // ✅ ฟังก์ชันโชว์หน้า Loading สำหรับวิเคราะห์อาหาร
+window.showFoodLoading = function() {
+  const cam = document.getElementById('cameraPage');
+  const lb  = document.getElementById('loadingFoodPage');
+  if (cam) cam.classList.add('hidden');
+  if (lb)  lb.classList.remove('hidden');
+
+  // 🖼️ ใส่ภาพจริงของอาหารที่ผู้ใช้อัปโหลด
+  const img = document.getElementById('scanImageFood');
+  const userImage = window.selectedImage || window.__ecalFoodImage || null;
+
+  if (img) {
+    img.src = userImage
+      ? (typeof userImage === 'string' ? userImage : URL.createObjectURL(userImage))
+      : "https://via.placeholder.com/280x280?text=Analyzing+Food...";
+  }
+};
+
 
 </script>
 <!-- ===== /E-CAL BODY SCRIPTS ===== -->
