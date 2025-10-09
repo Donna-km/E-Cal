@@ -1422,12 +1422,26 @@ window.previewBodyImage = function(ev){
   });
 };
 
-window.showBodyLoading = function(){
-  var cam = document.getElementById('cameraPage');
-  var lb  = document.getElementById('loadingBodyPage');
+window.showBodyLoading = function() {
+  const cam = document.getElementById('cameraPage');
+  const lb  = document.getElementById('loadingBodyPage');
   if (cam) cam.classList.add('hidden');
   if (lb)  lb.classList.remove('hidden');
+
+  // 🖼️ ใช้ภาพจริงของผู้ใช้ที่อัปโหลดล่าสุด
+  const img = document.getElementById('scanImageBody');
+  const userImage = window.__ecalBody?.images?.front || window.__ecalBody?.images?.side;
+
+  if (img) {
+    if (userImage) {
+      img.src = userImage; // ✅ ใส่ภาพจริงลงในหน้า Loading
+    } else {
+      // ถ้าไม่มีภาพให้ใช้ placeholder ปกติ
+      img.src = "https://via.placeholder.com/280x380?text=Analyzing+Body...";
+    }
+  }
 };
+
 
 window.analyzeBodyImages = async function(){
   try{
