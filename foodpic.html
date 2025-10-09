@@ -813,6 +813,7 @@ function goHome() {
             
             if (file) {
                 selectedImage = file;
+                window.__ecalFoodImage = file;
                 showToast('Image selected successfully!', 'success');
                 
                 const reader = new FileReader();
@@ -832,11 +833,11 @@ function goHome() {
                 return;
             }
 
-            showFoodLoading();
-
+            
             try {
                 const formData = new FormData();
                 formData.append('image', selectedImage);
+                showFoodLoading();
 
                 
                 // ✅ attach LINE user id so n8n can read it
