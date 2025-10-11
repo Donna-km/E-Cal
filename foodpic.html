@@ -569,25 +569,21 @@ body, button, h1, p {
       Food Scan
     </button>
   </div>
+
+  <!-- ✅ ย้ายส่วนเลือกไฟล์และ preview เข้ามาไว้ภายใน cameraPage -->
+  <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment" onchange="previewImage(event)">
+  <input type="file" id="galleryInput" class="file-input" accept="image/*" onchange="previewImage(event)">
+
+  <div id="previewContainer" class="preview-container hidden" style="margin-top:24px;">
+    <img id="previewImage" class="preview-image" alt="Preview">
+    <button class="btn btn-success" style="background:#FF3974; color:white; font-weight:600;" onclick="submitPhoto()">
+      ✨ Analyze Food
+    </button>
+    <button class="btn btn-secondary" style="color:#FF3974; border:1px solid #FF3974;" onclick="goHome()">
+      ← Cancel
+    </button>
+  </div>
 </div>
-
-
-      <!-- ✅ จบส่วนโหมด -->
-            
-            <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment" onchange="previewImage(event)">
-            <input type="file" id="galleryInput" class="file-input" accept="image/*" onchange="previewImage(event)">
-                      
-
-               <div id="previewContainer" class="preview-container hidden">
-                <img id="previewImage" class="preview-image" alt="Preview">
-                <button class="btn btn-success" onclick="submitPhoto()">
-                    ✨ Analyze Food
-                </button>
-                <button class="btn btn-secondary" onclick="goHome()">
-                    ← Cancel
-                </button>
-            </div>
-        </div>
 
         <!-- ===== E-CAL FOOD: Loading (with Scan Animation) ===== -->
 <div id="loadingPage" class="hidden" style="text-align:center; padding:40px 20px;">
