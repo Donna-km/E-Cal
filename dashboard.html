@@ -1160,7 +1160,7 @@ function updateDailyDonut(logs) {
           labels: [isOver ? "Over" : "Remaining"],
           datasets: [{
             data: [isOver ? remaining : (targetCalories - totals), totals],
-            backgroundColor: isOver ? ["#dc2626", "#FFECD0"] : ["#3b82f6", "#E0ECFF"],
+            backgroundColor: isOver ? ["#dc2626", "#FFECD0"] : ["#FF3974", "#FFECD0"],
             borderWidth: 0,
             cutout: "80%"
           }]
