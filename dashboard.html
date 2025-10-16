@@ -106,38 +106,69 @@
                     </button>
                 </div>
                 
-                <!-- Period Summary -->
-                <div id="periodSummary" class="hidden bg-white rounded-lg p-4 border border-gray-100">
-                    <div class="flex items-start space-x-3">
-                        <div class="text-2xl" id="summaryIcon"><i class="fi fi-rr-chart-line-up"></i></div>
-                        <div class="flex-1">
-                            <h4 class="font-semibold text-orange-800 mb-2" id="summaryTitle">สรุปผลรายสัปดาห์</h4>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                <div class="text-center">
-                                    <div class="font-bold text-orange-700" id="avgCalories">0</div>
-                                    <div class="text-gray-600">แคลอรี่เฉลี่ย/วัน</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="font-bold text-red-400" id="avgProtein">0g</div>
-                                    <div class="text-gray-600">โปรตีนเฉลี่ย/วัน</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="font-bold text-blue-400" id="avgCarbs">0g</div>
-                                    <div class="text-gray-600">คาร์บเฉลี่ย/วัน</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="font-bold text-green-400" id="avgFat">0g</div>
-                                    <div class="text-gray-600">ไฟต์เฉลี่ย/วัน</div>
-                                </div>
-                            </div>
-                            <div class="mt-3 text-sm text-gray-700" id="summaryText">
-                                คุณบันทึกอาหารไปแล้ว <span class="font-semibold" id="totalDays">0</span> วัน ในช่วงนี้
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+               <!-- Period Summary -->
+<div id="periodSummary" class="hidden bg-white rounded-2xl p-6 border border-gray-100 card-shadow">
+  <!-- สรุปการกินรายวันแบบวงแหวน -->
+  <div id="dailySummaryCard" class="hidden text-center">
+    <h3 class="text-lg font-semibold text-orange-800 mb-4">สรุปการกินวันนี้</h3>
+    <div class="relative flex justify-center items-center mb-4">
+      <canvas id="dailyDonutChart" width="200" height="200"></canvas>
+      <div class="absolute text-center">
+        <div class="text-xs text-gray-500">Remaining</div>
+        <div id="remainingCalories" class="text-3xl font-bold text-orange-700">0</div>
+        <div class="text-xs text-gray-400">kcal</div>
+      </div>
+    </div>
+
+    <div class="flex justify-around text-sm mt-2">
+      <div>
+        <div class="font-bold text-gray-800" id="eatenCalories">0</div>
+        <div class="text-gray-500">Eaten</div>
+      </div>
+      <div>
+        <div class="font-bold text-gray-800" id="burnedCalories">0</div>
+        <div class="text-gray-500">Burned</div>
+      </div>
+    </div>
+
+    <div class="flex justify-around mt-4 text-xs">
+      <div class="text-blue-500">Carbs <span id="carbsText">0g</span></div>
+      <div class="text-red-500">Protein <span id="proteinText">0g</span></div>
+      <div class="text-yellow-500">Fat <span id="fatText">0g</span></div>
+    </div>
+  </div>
+
+  <!-- สรุปผลรายสัปดาห์/รายเดือน -->
+  <div id="otherSummaryCard" class="hidden">
+    <div class="flex items-start space-x-3">
+      <div class="text-2xl" id="summaryIcon"><i class="fi fi-rr-chart-line-up"></i></div>
+      <div class="flex-1">
+        <h4 class="font-semibold text-orange-800 mb-2" id="summaryTitle">สรุปผลรายสัปดาห์</h4>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div class="text-center">
+            <div class="font-bold text-orange-700" id="avgCalories">0</div>
+            <div class="text-gray-600">แคลอรี่เฉลี่ย/วัน</div>
+          </div>
+          <div class="text-center">
+            <div class="font-bold text-red-400" id="avgProtein">0g</div>
+            <div class="text-gray-600">โปรตีนเฉลี่ย/วัน</div>
+          </div>
+          <div class="text-center">
+            <div class="font-bold text-blue-400" id="avgCarbs">0g</div>
+            <div class="text-gray-600">คาร์บเฉลี่ย/วัน</div>
+          </div>
+          <div class="text-center">
+            <div class="font-bold text-green-400" id="avgFat">0g</div>
+            <div class="text-gray-600">ไฟต์เฉลี่ย/วัน</div>
+          </div>
         </div>
+        <div class="mt-3 text-sm text-gray-700" id="summaryText">
+          คุณบันทึกอาหารไปแล้ว <span class="font-semibold" id="totalDays">0</span> วัน ในช่วงนี้
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
         <!-- Warnings Box for All Periods -->
         <div id="warningsBox" class="hidden mb-6">
@@ -557,37 +588,92 @@ if (profile.pictureUrl) {
             };
         }
 
-        // Update statistics cards
-        function updateStatistics(logs) {
-            const totals = logs.reduce((acc, log) => {
-                acc.calories += log.calories || 0;
-                acc.protein += log.protein_g || 0;
-                acc.carbs += log.carbs_g || 0;
-                acc.fat += log.fat_g || 0;
-                return acc;
-            }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+      // Update statistics cards
+function updateStatistics(logs) {
+  const totals = logs.reduce((acc, log) => {
+    acc.calories += log.calories || 0;
+    acc.protein += log.protein_g || 0;
+    acc.carbs += log.carbs_g || 0;
+    acc.fat += log.fat_g || 0;
+    return acc;
+  }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
 
-            // Update values
-            document.getElementById('totalCalories').textContent = Math.round(totals.calories);
-            document.getElementById('totalProtein').textContent = Math.round(totals.protein) + 'g';
-            document.getElementById('totalCarbs').textContent = Math.round(totals.carbs) + 'g';
-            document.getElementById('totalFat').textContent = Math.round(totals.fat) + 'g';
+  // Update values
+  document.getElementById('totalCalories').textContent = Math.round(totals.calories);
+  document.getElementById('totalProtein').textContent = Math.round(totals.protein) + 'g';
+  document.getElementById('totalCarbs').textContent = Math.round(totals.carbs) + 'g';
+  document.getElementById('totalFat').textContent = Math.round(totals.fat) + 'g';
 
-            // Update progress bars
-            const targetCalories = userProfile.goal_calories || userProfile.tdee;
-            const calorieProgress = Math.min((totals.calories / targetCalories) * 100, 100);
-            const proteinProgress = Math.min((totals.protein / userProfile.protein_goal) * 100, 100);
-            const carbsProgress = Math.min((totals.carbs / userProfile.carbs_goal) * 100, 100);
-            const fatProgress = Math.min((totals.fat / userProfile.fat_goal) * 100, 100);
+  // Update progress bars
+  const targetCalories = userProfile.goal_calories || userProfile.tdee;
+  const calorieProgress = Math.min((totals.calories / targetCalories) * 100, 100);
+  const proteinProgress = Math.min((totals.protein / userProfile.protein_goal) * 100, 100);
+  const carbsProgress = Math.min((totals.carbs / userProfile.carbs_goal) * 100, 100);
+  const fatProgress = Math.min((totals.fat / userProfile.fat_goal) * 100, 100);
 
-            document.getElementById('calorieProgress').style.width = calorieProgress + '%';
-            document.getElementById('proteinProgress').style.width = proteinProgress + '%';
-            document.getElementById('carbsProgress').style.width = carbsProgress + '%';
-            document.getElementById('fatProgress').style.width = fatProgress + '%';
+  document.getElementById('calorieProgress').style.width = calorieProgress + '%';
+  document.getElementById('proteinProgress').style.width = proteinProgress + '%';
+  document.getElementById('carbsProgress').style.width = carbsProgress + '%';
+  document.getElementById('fatProgress').style.width = fatProgress + '%';
 
-            // Update period summary
-            updatePeriodSummary(logs);
-        }
+  // Update period summary
+  updatePeriodSummary(logs);
+
+  // ✅ toggle ระหว่าง daily donut กับ summary ปกติ
+  if (currentPeriod === 'daily') {
+    document.getElementById('dailySummaryCard').classList.remove('hidden');
+    document.getElementById('otherSummaryCard').classList.add('hidden');
+    updateDailyDonut(logs);
+  } else {
+    document.getElementById('dailySummaryCard').classList.add('hidden');
+    document.getElementById('otherSummaryCard').classList.remove('hidden');
+  }
+}
+
+// ✅ ฟังก์ชันนี้แยกอยู่นอก updateStatistics
+function updateDailyDonut(logs) {
+  const totals = logs.reduce((acc, log) => {
+    acc.calories += log.calories || 0;
+    acc.protein += log.protein_g || 0;
+    acc.carbs += log.carbs_g || 0;
+    acc.fat += log.fat_g || 0;
+    return acc;
+  }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+
+  const targetCalories = userProfile.goal_calories || userProfile.tdee;
+  const remaining = Math.max(targetCalories - totals.calories, 0);
+
+  // update text
+  document.getElementById("remainingCalories").textContent = remaining;
+  document.getElementById("eatenCalories").textContent = totals.calories;
+  document.getElementById("burnedCalories").textContent = 0; // (ใส่ค่าจริงถ้ามีข้อมูล burn)
+  document.getElementById("proteinText").textContent = Math.round(totals.protein) + "g";
+  document.getElementById("carbsText").textContent = Math.round(totals.carbs) + "g";
+  document.getElementById("fatText").textContent = Math.round(totals.fat) + "g";
+
+  // draw donut
+  const ctx = document.getElementById("dailyDonutChart").getContext("2d");
+  if (window.dailyDonutChart) window.dailyDonutChart.destroy();
+
+  window.dailyDonutChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: ["Eaten", "Remaining"],
+      datasets: [{
+        data: [totals.calories, remaining],
+        backgroundColor: ["#FB923C", "#FFECD0"],
+        borderWidth: 0,
+        cutout: "75%"
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      animation: { duration: 800, easing: "easeOutQuart" }
+    }
+  });
+}
+
 
         // Update period summary
         function updatePeriodSummary(logs) {
