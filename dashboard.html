@@ -1123,6 +1123,7 @@ async function deleteFoodLog(createdAt) {
 
 function updateDailyDonut(logs) {
   try {
+    // รอให้ DOM render เสร็จก่อน (canvas ไม่ hidden)
     setTimeout(() => {
       const totals = logs.reduce((acc, log) => acc + (log.calories || 0), 0);
       const targetCalories = (userProfile && (userProfile.goal_calories || userProfile.tdee)) || 0;
@@ -1131,6 +1132,7 @@ function updateDailyDonut(logs) {
       const isOver = diff > 0;
       const remaining = Math.abs(diff);
 
+      // --- อัปเดตข้อความกลางวง ---
       const labelEl = document.getElementById("donutLabel");
       const remEl = document.getElementById("remainingCalories");
       if (labelEl) labelEl.textContent = isOver ? "Over" : "Remaining";
@@ -1140,21 +1142,24 @@ function updateDailyDonut(logs) {
         remEl.classList.toggle("text-red-600", isOver);
       }
 
+      // --- วาดกราฟ ---
       const canvas = document.getElementById("dailyDonutChart");
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
-      if (window.dailyDonutChart) window.dailyDonutChart.destroy();
 
-      const eaten = totals;
-      const remain = Math.max(targetCalories - eaten, 0);
-      const over = Math.max(eaten - targetCalories, 0);
+      // ✅ ล้างกราฟเก่าอย่างปลอดภัย (ถ้ามี)
+      if (window.dailyDonutChart && typeof window.dailyDonutChart.destroy === "function") {
+        window.dailyDonutChart.destroy();
+      }
+      window.dailyDonutChart = null;
 
+      // ✅ สร้างกราฟใหม่
       window.dailyDonutChart = new Chart(ctx, {
         type: "doughnut",
         data: {
-          labels: ["Eaten", isOver ? "Over" : "Remaining"],
+          labels: [isOver ? "Over" : "Remaining"],
           datasets: [{
-            data: isOver ? [targetCalories, over] : [eaten, remain],
+            data: [isOver ? remaining : (targetCalories - totals), totals],
             backgroundColor: isOver ? ["#dc2626", "#FFECD0"] : ["#cc1e0f", "#FFECD0"],
             borderWidth: 0,
             cutout: "80%"
@@ -1167,11 +1172,12 @@ function updateDailyDonut(logs) {
           animation: { duration: 800, easing: "easeOutQuart" }
         }
       });
-    }, 200);
+    }, 600); // ✅ หน่วง 0.6 วิ ให้ DOM พร้อมก่อนวาด
   } catch (e) {
     console.error("updateDailyDonut error:", e);
   }
 }
+
 window.addEventListener('load', initApp);
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c5ba257043d017',t:'MTc1NDcyNjUwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
