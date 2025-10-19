@@ -294,7 +294,7 @@
             for (let i = 0; i < 30; i++) {
                 const date = new Date(today);
                 date.setDate(date.getDate() - i);
-                const dateStr = date.toISOString().split('T')[0];
+                const dateStr = toThaiDateString(date);
                 
                 const calories = Math.floor(Math.random() * 1000) + 1500;
                 foodData[dateStr] = {
@@ -308,6 +308,11 @@
                 };
             }
         }
+        // ✅ helper: คืนค่า 'YYYY-MM-DD' ตามเวลา Asia/Bangkok เสมอ
+function toThaiDateString(dateObj) {
+  const thai = new Date(dateObj.toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
+  return thai.toISOString().split("T")[0];
+}
 
         // Calendar functions
         function renderCalendar() {
@@ -336,7 +341,7 @@
                 const date = new Date(startDate);
                 date.setDate(startDate.getDate() + i);
                 
-                const dateStr = date.toISOString().split('T')[0];
+                const dateStr = toThaiDateString(date);
                 const dayData = foodData[dateStr];
                 const isCurrentMonth = date.getMonth() === month;
                 
@@ -501,7 +506,7 @@
             for (let i = days - 1; i >= 0; i--) {
                 const date = new Date(today);
                 date.setDate(date.getDate() - i);
-                const dateStr = date.toISOString().split('T')[0];
+                const dateStr = toThaiDateString(date);
                 
                 labels.push(date.toLocaleDateString('th-TH', { 
                     month: 'short', 
@@ -539,7 +544,8 @@
             const calories = parseInt(document.getElementById('calories').value);
             const now = new Date();
             const thaiTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Bangkok"}));
-            const today = thaiTime.toISOString().split('T')[0];
+            const today = toThaiDateString(thaiTime);
+
             
             if (!foodData[today]) {
                 foodData[today] = { 
@@ -565,7 +571,7 @@
             // Get today's date in Thai timezone (UTC+7)
             const now = new Date();
             const thaiTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Bangkok"}));
-            const today = thaiTime.toISOString().split('T')[0];
+            const today = toThaiDateString(thaiTime);
             const todayData = foodData[today] || { calories: 0, goalCalories: userTDEE };
             
             document.getElementById('todayCalories').textContent = todayData.calories.toLocaleString();
@@ -604,7 +610,8 @@
             for (let i = 0; i < 365; i++) {
                 const date = new Date(today);
                 date.setDate(date.getDate() - i);
-                const dateStr = date.toISOString().split('T')[0];
+                const dateStr = toThaiDateString(date);
+
                 
                 const dayData = foodData[dateStr];
                 // Count any day that has been recorded (even if 0 calories)
@@ -637,6 +644,7 @@
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98ffdbe7328cd026',t:'MTc2MDcwNDc2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
