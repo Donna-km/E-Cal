@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Food Tracker</title>
-    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -37,9 +36,7 @@
     <header class="custom-pink text-white p-3 sm:p-4 shadow-lg">
         <div class="max-width-6xl mx-auto flex items-center justify-between">
             <div class="flex items-center space-x-2 sm:space-x-3">
-               <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                    <i class="fi fi-rr-salad" style="font-size:28px;"></i>
-                </div>
+                <div class="text-xl sm:text-2xl">🍽️</div>
                 <h1 class="text-lg sm:text-xl font-bold">Food Tracker</h1>
             </div>
             <div id="userInfo" class="flex items-center space-x-1.5 sm:space-x-2">
@@ -133,10 +130,6 @@
             </div>
         </div>
     </div>
-
-
-
-
 
     <script>
         // Supabase Configuration
@@ -233,16 +226,16 @@
                     }
                     
                     calorieData.forEach(record => {
-                    const dateStr = toThaiDateString(new Date(record.date + "T00:00:00")); // ✅ normalize เป็นเวลาไทย
-foodData[dateStr] = {
-  calories: parseInt(record.total_calories) || 0,
-  goalCalories: (Number.isFinite(parseInt(record.goal_calories)) && parseInt(record.goal_calories) > 0)
-                  ? parseInt(record.goal_calories)
-                  : (userTDEE || 2000),
-  diff: parseInt(record.diff) || 0,
-  foods: []
-};
-
+                        const dateStr = record.date; // ใช้วันจาก DB ตรง ๆ
+                        
+                        foodData[dateStr] = {
+                            calories: parseInt(record.total_calories) || 0,
+                            goalCalories: (Number.isFinite(parseInt(record.goal_calories)) && parseInt(record.goal_calories) > 0)
+                                            ? parseInt(record.goal_calories)
+                                            : (userTDEE || 2000),
+                            diff: parseInt(record.diff) || 0,
+                            foods: []
+                        };
                         
                         console.log(`Date ${dateStr}: calories=${foodData[dateStr].calories}, goal=${foodData[dateStr].goalCalories}`);
                     });
@@ -296,7 +289,7 @@ foodData[dateStr] = {
             for (let i = 0; i < 30; i++) {
                 const date = new Date(today);
                 date.setDate(date.getDate() - i);
-                const dateStr = toThaiDateString(date);
+                const dateStr = date.toISOString().split('T')[0];
                 
                 const calories = Math.floor(Math.random() * 1000) + 1500;
                 foodData[dateStr] = {
@@ -310,11 +303,12 @@ foodData[dateStr] = {
                 };
             }
         }
+
         // ✅ helper: คืนค่า 'YYYY-MM-DD' ตามเวลา Asia/Bangkok เสมอ
-function toThaiDateString(dateObj) {
-  const thai = new Date(dateObj.toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
-  return thai.toISOString().split("T")[0];
-}
+        function toThaiDateString(dateObj) {
+            const thai = new Date(dateObj.toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
+            return thai.toISOString().split("T")[0];
+        }
 
         // Calendar functions
         function renderCalendar() {
@@ -343,7 +337,7 @@ function toThaiDateString(dateObj) {
                 const date = new Date(startDate);
                 date.setDate(startDate.getDate() + i);
                 
-                const dateStr = toThaiDateString(date);
+                const dateStr = toThaiDateString(date); // แก้ให้เป็นเวลาไทย
                 const dayData = foodData[dateStr];
                 const isCurrentMonth = date.getMonth() === month;
                 
@@ -508,7 +502,7 @@ function toThaiDateString(dateObj) {
             for (let i = days - 1; i >= 0; i--) {
                 const date = new Date(today);
                 date.setDate(date.getDate() - i);
-                const dateStr = toThaiDateString(date);
+                const dateStr = toThaiDateString(date); // แก้ให้เป็นเวลาไทย
                 
                 labels.push(date.toLocaleDateString('th-TH', { 
                     month: 'short', 
@@ -546,8 +540,7 @@ function toThaiDateString(dateObj) {
             const calories = parseInt(document.getElementById('calories').value);
             const now = new Date();
             const thaiTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Bangkok"}));
-            const today = toThaiDateString(thaiTime);
-
+            const today = thaiTime.toISOString().split('T')[0];
             
             if (!foodData[today]) {
                 foodData[today] = { 
@@ -573,7 +566,7 @@ function toThaiDateString(dateObj) {
             // Get today's date in Thai timezone (UTC+7)
             const now = new Date();
             const thaiTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Bangkok"}));
-            const today = toThaiDateString(thaiTime);
+            const today = thaiTime.toISOString().split('T')[0];
             const todayData = foodData[today] || { calories: 0, goalCalories: userTDEE };
             
             document.getElementById('todayCalories').textContent = todayData.calories.toLocaleString();
@@ -612,8 +605,7 @@ function toThaiDateString(dateObj) {
             for (let i = 0; i < 365; i++) {
                 const date = new Date(today);
                 date.setDate(date.getDate() - i);
-                const dateStr = toThaiDateString(date);
-
+                const dateStr = toThaiDateString(date); // แก้ให้เป็นเวลาไทย
                 
                 const dayData = foodData[dateStr];
                 // Count any day that has been recorded (even if 0 calories)
@@ -646,9 +638,3 @@ function toThaiDateString(dateObj) {
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98ffdbe7328cd026',t:'MTc2MDcwNDc2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
-
-
-
-
-
-
