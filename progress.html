@@ -81,6 +81,7 @@
                 <span class="text-lg sm:text-2xl font-bold custom-pink-text streak-glow" id="streakCount">0/0</span>
                 <span class="text-sm sm:text-lg text-gray-600">วันที่ทำได้</span>
             </div>
+            <div id="ecalMessage" class="mt-3 text-base sm:text-lg font-semibold text-gray-700"></div>
         </div>
     </div>
 
@@ -593,33 +594,81 @@ function renderCalendar() {
         }
 
         function calculateStreak() {
-            let successDays = 0;
-            let totalDays = 0;
-            // Use Thai timezone for streak calculation
-            const now = new Date();
-            const today = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Bangkok"}));
-            
-            // Count all days that have data (including days with 0 calories if recorded)
-            for (let i = 0; i < 365; i++) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - i);
-                const dateStr = toThaiDateString(date); // แก้ให้เป็นเวลาไทย
-                
-                const dayData = foodData[dateStr];
-                // Count any day that has been recorded (even if 0 calories)
-                if (dayData) {
-                    totalDays++;
-                    const goalCalories = dayData.goalCalories || userTDEE;
-                    const percentage = (dayData.calories / goalCalories) * 100;
-                    // Success criteria: between 65% and 100% of goal
-                    if (percentage >= 65 && percentage <= 100) {
-                        successDays++;
-                    }
-                }
-            }
-            
-            document.getElementById('streakCount').textContent = `${successDays}/${totalDays}`;
-        }
+  let successDays = 0;
+  const now = new Date();
+  const thaiNow = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
+  const year = thaiNow.getFullYear();
+  const month = thaiNow.getMonth();
+  const monthStart = new Date(year, month, 1);
+  const monthEnd = new Date(year, month + 1, 0);
+  const totalDaysInMonth = monthEnd.getDate();
+
+  // 🔥 คำนวณวันสำเร็จในเดือนนี้
+  for (let day = 1; day <= totalDaysInMonth; day++) {
+    const date = new Date(year, month, day);
+    const dateStr = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+      .toISOString()
+      .split("T")[0];
+    const dayData = foodData[dateStr];
+    if (dayData) {
+      const goalCalories = dayData.goalCalories || userTDEE;
+      const percentage = (dayData.calories / goalCalories) * 100;
+      if (percentage >= 65 && percentage <= 100) {
+        successDays++;
+      }
+    }
+  }
+
+  // แสดง progress 🔥
+  document.getElementById("streakCount").textContent = `${successDays}/${totalDaysInMonth}`;
+
+  // 💬 ระบบข้อความอีแคลสุดกวน (สุ่มข้อความ)
+  const ratio = (successDays / totalDaysInMonth) * 100;
+  let messageSet = [];
+
+  if (ratio >= 80) {
+    // ทำดีมาก
+    messageSet = [
+      "💖 โอ้โห! อีแคลจะกราบละ เก่งเกินคนไปแล้ว!",
+      "🔥 บันทึกครบขนาดนี้ เอารางวัลไปเลยยย!",
+      "🎉 อีแคลน้ำตาจะไหล ดีใจแทบระเบิด!",
+      "😎 นี่มันโหมดเทพแล้วป่ะเนี่ย!",
+      "👏 ทุกวันคือชัยชนะของคนมีวินัย~"
+    ];
+  } else if (ratio >= 50) {
+    // กลางๆ
+    messageSet = [
+      "😉 ดีขึ้นเรื่อยๆ แต่อีแคลยังไม่ปลื้มพอนะ!",
+      "😏 เกือบครึ่งเดือนละ… อย่ามาแผ่วตอนนี้!",
+      "🧐 เอ๊ะ วันนี้บันทึกยัง? อีแคลรอดูอยู่!",
+      "💪 ครึ่งเดือนแล้วนะ อีกนิดเดียวจะครบเป้าแล้ว!",
+      "🤓 ถ้าเดือนนี้ผ่านครบ อีแคลจะเลี้ยงชานม (ในใจ)"
+    ];
+  } else if (ratio > 0) {
+    // ยังน้อย
+    messageSet = [
+      "😅 อีแคลหายใจแรงแทนแล้วนะ!",
+      "😤 อย่าทำให้อีแคลต้องขึ้นเสียง~",
+      "🙄 จะให้พูดยังไงดี… เริ่มเถอะ!",
+      "😭 เดือนจะหมดแล้วลูก! กินแล้วอย่าลืมบันทึก!",
+      "😬 อีแคลยังไม่ทิ้งเธอนะ แต่ช่วยกลับมาหน่อย!"
+    ];
+  } else {
+    // ไม่บันทึกเลย
+    messageSet = [
+      "😡 หายไปไหนมา!! อีแคลจะส่งคนไปลากกลับ!",
+      "😭 ไม่รักอีแคลแล้วเหรอออ~ TT",
+      "🥲 อีแคลนั่งรอทุกวัน เหงาเหมือนแมวหิวนม",
+      "😩 บันทึกหน่อยเถอะ ขอร้อง อีแคลจะร้องไห้แล้ว!",
+      "💔 อีแคลขอพื้นที่ในใจเธอสักนิดก็ยังดี..."
+    ];
+  }
+
+  // 🌀 สุ่มข้อความ
+  const message = messageSet[Math.floor(Math.random() * messageSet.length)];
+  const msgEl = document.getElementById("ecalMessage");
+  msgEl.textContent = message;
+}
 
         // Initialize app
         async function initializeApp() {
@@ -636,6 +685,7 @@ function renderCalendar() {
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98ffdbe7328cd026',t:'MTc2MDcwNDc2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
