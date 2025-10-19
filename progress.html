@@ -333,10 +333,12 @@ function renderCalendar() {
     const date = new Date(startDate);
     date.setDate(startDate.getDate() + i);
 
-    // ✅ ใช้ key เดียวกับ Supabase (ไม่ยุ่ง timezone)
-    const dateStr = date.toISOString().slice(0, 10);
-    const dayData = foodData[dateStr];
+    // ✅ ใช้ key แบบเดียวกับกราฟและ Supabase
+    const dateStr = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 10);
 
+    const dayData = foodData[dateStr];
     const isCurrentMonth = date.getMonth() === month;
     const calendarDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const isToday = calendarDate.getTime() === todayDateOnly.getTime();
@@ -363,12 +365,12 @@ function renderCalendar() {
       }
     }
 
-    if (isToday) {
-      bgColor = "custom-pink text-white";
-    }
+    if (isToday) bgColor = "custom-pink text-white";
 
     const dayElement = document.createElement("div");
-    dayElement.className = `calendar-day p-1 sm:p-2 text-center rounded-lg cursor-pointer ${bgColor} ${isCurrentMonth ? "" : "opacity-30"}`;
+    dayElement.className = `calendar-day p-1 sm:p-2 text-center rounded-lg cursor-pointer ${bgColor} ${
+      isCurrentMonth ? "" : "opacity-30"
+    }`;
     dayElement.innerHTML = `
       <div class="text-xs sm:text-sm font-semibold">${date.getDate()}</div>
       <div class="text-sm sm:text-lg">${emoji}</div>
@@ -381,6 +383,7 @@ function renderCalendar() {
     calendarGrid.appendChild(dayElement);
   }
 }
+
 
         function changeMonth(direction) {
             currentDate.setMonth(currentDate.getMonth() + direction);
@@ -633,6 +636,7 @@ function renderCalendar() {
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98ffdbe7328cd026',t:'MTc2MDcwNDc2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
