@@ -310,87 +310,92 @@
             return thai.toISOString().split("T")[0];
         }
 
-        // Calendar functions
-        function renderCalendar() {
-            // Use Thai timezone for calendar display
-            const now = new Date();
-            const thaiTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Bangkok"}));
-            
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            
-            document.getElementById('currentMonth').textContent = 
-                `${year} ${new Date(year, month).toLocaleDateString('th-TH', { month: 'long' })}`;
-            
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const startDate = new Date(firstDay);
-            startDate.setDate(startDate.getDate() - firstDay.getDay());
-            // ✅ Normalize ให้เป็นเวลาไทย (ใช้ logic เดียวกับกราฟ)
-const normalizedStart = new Date(startDate.toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
+        // ✅ Calendar functions (Final Version)
+function renderCalendar() {
+    // ใช้เวลาไทยเป็นหลัก
+    const now = new Date();
+    const thaiTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
 
-            
-            const calendarGrid = document.getElementById('calendarGrid');
-            calendarGrid.innerHTML = '';
-            
-            // Get today's date in Thai timezone for comparison
-            const todayInThai = new Date(thaiTime.getFullYear(), thaiTime.getMonth(), thaiTime.getDate());
-            
-           for (let i = 0; i < 42; i++) {
-  const date = new Date(normalizedStart);
-  date.setDate(normalizedStart.getDate() + i);
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
 
-  // ✅ ใช้ logic เดียวกับกราฟ
-  const dateStr = date.toISOString().split("T")[0];
-  const dayData = foodData[dateStr];
+    // ชื่อเดือนภาษาไทย
+    document.getElementById("currentMonth").textContent =
+        `${year} ${new Date(year, month).toLocaleDateString("th-TH", { month: "long" })}`;
 
-                const isCurrentMonth = date.getMonth() === month;
-                
-                // Compare dates properly - create date objects without time
-                const calendarDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-                const isToday = calendarDate.getTime() === todayInThai.getTime();
-                const isFutureDate = calendarDate > todayInThai;
-                
-                let emoji = '';
-                let bgColor = 'bg-gray-100';
-                
-                // Only show emojis for past dates or today, not future dates
-                if (dayData && isCurrentMonth && !isFutureDate) {
-                    const goalCalories = dayData.goalCalories || userTDEE;
-                    const percentage = (dayData.calories / goalCalories) * 100;
-                    if (percentage < 65) {
-                        emoji = '🥺';
-                        bgColor = 'bg-yellow-100';
-                    } else if (percentage <= 85) {
-                        emoji = '🤩';
-                        bgColor = 'bg-green-100';
-                    } else if (percentage <= 100) {
-                        emoji = '🥰';
-                        bgColor = 'bg-blue-100';
-                    } else {
-                        emoji = '😭';
-                        bgColor = 'bg-red-100';
-                    }
-                }
-                
-                if (isToday) {
-                    bgColor = 'custom-pink text-white';
-                }
-                
-                const dayElement = document.createElement('div');
-                dayElement.className = `calendar-day p-1 sm:p-2 text-center rounded-lg cursor-pointer ${bgColor} ${isCurrentMonth ? '' : 'opacity-30'}`;
-                dayElement.innerHTML = `
-                    <div class="text-xs sm:text-sm font-semibold">${date.getDate()}</div>
-                    <div class="text-sm sm:text-lg">${emoji}</div>
-                `;
-                
-                if (isCurrentMonth) {
-                    dayElement.onclick = () => selectDate(dateStr);
-                }
-                
-                calendarGrid.appendChild(dayElement);
+    // วันที่เริ่มต้นของเดือน
+    const firstDay = new Date(year, month, 1);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+    // 🧩 ไม่ต้อง normalize ซ้ำ (จะทำให้วันเหลื่อม)
+    // const normalizedStart = new Date(startDate.toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
+
+    const calendarGrid = document.getElementById("calendarGrid");
+    calendarGrid.innerHTML = "";
+
+    // วันปัจจุบัน (ตามเวลาไทย)
+    const todayInThai = new Date(thaiTime.getFullYear(), thaiTime.getMonth(), thaiTime.getDate());
+
+    // วาด 6 แถว x 7 คอลัมน์
+    for (let i = 0; i < 42; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+
+        // ✅ ใช้ logic เดียวกับกราฟ — แปลงเวลาไทยก่อน .toISOString()
+        const dateStr = toThaiDateString(date);
+        const dayData = foodData[dateStr];
+
+        const isCurrentMonth = date.getMonth() === month;
+
+        // ตรวจวันปัจจุบัน
+        const calendarDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const isToday = calendarDate.getTime() === todayInThai.getTime();
+        const isFutureDate = calendarDate > todayInThai;
+
+        let emoji = "";
+        let bgColor = "bg-gray-100";
+
+        // แสดง emoji เฉพาะวันอดีตหรือวันนี้
+        if (dayData && isCurrentMonth && !isFutureDate) {
+            const goalCalories = dayData.goalCalories || userTDEE;
+            const percentage = (dayData.calories / goalCalories) * 100;
+            if (percentage < 65) {
+                emoji = "🥺";
+                bgColor = "bg-yellow-100";
+            } else if (percentage <= 85) {
+                emoji = "🤩";
+                bgColor = "bg-green-100";
+            } else if (percentage <= 100) {
+                emoji = "🥰";
+                bgColor = "bg-blue-100";
+            } else {
+                emoji = "😭";
+                bgColor = "bg-red-100";
             }
         }
+
+        // ไฮไลต์วันปัจจุบัน
+        if (isToday) {
+            bgColor = "custom-pink text-white";
+        }
+
+        // สร้าง element วัน
+        const dayElement = document.createElement("div");
+        dayElement.className = `calendar-day p-1 sm:p-2 text-center rounded-lg cursor-pointer ${bgColor} ${isCurrentMonth ? "" : "opacity-30"}`;
+        dayElement.innerHTML = `
+            <div class="text-xs sm:text-sm font-semibold">${date.getDate()}</div>
+            <div class="text-sm sm:text-lg">${emoji}</div>
+        `;
+
+        // คลิกดูรายละเอียดวัน
+        if (isCurrentMonth) {
+            dayElement.onclick = () => selectDate(dateStr);
+        }
+
+        calendarGrid.appendChild(dayElement);
+    }
+}
 
         function changeMonth(direction) {
             currentDate.setMonth(currentDate.getMonth() + direction);
@@ -643,5 +648,6 @@ const normalizedStart = new Date(startDate.toLocaleString("en-US", { timeZone: "
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98ffdbe7328cd026',t:'MTc2MDcwNDc2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
