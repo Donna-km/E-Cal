@@ -11,7 +11,14 @@
         }
         
         .gradient-bg {
+            background: white;
+            padding: 20px;
+        }
+        
+        .pink-container {
             background: #FF3974;
+            border-radius: 24px;
+            min-height: calc(100vh - 40px);
         }
         
         .card-hover {
@@ -22,36 +29,16 @@
             transform: translateY(-8px);
             box-shadow: 0 20px 40px rgba(255, 57, 116, 0.2);
         }
-        
-        .icon-bounce {
-            animation: bounce 2s infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-10px);
-            }
-            60% {
-                transform: translateY(-5px);
-            }
-        }
     </style>
 </head>
 <body class="gradient-bg min-h-full">
-    <main class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <header class="text-center mb-12">
-            <div class="bg-white/20 backdrop-blur-sm rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center icon-bounce">
-                <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-            </div>
-            <h1 class="text-4xl font-bold text-white mb-2">My Dashboard</h1>
-            <p class="text-white/80 text-lg">เลือกฟีเจอร์ที่คุณต้องการใช้งาน</p>
-        </header>
+    <div class="pink-container">
+        <main class="container mx-auto px-4 py-8">
+            <!-- Header -->
+            <header class="text-center mb-12">
+                <h1 class="text-4xl font-bold text-white mb-2">My Dashboard</h1>
+                <p class="text-white/80 text-lg">เลือกฟีเจอร์ที่คุณต้องการใช้งาน</p>
+            </header>
 
         <!-- Button Grid -->
         <div class="flex flex-col gap-4 max-w-md mx-auto">
@@ -126,13 +113,11 @@
             </a>
         </div>
 
-        <!-- Footer -->
-        <footer class="text-center mt-12">
-            <p class="text-white/60 text-sm">© 2024 My App Dashboard. All rights reserved.</p>
-        </footer>
-    </main>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9918e3f136cc270d',t:'MTc2MDk2NzI0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+            <!-- Footer -->
+            <footer class="text-center mt-12">
+                <p class="text-white/60 text-sm">© 2024 My App Dashboard. All rights reserved.</p>
+            </footer>
+        </main>
+    </div>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9918f4c1e7442709',t:'MTc2MDk2NzkzMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
-
-
-
