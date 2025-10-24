@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://js.stripe.com/v3/"></script>
     <style>
         body {
             box-sizing: border-box;
@@ -191,7 +192,9 @@ async function startPremiumCheckout() {
     });
     const data = await res.json();
     if (!data.url && !data.checkout_url) throw new Error("ไม่พบ checkout URL");
-    window.location.href = data.url || data.checkout_url;
+    const stripe = Stripe("pk_test_51S7qtO3VKgRtrVeY2zqMmhpuqCt9jHfIKMxxvAaKTxU5uLEkNVHoFErKWbHrxKmWqTkD6dZl4f2KxFMWRZzV2bqs00V4phfMTB");
+await stripe.redirectToCheckout({ sessionId: data.id || data.session_id || data.url?.split("/c/pay/")[1] });
+
   } catch (err) {
     alert("เกิดข้อผิดพลาดในการเริ่มต้นการชำระเงิน ❌");
     console.error(err);
@@ -205,6 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'992f5b7f42e8d037',t:'MTc2MTIwMjgyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
