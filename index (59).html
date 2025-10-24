@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My App Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        .gradient-bg {
+            background: white;
+            padding: 20px;
+        }
+        
+        .pink-container {
+            background: #FF3974;
+            border-radius: 24px;
+            min-height: calc(100vh - 40px);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(255, 57, 116, 0.2);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-full">
+    <div class="pink-container">
+        <main class="container mx-auto px-4 py-8">
+            <!-- Header -->
+            <header class="text-center mb-12">
+                <div id="loading" class="text-white text-lg">กำลังโหลด...</div>
+                <div id="profile-section" class="hidden">
+                    <div class="mb-4">
+                        <img id="profile-picture" src="" alt="Profile" class="w-28 h-28 rounded-full mx-auto mb-4 border-4 border-white/30">
+                    </div>
+                    <h1 id="profile-name" class="text-3xl font-bold text-white mb-2"></h1>
+                    <div id="plan-badge" class="inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4"></div>
+                    <div id="upgrade-button" class="hidden mb-4">
+  <button id="btnUpgradePremium"
+    class="inline-block bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-semibold px-6 py-2 rounded-full transition-colors duration-300">
+    🚀 อัพเกรดเป็น Premium
+  </button>
+</div>
+
+               </header>
+
+        <!-- Button Grid -->
+        <div class="flex flex-col gap-3 max-w-xs mx-auto">
+            <!-- Profile User Button -->
+            <a href="https://liff.line.me/2007859046-AM0LQo0g" target="_blank" rel="noopener noreferrer" 
+               class="bg-[#FFECD0] rounded-xl p-3 flex items-center justify-center gap-2 card-hover">
+                <div class="bg-white/50 rounded-full w-8 h-8 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-[#FF3974]" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-[#FF3974]">Profile User</h3>
+            </a>
+
+            <!-- Smart Scan Button -->
+            <a href="https://liff.line.me/2007859046-doqQg8qv" target="_blank" rel="noopener noreferrer" 
+               class="bg-[#FFECD0] rounded-xl p-3 flex items-center justify-center gap-2 card-hover">
+                <div class="bg-white/50 rounded-full w-8 h-8 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-[#FF3974]" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9.5 6.5v3h-3v-3h3M11 5H5v6h6V5zm-1.5 9.5v3h-3v-3h3M11 13H5v6h6v-6zm6.5-6.5v3h-3v-3h3M19 5h-6v6h6V5zm-6.5 9.5v3h-3v-3h3M13 13h6v6h-6v-6z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-[#FF3974]">Smart Scan</h3>
+            </a>
+
+            <!-- Dashboard Button -->
+            <a href="https://liff.line.me/2007859046-7NZV6xZG" target="_blank" rel="noopener noreferrer" 
+               class="bg-[#FFECD0] rounded-xl p-3 flex items-center justify-center gap-2 card-hover">
+                <div class="bg-white/50 rounded-full w-8 h-8 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-[#FF3974]" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-[#FF3974]">Dashboard</h3>
+            </a>
+
+            <!-- Progress Button -->
+            <a href="https://liff.line.me/2007859046-WDvlrevQ" target="_blank" rel="noopener noreferrer" 
+               class="bg-[#FFECD0] rounded-xl p-3 flex items-center justify-center gap-2 card-hover">
+                <div class="bg-white/50 rounded-full w-8 h-8 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-[#FF3974]" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-[#FF3974]">Progress</h3>
+            </a>
+
+            <!-- Contact Us Button -->
+            <a href="https://liff.line.me/2007859046-0L6j9X6m" target="_blank" rel="noopener noreferrer" 
+               class="bg-[#FFECD0] rounded-xl p-3 flex items-center justify-center gap-2 card-hover">
+                <div class="bg-white/50 rounded-full w-8 h-8 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-[#FF3974]" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-[#FF3974]">Contact Us</h3>
+            </a>
+        </div>
+
+            <!-- Footer -->
+            <footer class="text-center mt-12">
+                <p class="text-white/60 text-sm">© 2024 My App Dashboard. All rights reserved.</p>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // Supabase configuration
+        const supabaseUrl = 'https://lvtdqeerzxpznnayccmb.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function initApp() {
+            try {
+                // Initialize LIFF
+                await liff.init({ liffId: "2007859046-BpXDWpXe" });
+
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+
+                // Get LINE profile
+                const profile = await liff.getProfile();
+                
+                // Get user plan from Supabase
+                const { data: userPlan, error } = await supabase
+                    .from('user_plans')
+                    .select('plan_type')
+                    .eq('line_user_id', profile.userId)
+                    .single();
+
+                let planType = 'free';
+                if (!error && userPlan) {
+                    planType = userPlan.plan_type;
+                }
+
+                // Update UI
+                document.getElementById('profile-picture').src = profile.pictureUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiNGRkZGRkYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjRkYzOTc0Ij4KPHA+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPgo8L3N2Zz4K';
+                document.getElementById('profile-name').textContent = profile.displayName;
+                
+                // Set plan badge
+                const planBadge = document.getElementById('plan-badge');
+                const upgradeButton = document.getElementById('upgrade-button');
+                
+                if (planType === 'premium') {
+                    planBadge.textContent = '👑 Premium';
+                    planBadge.className = 'inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 bg-yellow-400 text-yellow-900';
+                    upgradeButton.classList.add('hidden');
+                } else {
+                    planBadge.textContent = '📌 Free Plan';
+                    planBadge.className = 'inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 bg-white/20 text-white';
+                    upgradeButton.classList.remove('hidden');
+                }
+
+                // Hide loading and show profile
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('profile-section').classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                document.getElementById('loading').textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
+            }
+        }
+
+        // Initialize app when page loads
+        window.addEventListener('load', initApp);
+
+async function startPremiumCheckout() {
+  try {
+    const profile = await liff.getProfile();
+
+    const res = await fetch("https://primary-production-49d9.up.railway.app/webhook-test/create-premium-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ line_user_id: profile.userId })
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text}`);
+    }
+
+    const data = await res.json();
+    console.log("Response from n8n:", data);
+
+    if (data.url) {
+      // ✅ redirect ไป Stripe โดยตรงแบบ event
+      window.location.href = data.url;
+    } else {
+      alert("❌ ไม่พบ URL สำหรับชำระเงิน");
+      console.error("Missing URL:", data);
+    }
+
+  } catch (err) {
+    alert("เกิดข้อผิดพลาดในการเริ่มต้นการชำระเงิน ❌");
+    console.error(err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("btnUpgradePremium");
+  if (btn) btn.addEventListener("click", startPremiumCheckout);
+});
+
+</script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'992f5b7f42e8d037',t:'MTc2MTIwMjgyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+
+
+
+
+
+
+
+
+
