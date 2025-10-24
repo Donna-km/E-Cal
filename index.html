@@ -160,14 +160,29 @@
                 const upgradeButton = document.getElementById('upgrade-button');
                 
                 if (planType === 'premium') {
-                    planBadge.textContent = '👑 Premium';
-                    planBadge.className = 'inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 bg-yellow-400 text-yellow-900';
-                    upgradeButton.classList.add('hidden');
-                } else {
-                    planBadge.textContent = '📌 Free Plan';
-                    planBadge.className = 'inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 bg-white/20 text-white';
-                    upgradeButton.classList.remove('hidden');
-                }
+  // ซ่อนปุ่มอัปเกรด
+  upgradeButton.classList.add('hidden');
+
+  // สร้างป้าย Premium พร้อมมงกุฏ (เฉพาะ Premium)
+  planBadge.innerHTML = `
+    <div class="relative inline-block mb-4">
+      <!-- 👑 มงกุฏอยู่เหนือป้าย -->
+      <img src="https://cdn-icons-png.flaticon.com/512/743/743922.png" 
+           alt="Crown"
+           class="absolute -top-5 left-1/2 transform -translate-x-1/2 w-6 drop-shadow-[0_2px_4px_rgba(255,215,0,0.8)] animate-bounce">
+      <!-- ป้าย Premium -->
+      <div class="inline-block px-5 py-2 rounded-full text-sm font-semibold bg-yellow-400 text-yellow-900 shadow-md border border-yellow-500">
+        Premium
+      </div>
+    </div>
+  `;
+} else {
+  // Free plan
+  planBadge.textContent = '📌 Free Plan';
+  planBadge.className = 'inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 bg-white/20 text-white';
+  upgradeButton.classList.remove('hidden');
+}
+
 
                 // Hide loading and show profile
                 document.getElementById('loading').classList.add('hidden');
@@ -222,6 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'992f5b7f42e8d037',t:'MTc2MTIwMjgyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
