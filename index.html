@@ -160,14 +160,41 @@
                 const upgradeButton = document.getElementById('upgrade-button');
                 
                 if (planType === 'premium') {
-                    planBadge.textContent = '👑 Premium';
-                    planBadge.className = 'inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 bg-yellow-400 text-yellow-900';
-                    upgradeButton.classList.add('hidden');
-                } else {
-                    planBadge.textContent = '📌 Free Plan';
-                    planBadge.className = 'inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 bg-white/20 text-white';
-                    upgradeButton.classList.remove('hidden');
-                }
+  planBadge.textContent = '👑 Premium';
+  planBadge.className = 'inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 bg-yellow-400 text-yellow-900';
+  upgradeButton.classList.add('hidden');
+
+  // 🌟 เพิ่มเอฟเฟกต์ Gold Aura Glow รอบโปรไฟล์
+  const profilePic = document.getElementById('profile-picture');
+  if (profilePic) {
+    profilePic.classList.add(
+      'shadow-[0_0_25px_8px_rgba(255,215,0,0.6)]', // แสงทองนุ่มๆ
+      'transition-all', 
+      'duration-700',
+      'hover:shadow-[0_0_45px_12px_rgba(255,235,59,0.8)]' // วิ้งตอน hover
+    );
+  }
+
+  // 👑 เพิ่มมงกุฏลอยบนหัว (ไม่ซ้ำ)
+  const profileContainer = profilePic?.parentElement;
+  if (profileContainer && !profileContainer.querySelector('img[alt="Crown"]')) {
+    const crownImg = document.createElement('img');
+    crownImg.src = 'https://cdn-icons-png.flaticon.com/512/743/743922.png';
+    crownImg.alt = 'Crown';
+    crownImg.className = `
+      absolute -top-6 left-1/2 transform -translate-x-1/2 w-10 
+      drop-shadow-[0_2px_4px_rgba(255,215,0,0.8)]
+      animate-bounce
+    `;
+    profileContainer.appendChild(crownImg);
+  }
+
+} else {
+  planBadge.textContent = '📌 Free Plan';
+  planBadge.className = 'inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 bg-white/20 text-white';
+  upgradeButton.classList.remove('hidden');
+}
+
 
                 // Hide loading and show profile
                 document.getElementById('loading').classList.add('hidden');
@@ -222,6 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'992f5b7f42e8d037',t:'MTc2MTIwMjgyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
