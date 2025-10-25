@@ -190,10 +190,32 @@ allButtons.forEach(btn => {
       !text.includes("dashboard") &&
       !text.includes("contact")
     ) {
-      btn.style.opacity = "0.5";
+      btn.style.opacity = "0.6";
       btn.style.pointerEvents = "none";
       btn.style.filter = "grayscale(100%)";
-      btn.title = "อัปเกรดเป็น Premium เพื่อใช้งานฟีเจอร์นี้ 🚀";
+      btn.style.position = "relative";
+      btn.style.overflow = "hidden";
+
+      // 🔔 สร้างข้อความเตือนแบบ bubble พร้อมไอคอนมงกุฏ
+      const warn = document.createElement("div");
+      warn.innerHTML = `อัปเกรดเป็น Premium <span style="position:relative;left:4px;">👑</span>`;
+      warn.style.position = "absolute";
+      warn.style.bottom = "-22px";
+      warn.style.left = "50%";
+      warn.style.transform = "translateX(-50%)";
+      warn.style.background = "rgba(255, 255, 255, 0.85)";
+      warn.style.color = "#FF3974";
+      warn.style.fontSize = "12px";
+      warn.style.fontWeight = "600";
+      warn.style.padding = "4px 10px";
+      warn.style.borderRadius = "999px";
+      warn.style.boxShadow = "0 2px 6px rgba(0,0,0,0.15)";
+      warn.style.whiteSpace = "nowrap";
+      warn.style.zIndex = "10";
+      warn.style.display = "flex";
+      warn.style.alignItems = "center";
+      warn.style.gap = "4px";
+      btn.appendChild(warn);
     }
   }
 });
@@ -251,6 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'992f5b7f42e8d037',t:'MTc2MTIwMjgyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
