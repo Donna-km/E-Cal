@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Cal 7-Day Challenge</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body {
+      font-family: 'Prompt', sans-serif;
+      background-color: #fff5f8;
+    }
+    .highlight {
+      color: #FF3974;
+      font-weight: 700;
+    }
+    .card {
+      background-color: white;
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 25px rgba(255, 57, 116, 0.1);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start py-6 px-4">
+  <!-- Header -->
+  <div class="w-full max-w-md card p-5 text-center">
+    <img src="https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/e-cal/7day-challenge-hero.jpg"
+      alt="7-Day Challenge Banner" class="rounded-2xl mb-4 shadow-md" />
+
+    <h1 class="text-2xl font-bold text-[#FF3974] mb-2">7-Day Free Challenge 💪</h1>
+    <p class="text-gray-700 mb-4">
+      พร้อมเปลี่ยนตัวเองใน 7 วันไหม? <br />
+      เข้าร่วมฟรีและให้อีแคลช่วยผลักดันให้ <span class="highlight">เป้าหมายของคุณเป็นจริง!</span>
+    </p>
+
+    <!-- Mission Section -->
+    <div class="text-left bg-pink-50 rounded-xl p-4 mb-5">
+      <h2 class="font-semibold text-[#FF3974] mb-2">📆 สิ่งที่คุณจะทำ:</h2>
+      <ul class="list-disc list-inside text-gray-700 text-sm">
+        <li>ทำภารกิจสุขภาพวันละ 1 อย่าง</li>
+        <li>ส่งหลักฐานกลับให้อีแคล (รูป/ลิงก์)</li>
+        <li>รับคำแนะนำ หรือคำด่าจากโค้ชอีแคล 😂</li>
+      </ul>
+    </div>
+
+    <!-- Reward Section -->
+    <div class="bg-white border border-pink-200 rounded-xl p-4 mb-5">
+      <h2 class="font-semibold text-[#FF3974] mb-2">🎁 รางวัลเมื่อทำครบ:</h2>
+      <p class="text-gray-700 text-sm">
+        รับฟรี! <span class="font-bold text-[#FF3974]">Premium Plan 1 เดือน 👑</span><br />
+        เข้าถึงทุกฟีเจอร์แบบไม่จำกัด พร้อมภารกิจรายวันส่วนบุคคล!
+      </p>
+    </div>
+
+    <!-- Compare Table -->
+    <h2 class="font-semibold text-[#FF3974] mb-2 text-lg">📊 เปรียบเทียบ Free vs Premium</h2>
+    <div class="overflow-x-auto mb-5">
+      <table class="w-full text-sm border border-gray-200">
+        <thead class="bg-[#FF3974] text-white">
+          <tr>
+            <th class="py-2">ฟีเจอร์</th>
+            <th class="py-2">Free</th>
+            <th class="py-2">Premium</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-700">
+          <tr class="border-b"><td class="py-2 px-2">คำนวณ TDEE</td><td class="text-center">✅</td><td class="text-center">✅</td></tr>
+          <tr class="border-b"><td class="py-2 px-2">Smart Scan (AI วิเคราะห์อาหาร)</td><td class="text-center">⚪️ จำกัด 3 ครั้ง/วัน</td><td class="text-center">✅ ไม่จำกัด</td></tr>
+          <tr class="border-b"><td class="py-2 px-2">บันทึกเมนูรายวัน</td><td class="text-center">⚪️ 3 เมนู/วัน</td><td class="text-center">✅ ไม่จำกัด</td></tr>
+          <tr class="border-b"><td class="py-2 px-2">เข้าร่วม Challenge</td><td class="text-center">✅ 7 วัน</td><td class="text-center">✅ ทุก Challenge</td></tr>
+          <tr class="border-b"><td class="py-2 px-2">ภารกิจรายวันส่วนบุคคล</td><td class="text-center">⚪️</td><td class="text-center">✅</td></tr>
+          <tr><td class="py-2 px-2">แผนสุขภาพส่วนตัว</td><td class="text-center">⚪️</td><td class="text-center">✅</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- CTA Buttons -->
+    <button id="joinBtn" 
+      class="w-full bg-[#FF3974] text-white text-lg font-semibold py-3 rounded-xl mb-3 hover:bg-pink-600 transition">
+      🚀 เข้าร่วมตอนนี้
+    </button>
+
+    <button id="cancelBtn"
+      class="w-full bg-gray-200 text-gray-700 text-sm py-2 rounded-xl hover:bg-gray-300 transition">
+      กลับหน้าหลัก
+    </button>
+  </div>
+
+  <script>
+    const joinBtn = document.getElementById("joinBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
+
+    // 🔹 Initialize LIFF
+    async function initLiff() {
+      await liff.init({ liffId: "2007859046-BpXDWpXe" });
+      if (!liff.isLoggedIn()) return liff.login();
+    }
+
+    // 🔹 When user clicks join
+    joinBtn.addEventListener("click", async () => {
+      await initLiff();
+      const profile = await liff.getProfile();
+      const lineId = profile.userId;
+
+      // ส่ง webhook ไป n8n เพื่อ insert user_challenges
+      await fetch("https://primary-production-49d9.up.railway.app/webhook/join-challenge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          line_user_id: lineId,
+          challenge_name: "7-day challenge"
+        })
+      });
+
+      alert("🎉 ยินดีด้วย! คุณได้เข้าร่วม 7-Day Challenge แล้ว\nโค้ชอีแคลจะส่งภารกิจให้คุณวันนี้ 💪");
+      liff.closeWindow();
+    });
+
+    cancelBtn.addEventListener("click", () => {
+      window.location.href = "https://liff.line.me/2007859046-BpXDWpXe";
+    });
+  </script>
+</body>
+</html>
