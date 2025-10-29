@@ -102,20 +102,20 @@
       await initLiff();
       const profile = await liff.getProfile();
       const lineId = profile.userId;
-
-      // ส่ง webhook ไป n8n เพื่อ insert user_challenges
-      await fetch("https://primary-production-49d9.up.railway.app/webhook-test/line-event", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          line_user_id: lineId,
-          challenge_name: "7-day challenge"
-        })
-      });
-
-      alert("🎉 ยินดีด้วย! คุณได้เข้าร่วม 7-Day Challenge แล้ว\nโค้ชอีแคลจะส่งภารกิจให้คุณวันนี้ 💪");
-      liff.closeWindow();
+// ส่งข้อมูลไป webhook ของ n8n
+    await fetch("https://primary-production-49d9.up.railway.app/webhook-test/line-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        line_user_id: lineId,
+        full_name: fullName,
+        challenge_name: "7-day challenge"
+      })
     });
+
+    // ✅ ปิดหน้าทันที ไม่ต้อง alert
+    liff.closeWindow();
+  });
 
     cancelBtn.addEventListener("click", () => {
       window.location.href = "https://liff.line.me/2007859046-BpXDWpXe";
@@ -123,5 +123,6 @@
   </script>
 </body>
 </html>
+
 
 
