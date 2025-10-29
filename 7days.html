@@ -87,22 +87,24 @@
     </button>
   </div>
 
-  <script>
-    const joinBtn = document.getElementById("joinBtn");
-    const cancelBtn = document.getElementById("cancelBtn");
+ <script>
+  const joinBtn = document.getElementById("joinBtn");
+  const cancelBtn = document.getElementById("cancelBtn");
 
-    // 🔹 Initialize LIFF
-    async function initLiff() {
-      await liff.init({ liffId: "2007859046-96MZOBMp" });
-      if (!liff.isLoggedIn()) return liff.login();
-    }
+  // 🔹 Initialize LIFF
+  async function initLiff() {
+    await liff.init({ liffId: "2007859046-96MZOBMp" });
+    if (!liff.isLoggedIn()) return liff.login();
+  }
 
-    // 🔹 When user clicks join
-    joinBtn.addEventListener("click", async () => {
-      await initLiff();
-      const profile = await liff.getProfile();
-      const lineId = profile.userId;
-// ส่งข้อมูลไป webhook ของ n8n
+  // 🔹 When user clicks join
+  joinBtn.addEventListener("click", async () => {
+    await initLiff();
+    const profile = await liff.getProfile();
+    const lineId = profile.userId;
+    const fullName = profile.displayName; // ✅ เพิ่มตรงนี้!
+
+    // ส่งข้อมูลไป webhook ของ n8n
     await fetch("https://primary-production-49d9.up.railway.app/webhook-test/line-event", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -117,12 +119,13 @@
     liff.closeWindow();
   });
 
-    cancelBtn.addEventListener("click", () => {
-      window.location.href = "https://liff.line.me/2007859046-BpXDWpXe";
-    });
-  </script>
+  cancelBtn.addEventListener("click", () => {
+    window.location.href = "https://liff.line.me/2007859046-BpXDWpXe";
+  });
+</script>
 </body>
 </html>
+
 
 
 
