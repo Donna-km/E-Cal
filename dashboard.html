@@ -415,17 +415,43 @@ if (profile.pictureUrl) {
                     .eq("line_user_id", currentUserId)
                     .single();
 
-                if (profileError) {
-                    console.error('Profile error:', profileError);
-                    // Set default values if no profile found
-                    userProfile = {
-                        tdee: 2000,
-                        weight: 70,
-                        goal_calories: 2000
-                    };
-                } else {
-                    userProfile = profile;
-                }
+                if (profileError || !profile) {
+  console.warn('ยังไม่มีข้อมูล TDEE ในระบบ');
+  userProfile = {
+    tdee: 0,
+    weight: 0,
+    goal_calories: 0,
+    protein_goal: 0,
+    carbs_goal: 0,
+    fat_goal: 0
+  };
+
+  // อัปเดต UI ให้ผู้ใช้เห็นว่าไม่มีข้อมูล
+  document.getElementById('tdeeValue').textContent = "0";
+  document.getElementById('proteinGoal').textContent = "0g";
+  document.getElementById('carbsGoal').textContent = "0g";
+  document.getElementById('fatGoal').textContent = "0g";
+
+  // แสดงกล่องแจ้งเตือน
+  const warningsBox = document.getElementById('warningsBox');
+  warningsBox.classList.remove('hidden');
+  document.getElementById('warningIcon').textContent = '⚠️';
+  document.getElementById('warningTitle').textContent = 'ยังไม่ได้บันทึกค่าพลังงานที่ต้องการต่อวัน (TDEE)';
+  document.getElementById('warningTitle').className = 'font-semibold text-red-600 mb-2';
+  document.getElementById('warningContent').innerHTML = `
+    <p class="text-sm text-red-600 leading-relaxed">
+      คุณยังไม่ได้บันทึกค่าพลังงานที่ต้องการต่อวัน (TDEE) 💡<br>
+      โปรดกลับไปที่หน้า <a href="https://e-calbot.com/profile" 
+      target="_blank" rel="noopener noreferrer"
+      class="underline font-semibold text-[#FF3974] hover:text-pink-700 transition">
+      กรอกข้อมูลร่างกาย</a> เพื่อเริ่มใช้งานระบบนี้ค่ะ ❤️
+    </p>
+  `;
+
+  return; // ❌ หยุดโหลดข้อมูลต่อ
+} else {
+  userProfile = profile;
+}
 
                 // Calculate nutrition goals based on body weight and TDEE
                 const calories = userProfile.goal_calories || userProfile.tdee;
