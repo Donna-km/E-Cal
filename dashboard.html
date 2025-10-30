@@ -1207,21 +1207,23 @@ window.addEventListener('load', initApp);
 </a>
     
 <script>
-    // ✅ ตรวจสอบค่า TDEE แล้วแสดงกล่องเตือนถ้ายังไม่มีข้อมูล
-document.addEventListener("DOMContentLoaded", () => {
-  const tdeeValue = document.getElementById("tdeeValue");
-  const warningBox = document.getElementById("tdeeWarningBox");
+// ✅ ตรวจสอบค่า TDEE แล้วแสดงกล่องเตือนถ้ายังไม่มีข้อมูล
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    const tdeeValue = document.getElementById("tdeeValue");
+    const warningBox = document.getElementById("tdeeWarningBox");
 
-  if (tdeeValue && warningBox) {
+    if (!tdeeValue || !warningBox) return;
+
     const currentTdee = parseInt(tdeeValue.textContent.replace(/[^0-9]/g, "")) || 0;
 
     if (currentTdee === 0) {
       warningBox.classList.remove("hidden");
       console.warn("⚠️ ผู้ใช้ยังไม่ได้บันทึกค่า TDEE");
     }
-  }
+  }, 1500); // ⏱ รอ 1.5 วินาทีให้ Supabase โหลดเสร็จ
 });
-
+    
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c5ba257043d017',t:'MTc1NDcyNjUwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
 
