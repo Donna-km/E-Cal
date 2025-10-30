@@ -439,17 +439,21 @@ if (profile.pictureUrl) {
                     .eq("line_user_id", currentUserId)
                     .single();
 
-                if (profileError) {
-                    console.error('Profile error:', profileError);
-                    // Set default values if no profile found
-                    userProfile = {
-                        tdee: 2000,
-                        weight: 70,
-                        goal_calories: 2000
-                    };
-                } else {
-                    userProfile = profile;
-                }
+               if (profileError || !profile) {
+  console.warn('⚠️ ไม่พบข้อมูลผู้ใช้ใน Supabase');
+  userProfile = {
+      tdee: 0,
+      weight: 0,
+      goal_calories: 0
+  };
+} else {
+  userProfile = {
+      tdee: profile.tdee || 0,
+      weight: profile.weight || 0,
+      goal_calories: profile.goal_calories || 0
+  };
+}
+
 
                 // Calculate nutrition goals based on body weight and TDEE
                 const calories = userProfile.goal_calories || userProfile.tdee;
@@ -1225,7 +1229,7 @@ window.addEventListener("load", () => {
   }, 1500); // ⏱ รอ 1.5 วินาทีให้ Supabase โหลดเสร็จ
 });
      </script> 
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c5ba257043d017',t:'MTc1NDcyNjUwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
 
 
