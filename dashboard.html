@@ -1224,10 +1224,14 @@ window.addEventListener("load", () => {
 
     if (currentTdee === 0) {
       warningBox.classList.remove("hidden");
-      console.warn("⚠️ ผู้ใช้ยังไม่ได้บันทึกค่า TDEE");
+      console.warn("⚠️ ยังไม่มีค่า TDEE — แสดง popup เตือน");
+    } else {
+      warningBox.classList.add("hidden");
+      console.log(`✅ มีค่า TDEE แล้ว: ${currentTdee} kcal`);
     }
   }, 1500); // ⏱ รอ 1.5 วินาทีให้ Supabase โหลดเสร็จ
 });
+
      </script> 
 </body>
 </html>
