@@ -168,6 +168,30 @@
                 </div>
             </div>
 
+            <!-- ⚠️ กล่องแจ้งเตือนกรณีผู้ใช้ยังไม่ได้บันทึกค่า TDEE -->
+<div id="tdeeWarningBox" class="hidden bg-red-50 border border-red-300 rounded-xl p-4 mt-6 mx-4">
+  <div class="flex items-start gap-3">
+    <div class="text-2xl">⚠️</div>
+    <div>
+      <div class="font-semibold text-red-600 mb-1">
+        ยังไม่ได้บันทึกค่าพลังงานที่ต้องการต่อวัน (TDEE)
+      </div>
+      <p class="text-sm text-red-600 leading-relaxed">
+        คุณยังไม่ได้บันทึกค่าพลังงานที่ต้องการต่อวัน 💡<br>
+        โปรดกลับไปที่หน้า 
+        <a href="https://e-calbot.com/profile" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="underline font-semibold text-[#FF3974] hover:text-pink-700 transition">
+          กรอกข้อมูลร่างกาย
+        </a> 
+        เพื่อเริ่มใช้งานระบบนี้ค่ะ ❤️
+      </p>
+    </div>
+  </div>
+</div>
+
+
             <div class="bg-white rounded-xl p-4 card-shadow stat-card">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-2xl">🍖</span>
@@ -1181,6 +1205,21 @@ window.addEventListener('load', initApp);
           rounded-full shadow-md hover:bg-pink-600 text-3xl z-50 transition">
    <i class="fi fi-rr-home"></i>
 </a>
+
+    // ✅ ตรวจสอบค่า TDEE แล้วแสดงกล่องเตือนถ้ายังไม่มีข้อมูล
+document.addEventListener("DOMContentLoaded", () => {
+  const tdeeValue = document.getElementById("tdeeValue");
+  const warningBox = document.getElementById("tdeeWarningBox");
+
+  if (tdeeValue && warningBox) {
+    const currentTdee = parseInt(tdeeValue.textContent.replace(/[^0-9]/g, "")) || 0;
+
+    if (currentTdee === 0) {
+      warningBox.classList.remove("hidden");
+      console.warn("⚠️ ผู้ใช้ยังไม่ได้บันทึกค่า TDEE");
+    }
+  }
+});
 
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c5ba257043d017',t:'MTc1NDcyNjUwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
