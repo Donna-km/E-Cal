@@ -527,17 +527,53 @@
             }
         }
 
+        // Get user challenge data
+        async function getUserChallengeData(lineUserId) {
+            if (!supabase) return null;
+            
+            try {
+                const { data, error } = await supabase
+                    .from('user_challenges')
+                    .select('id, current_day, is_active')
+                    .eq('line_user_id', lineUserId)
+                    .eq('is_active', true)
+                    .single();
+                
+                if (error) {
+                    console.error('Error fetching user challenge:', error);
+                    return null;
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Error in getUserChallengeData:', error);
+                return null;
+            }
+        }
+
         // Save to Supabase
         async function saveToSupabase(data) {
             if (!supabase) return { success: false, error: 'Supabase not initialized' };
+            
+            const lineUserId = userProfile?.userId || 'anonymous';
+            
+            // Get user challenge data first
+            const challengeData = await getUserChallengeData(lineUserId);
+            
+            if (!challengeData) {
+                return { 
+                    success: false, 
+                    error: 'ไม่พบข้อมูล Challenge ของคุณ กรุณาลงทะเบียน Challenge ก่อน' 
+                };
+            }
             
             try {
                 const { data: result, error } = await supabase
                     .from('user_challenges_proof')
                     .insert([{
-                        line_user_id: userProfile?.userId || 'anonymous',
-                        user_challenge_id: 1, // Adjust as needed
-                        day_number: 1, // Adjust as needed
+                        line_user_id: lineUserId,
+                        user_challenge_id: challengeData.id,
+                        day_number: challengeData.current_day,
                         proof_type: 'image',
                         proof_content: JSON.stringify({
                             caption: data.caption,
@@ -552,11 +588,37 @@
                     console.error('Supabase error:', error);
                     return { success: false, error: error.message };
                 }
+
+                // Update user challenge progress after successful proof submission
+                await updateChallengeProgress(challengeData.id, challengeData.current_day);
                 
                 return { success: true, data: result };
             } catch (error) {
                 console.error('Supabase save error:', error);
                 return { success: false, error: error.message };
+            }
+        }
+
+        // Update challenge progress
+        async function updateChallengeProgress(challengeId, currentDay) {
+            if (!supabase) return;
+            
+            try {
+                const { error } = await supabase
+                    .from('user_challenges')
+                    .update({
+                        completed_days: currentDay,
+                        current_day: currentDay < 7 ? currentDay + 1 : currentDay,
+                        last_submitted_at: new Date().toISOString(),
+                        is_active: currentDay < 7 // Set to false if completed all 7 days
+                    })
+                    .eq('id', challengeId);
+                
+                if (error) {
+                    console.error('Error updating challenge progress:', error);
+                }
+            } catch (error) {
+                console.error('Error in updateChallengeProgress:', error);
             }
         }
 
@@ -603,15 +665,18 @@
                     showPage2();
                 }, 1000);
             } else {
-                // Error handling
-                loading.textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่ 😅';
+                // Error handling - show specific error message
+                const errorMessage = supabaseResult.error || 'เกิดข้อผิดพลาด กรุณาลองใหม่ 😅';
+                loading.textContent = errorMessage;
+                loading.style.color = '#FF3974';
                 submitBtn.disabled = false;
                 submitBtn.style.opacity = '1';
                 
                 setTimeout(() => {
                     loading.style.display = 'none';
                     loading.textContent = 'กำลังส่ง... ✨';
-                }, 3000);
+                    loading.style.color = '#FF3974';
+                }, 5000);
             }
         });
 
@@ -682,5 +747,5 @@
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99818e9701b926c5',t:'MTc2MjA2NDc1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99819eef96d0d01a',t:'MTc2MjA2NTQyMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
