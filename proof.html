@@ -551,8 +551,50 @@
             }
         }
 
+        // Upload files to Supabase Storage
+        async function uploadFilesToStorage(files, lineUserId, challengeId, dayNumber) {
+            if (!supabase || !files || files.length === 0) return [];
+            
+            const uploadedFiles = [];
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${lineUserId}_challenge${challengeId}_day${dayNumber}_${Date.now()}_${i}.${fileExt}`;
+                
+                try {
+                    const { data, error } = await supabase.storage
+                        .from('proof')
+                        .upload(fileName, file);
+                    
+                    if (error) {
+                        console.error('Upload error:', error);
+                        continue;
+                    }
+                    
+                    // Get public URL
+                    const { data: urlData } = supabase.storage
+                        .from('proof')
+                        .getPublicUrl(fileName);
+                    
+                    uploadedFiles.push({
+                        fileName: fileName,
+                        originalName: file.name,
+                        fileSize: file.size,
+                        fileType: file.type,
+                        publicUrl: urlData.publicUrl
+                    });
+                    
+                } catch (error) {
+                    console.error('File upload error:', error);
+                }
+            }
+            
+            return uploadedFiles;
+        }
+
         // Save to Supabase
-        async function saveToSupabase(data) {
+        async function saveToSupabase(data, files) {
             if (!supabase) return { success: false, error: 'Supabase not initialized' };
             
             const lineUserId = userProfile?.userId || 'anonymous';
@@ -567,6 +609,9 @@
                 };
             }
             
+            // Upload files to storage
+            const uploadedFiles = await uploadFilesToStorage(files, lineUserId, challengeData.id, challengeData.current_day);
+            
             try {
                 const { data: result, error } = await supabase
                     .from('user_challenges_proof')
@@ -574,12 +619,13 @@
                         line_user_id: lineUserId,
                         user_challenge_id: challengeData.id,
                         day_number: challengeData.current_day,
-                        proof_type: 'image',
+                        proof_type: uploadedFiles.length > 0 ? 'image' : 'text',
                         proof_content: JSON.stringify({
                             caption: data.caption,
                             instagram_username: data.instagram_username,
                             send_to_ecal: data.send_to_ecal,
-                            files_count: data.files_count || 0
+                            files_count: data.files_count || 0,
+                            uploaded_files: uploadedFiles
                         }),
                         proof_date: new Date().toISOString()
                     }]);
@@ -646,8 +692,8 @@
                 uploaded_at: new Date().toISOString()
             };
             
-            // Save to Supabase
-            const supabaseResult = await saveToSupabase(submissionData);
+            // Save to Supabase (with file upload)
+            const supabaseResult = await saveToSupabase(submissionData, files);
             
             // Save to Canva Sheet (Data SDK)
             let canvaResult = { isOk: true };
@@ -747,5 +793,5 @@
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99819eef96d0d01a',t:'MTc2MjA2NTQyMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'998221561535d32e',t:'MTc2MjA3MDc2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
