@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>อวดอีแคล 👀 | Proof Upload</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-pink-50 flex flex-col items-center justify-center min-h-screen text-center p-4">
+  <h1 class="text-2xl font-bold text-pink-600 mb-2">📸 อวดอีแคล 👀</h1>
+  <p class="text-gray-600 mb-4">อัปโหลดรูป Proof ของคุณให้ประชาชาติได้ชื่นชม 💪</p>
+
+  <div class="bg-white shadow-md rounded-xl p-6 w-full max-w-sm">
+    <form id="proofForm" class="space-y-4">
+      <input type="file" id="proofImage" accept="image/*" required class="w-full text-sm text-gray-600">
+
+      <textarea id="caption" rows="2" placeholder="พิมพ์แคปชัน เช่น โดนอีแคลด่าอีกแล้ว 😂"
+        class="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-pink-300"></textarea>
+
+      <!-- 🆕 เพิ่มช่อง IG Username -->
+      <input type="text" id="igUsername" placeholder="IG ของคุณ เช่น donna.fitstyle"
+        class="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-pink-300">
+
+      <button type="submit"
+        class="w-full bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition">
+        ✅ ส่งให้อีแคลดู
+      </button>
+    </form>
+    <p id="status" class="text-sm text-gray-500 mt-4"></p>
+  </div>
+
+  <script>
+    // 🌸 Supabase Config
+    const supabase = supabase.createClient(
+      "https://lvtdqeerzxpznnayccmb.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM"
+    );
+
+    // 🌸 LIFF init
+    let lineUserId = null;
+    let dayNumber = null;
+    let challengeId = null;
+
+    async function initLiff() {
+      await liff.init({ liffId: "2007859046-ZlYy9oYr" }); // 👉 LIFF ID ของ Proof Page
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
+      const profile = await liff.getProfile();
+      lineUserId = profile.userId;
+
+      const params = new URLSearchParams(window.location.search);
+      challengeId = params.get("challenge_id");
+      dayNumber = params.get("day");
+    }
+
+    // 🌸 เมื่อ user ส่ง proof
+    document.getElementById("proofForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const file = document.getElementById("proofImage").files[0];
+      const caption = document.getElementById("caption").value || "";
+      const igUsername = document.getElementById("igUsername").value || null;
+
+      if (!file) return alert("กรุณาเลือกรูปก่อนนะ!");
+
+      // 📤 Upload image to Supabase Storage
+      const filePath = `${lineUserId}/${Date.now()}_${file.name}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("proof_uploads")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error(uploadError);
+        return alert("อัปโหลดรูปไม่สำเร็จ 😭");
+      }
+
+      const imageUrl = `https://YOUR_PROJECT.supabase.co/storage/v1/object/public/proof_uploads/${filePath}`;
+
+      // 💾 Insert proof to Supabase
+      const { data, error } = await supabase.from("user_challenges_proof").insert([
+        {
+          line_user_id: lineUserId,
+          proof_type: "image",
+          proof_content: imageUrl,
+          day_number: parseInt(dayNumber),
+          user_challenge_id: parseInt(challengeId),
+          full_name: null, // auto trigger
+          ig_username: igUsername,
+        },
+      ]);
+
+      if (error) {
+        console.error(error);
+        document.getElementById("status").innerText = "❌ ส่งไม่สำเร็จ อีแคลงอนแล้ว!";
+      } else {
+        document.getElementById("status").innerText =
+          "💖 เทอมันเริ่ด อีแคลภูมิใจในตัวเธอมาก! รูปนี้จะถูกส่งไป IG @e.cal.official พร้อมแท็กเธอไว้ให้เลย 💅";
+        document.getElementById("proofForm").reset();
+
+        if (liff.isInClient()) {
+          liff.sendMessages([
+            {
+              type: "text",
+              text: "อีแคลเห็น proof แล้วนะ! รูปนี้จะถูกส่งไป IG อีแคล ❤️",
+            },
+          ]);
+          setTimeout(() => liff.closeWindow(), 2500);
+        }
+      }
+    });
+
+    initLiff();
+  </script>
+</body>
+</html>
