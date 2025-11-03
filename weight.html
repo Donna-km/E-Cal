@@ -71,7 +71,7 @@
     <div class="mt-3 text-center">
      <div class="inline-flex items-center px-3 py-1 rounded-full bg-white/10 text-white/70 text-xs">
       <svg class="w-3 h-3 mr-1" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-      </svg> เชื่อมต่อ Supabase Database
+      </svg> เชื่อมต่อ Supabase Database + Storage
      </div>
     </div>
    </header><!-- Loading State -->
@@ -226,6 +226,69 @@
             }
         }
 
+        // Supabase Storage Functions
+        async function uploadImageToStorage(file) {
+            if (!supabase || isDemoMode) {
+                // Demo mode - return Base64 data URL
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            try {
+                const fileName = `${currentUser.userId}/${Date.now()}_${file.name}`;
+                
+                const { data, error } = await supabase.storage
+                    .from('weight')
+                    .upload(fileName, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (error) {
+                    console.error('Storage upload error:', error);
+                    throw error;
+                }
+
+                // Get public URL
+                const { data: { publicUrl } } = supabase.storage
+                    .from('weight')
+                    .getPublicUrl(fileName);
+
+                return publicUrl;
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                throw error;
+            }
+        }
+
+        async function deleteImageFromStorage(imageUrl) {
+            if (!supabase || isDemoMode || !imageUrl || imageUrl.startsWith('data:')) {
+                return; // Skip for demo mode or Base64 images
+            }
+
+            try {
+                // Extract file path from URL
+                const urlParts = imageUrl.split('/');
+                const bucketIndex = urlParts.findIndex(part => part === 'weight');
+                if (bucketIndex === -1) return;
+
+                const filePath = urlParts.slice(bucketIndex + 1).join('/');
+                
+                const { error } = await supabase.storage
+                    .from('weight')
+                    .remove([filePath]);
+
+                if (error) {
+                    console.error('Storage delete error:', error);
+                }
+            } catch (error) {
+                console.error('Error deleting image:', error);
+            }
+        }
+
         // Supabase Database Functions
         async function loadWeightRecords() {
             if (isDemoMode || !supabase || !currentUser) {
@@ -315,6 +378,9 @@
             }
 
             try {
+                // Find the record to get image URL before deleting
+                const record = weightRecords.find(r => r.__backendId === recordId);
+                
                 const { error } = await supabase
                     .from('user_weight_log')
                     .delete()
@@ -323,6 +389,11 @@
                 if (error) {
                     console.error('Error deleting weight record:', error);
                     return { success: false, error: error.message };
+                }
+
+                // Delete associated image from storage
+                if (record && record.image_url) {
+                    await deleteImageFromStorage(record.image_url);
                 }
 
                 // Reload records to get updated data
@@ -508,8 +579,6 @@
                 `;
             }).join('');
         }
-
-
 
         function openImageModal(recordId) {
             const record = weightRecords.find(r => r.__backendId === recordId);
@@ -826,24 +895,48 @@
         }
 
         // Photo handling functions
-        function handlePhotoUpload() {
+        async function handlePhotoUpload() {
             const fileInput = document.getElementById('photo-upload');
             const file = fileInput.files[0];
             
             if (!file) return;
             
-            // Check file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                showToast('ไฟล์รูปภาพต้องมีขนาดไม่เกิน 5MB', 'error');
+            // Check file size (max 10MB for storage)
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('ไฟล์รูปภาพต้องมีขนาดไม่เกิน 10MB', 'error');
                 return;
             }
             
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                selectedImageData = e.target.result;
+            try {
+                // Show loading state
+                const uploadBtn = document.getElementById('photo-upload-btn');
+                const originalContent = uploadBtn.innerHTML;
+                uploadBtn.innerHTML = `
+                    <div class="loading-spinner mr-2"></div>
+                    กำลังอัปโหลด...
+                `;
+                uploadBtn.disabled = true;
+                
+                // Upload to storage and get URL
+                selectedImageData = await uploadImageToStorage(file);
                 showPhotoPreview(selectedImageData);
-            };
-            reader.readAsDataURL(file);
+                
+                uploadBtn.innerHTML = originalContent;
+                uploadBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('Error uploading photo:', error);
+                showToast('เกิดข้อผิดพลาดในการอัปโหลดรูป', 'error');
+                
+                const uploadBtn = document.getElementById('photo-upload-btn');
+                uploadBtn.innerHTML = `
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+                    </svg>
+                    เลือกรูปภาพ
+                `;
+                uploadBtn.disabled = false;
+            }
         }
         
         function showPhotoPreview(imageData) {
@@ -969,8 +1062,6 @@
             document.getElementById('nav-home').addEventListener('click', () => showPage('home'));
             document.getElementById('nav-gallery').addEventListener('click', () => showPage('gallery'));
 
-
-
             // Image modal event listeners
             document.getElementById('close-modal').addEventListener('click', closeImageModal);
             document.getElementById('image-modal').addEventListener('click', (e) => {
@@ -994,5 +1085,5 @@
             });
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'998b4252e6f87b50',t:'MTc2MjE2NjQ4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'998b9934746cd02f',t:'MTc2MjE3MDA0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
