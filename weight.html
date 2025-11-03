@@ -639,21 +639,22 @@
             const maxWeight = Math.max(...sortedRecords.map(r => r.weight));
             const minWeight = Math.min(...sortedRecords.map(r => r.weight));
 
-            // Render stats
-            progressStats.innerHTML = `
-                <div class="rounded-lg p-4 text-center border border-white/30 shadow-lg backdrop-blur-sm" style="background-color: #FFECD0;">
-                    <div class="text-gray-600 text-xs font-medium mb-1">การเปลี่ยนแปลง</div>
-                    <div class="text-gray-800 font-bold text-lg ${weightChange < 0 ? 'text-green-600' : weightChange > 0 ? 'text-red-600' : ''}">
-                        ${weightChange > 0 ? '+' : ''}${weightChange.toFixed(1)} กก.
-                    </div>
-                </div>
-                <div class="rounded-lg p-4 text-center border border-white/30 shadow-lg backdrop-blur-sm" style="background-color: #FFECD0;">
-                    <div class="text-gray-600 text-xs font-medium mb-1">ช่วงน้ำหนัก</div>
-                    <div class="text-gray-800 font-bold text-lg">
-                        ${minWeight.toFixed(1)} - ${maxWeight.toFixed(1)} กก.
-                    </div>
-                </div>
-            `;
+           // Render stats (เวอร์ชันขนาดเล็ก)
+progressStats.innerHTML = `
+  <div class="rounded-lg p-2 text-center border border-white/30 shadow-md backdrop-blur-sm" style="background-color: #FFECD0;">
+    <div class="text-gray-600 text-[10px] font-medium mb-0.5">การเปลี่ยนแปลง</div>
+    <div class="text-gray-800 font-semibold text-sm ${weightChange < 0 ? 'text-green-600' : weightChange > 0 ? 'text-red-600' : ''}">
+      ${weightChange > 0 ? '+' : ''}${weightChange.toFixed(1)} กก.
+    </div>
+  </div>
+  <div class="rounded-lg p-2 text-center border border-white/30 shadow-md backdrop-blur-sm" style="background-color: #FFECD0;">
+    <div class="text-gray-600 text-[10px] font-medium mb-0.5">ช่วงน้ำหนัก</div>
+    <div class="text-gray-800 font-semibold text-sm">
+      ${minWeight.toFixed(1)} - ${maxWeight.toFixed(1)} กก.
+    </div>
+  </div>
+`;
+
 
             // Draw chart
             const ctx = canvas.getContext('2d');
@@ -1087,4 +1088,5 @@
     </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'998bb33856add023',t:'MTc2MjE3MTEwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
