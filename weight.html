@@ -104,8 +104,6 @@
        </div>
        <div><label for="note-input" class="block text-white/80 text-sm font-medium mb-2">หมายเหตุ (ไม่บังคับ)</label> <textarea id="note-input" rows="2" class="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent resize-none" placeholder="เช่น หลังออกกำลังกาย"></textarea>
        </div>
-       <div><label for="photo-type" class="block text-white/80 text-sm font-medium mb-2">ประเภทรูปภาพ</label> <select id="photo-type" class="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"> <option value="weekly" class="bg-gray-800">รายสัปดาห์</option> <option value="before" class="bg-gray-800">ก่อนลดน้ำหนัก</option> <option value="after" class="bg-gray-800">หลังลดน้ำหนัก</option> </select>
-       </div>
        <div><label for="photo-upload" class="block text-white/80 text-sm font-medium mb-2">อัปโหลดรูปภาพ (ไม่บังคับ)</label>
         <div class="relative"><input type="file" id="photo-upload" accept="image/*" class="hidden"> <button type="button" id="photo-upload-btn" class="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white/80 hover:bg-white/30 transition-all duration-200 flex items-center justify-center">
           <svg class="w-5 h-5 mr-2" fill="currentColor" viewbox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z" />
@@ -257,7 +255,6 @@
                     weight: parseFloat(record.weight),
                     note: record.note,
                     image_url: record.image_url,
-                    photo_type: record.photo_type,
                     created_at: record.created_at
                 }));
 
@@ -290,8 +287,7 @@
                         record_date: recordData.record_date,
                         weight: recordData.weight,
                         note: recordData.note,
-                        image_url: recordData.image_url,
-                        photo_type: recordData.photo_type || 'weekly'
+                        image_url: recordData.image_url
                     }])
                     .select();
 
@@ -744,7 +740,6 @@
 
             const weightInput = document.getElementById('weight-input');
             const noteInput = document.getElementById('note-input');
-            const photoTypeSelect = document.getElementById('photo-type');
             const submitBtn = document.getElementById('add-weight-btn');
 
             const weight = parseFloat(weightInput.value);
@@ -767,7 +762,6 @@
                     weight: weight,
                     note: noteInput.value.trim() || null,
                     image_url: selectedImageData,
-                    photo_type: photoTypeSelect.value,
                     created_at: new Date().toISOString()
                 };
 
@@ -1000,6 +994,5 @@
             });
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'998b2aed213dee5e',t:'MTc2MjE2NTUyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
-
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'998b4252e6f87b50',t:'MTc2MjE2NjQ4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
