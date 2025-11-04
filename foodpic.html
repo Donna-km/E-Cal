@@ -936,8 +936,7 @@ const imageUrl =
       document.getElementById("resultFoodImage")?.src;
 
 if (imageUrl) {
-  document.getElementById("previewImage").src = imageUrl;
-  showFoodLoading(); // เปิดหน้า "Analyzing your food..."
+    showFoodLoading(); // เปิดหน้า "Analyzing your food..."
 }
 
 // 🧠 แนบรูปภาพเข้า formData (ใช้ selectedImage ก่อน, fallback เป็น src)
