@@ -590,10 +590,11 @@ function showFoodLoading() {
     return;
   }
 
-  // ✅ แสดงหน้า loading พร้อมรูปและเส้นสแกน
-  const imageUrl = URL.createObjectURL(selectedImage);
-  document.getElementById("previewImage").src = imageUrl;
-  showPage("loadingPage");
+ // ✅ แสดงหน้า Analyzing พร้อมรูปจริง
+const imageUrl = URL.createObjectURL(selectedImage);
+document.getElementById("scanImageFood").src = imageUrl;
+showPage("loadingPage");
+
 
   try {
     const formData = new FormData();
