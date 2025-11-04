@@ -323,7 +323,26 @@ body {
 .btn-primary-red { background:#cc1e0f; color:#fff; border:1px solid #cc1e0f; }
 .modal-close { background: transparent; border: 0; font-size: 20px; color: #cc1e0f; cursor: pointer; }
 </style>
+<style>
+/* ✅ แก้ให้ปุ่มเรียงข้างกันในหน้า result */
+#resultPage .button-group {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+  margin-top: 16px;
+}
 
+#resultPage .button-group .btn {
+  width: auto !important;
+  flex: 1 1 auto;
+  min-width: 100px;
+  margin-bottom: 0;
+}
+</style>
+
+    
 </head>
 <body>
     <div class="container">
