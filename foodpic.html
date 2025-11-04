@@ -358,28 +358,36 @@ body {
             </div>
         </div>
 
-        <!-- 📸 หน้าโหลด / กำลังวิเคราะห์อาหาร -->
-<div id="loadingPage" class="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#FFB5C2] to-[#FFECD0] hidden">
+        <!-- 📸 หน้า Loading -->
+<div id="loadingPage" class="fixed inset-0 flex flex-col items-center justify-center bg-[#FFECD0] hidden">
 
-  <!-- กล่องแสดงรูปอาหาร -->
-  <div class="relative w-80 h-80 overflow-hidden rounded-2xl shadow-xl border border-white/40">
-    <img id="scanImageFood" src="https://via.placeholder.com/280x280?text=Analyzing+Food..." 
-     alt="food preview" class="w-full h-full object-cover">
+  <div class="relative w-80 h-80 overflow-hidden rounded-2xl shadow-lg border border-[#372329]/20">
+    <!-- ✅ รูปอาหาร -->
+    <img id="scanImageFood" src="" alt="food preview" class="w-full h-full object-cover">
 
+    <!-- ✅ เส้นสแกน -->
+    <div id="scanLine" class="absolute top-0 left-0 w-full h-[3px] bg-[#FF3974] animate-scanLine"></div>
 
-    <!-- เส้นสแกนเคลื่อนไหว -->
-    <div class="absolute top-0 left-0 w-full h-[3px] bg-white/70 animate-scanLine"></div>
-
-    <!-- กรอบสี่เหลี่ยมรอบภาพ -->
-    <div class="absolute inset-0 border-[3px] border-white/60 rounded-2xl pointer-events-none"></div>
+    <!-- ✅ กรอบ -->
+    <div class="absolute inset-0 border-[3px] border-[#FF3974]/40 rounded-2xl pointer-events-none"></div>
   </div>
 
-  <!-- ข้อความโหลด -->
-  <div class="mt-6 text-center text-white/90">
-    <div class="text-lg font-semibold">Analyzing your food...</div>
+  <div class="mt-6 text-center text-[#372329]">
+    <div class="text-lg font-bold">Analyzing your food...</div>
     <div class="text-sm opacity-80">Please wait a moment</div>
   </div>
 </div>
+
+<style>
+@keyframes scanLineMove {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+.animate-scanLine {
+  animation: scanLineMove 1.5s linear infinite alternate;
+}
+</style>
+
 
 <!-- 🌈 animation เส้นสแกน -->
 <style>
@@ -590,10 +598,11 @@ function showFoodLoading() {
     return;
   }
 
+  
   // ✅ แสดงหน้า loading พร้อมรูปและเส้นสแกน
-  const imageUrl = URL.createObjectURL(selectedImage);
-  document.getElementById("previewImage").src = imageUrl;
-  showPage("loadingPage");
+const imageUrl = URL.createObjectURL(selectedImage);
+showFoodLoading();
+
 
   try {
     const formData = new FormData();
