@@ -363,7 +363,7 @@ body {
 
   <!-- กล่องแสดงรูปอาหาร -->
   <div class="relative w-80 h-80 overflow-hidden rounded-2xl shadow-xl border border-white/40">
-    <img id="previewImage" src="" alt="food preview" class="w-full h-full object-cover">
+    <img id="loadingPreview" src="" alt="food preview" class="w-full h-full object-cover">
 
     <!-- เส้นสแกนเคลื่อนไหว -->
     <div class="absolute top-0 left-0 w-full h-[3px] bg-white/70 animate-scanLine"></div>
@@ -371,6 +371,7 @@ body {
     <!-- กรอบสี่เหลี่ยมรอบภาพ -->
     <div class="absolute inset-0 border-[3px] border-white/60 rounded-2xl pointer-events-none"></div>
   </div>
+
 
   <!-- ข้อความโหลด -->
   <div class="mt-6 text-center text-white/90">
@@ -578,9 +579,8 @@ if (profile?.userId) {
 
   // ✅ แสดงหน้า loading พร้อมรูปและเส้นสแกน
   const imageUrl = URL.createObjectURL(selectedImage);
-  document.getElementById("previewImage").src = imageUrl;
-  showPage("loadingPage");
-
+document.getElementById("loadingPreview").src = imageUrl;
+showPage("loadingPage");
   try {
     const formData = new FormData();
     formData.append('image', selectedImage);
@@ -913,8 +913,8 @@ const imageUrl =
       document.getElementById("resultFoodImage")?.src;
 
 if (imageUrl) {
-  document.getElementById("previewImage").src = imageUrl;
-  showPage("loadingPage"); // เปิดหน้า "Analyzing your food..."
+  document.getElementById("loadingPreview").src = imageUrl;
+  showPage("loadingPage");
 }
 
 // 🧠 แนบรูปภาพเข้า formData (ใช้ selectedImage ก่อน, fallback เป็น src)
