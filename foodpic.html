@@ -363,7 +363,9 @@ body {
 
   <!-- กล่องแสดงรูปอาหาร -->
   <div class="relative w-80 h-80 overflow-hidden rounded-2xl shadow-xl border border-white/40">
-    <img id="previewImage" src="" alt="food preview" class="w-full h-full object-cover">
+    <img id="scanImageFood" src="https://via.placeholder.com/280x280?text=Analyzing+Food..." 
+     alt="food preview" class="w-full h-full object-cover">
+
 
     <!-- เส้นสแกนเคลื่อนไหว -->
     <div class="absolute top-0 left-0 w-full h-[3px] bg-white/70 animate-scanLine"></div>
@@ -569,6 +571,18 @@ if (profile?.userId) {
                 showToast('No image selected', 'error');
             }
         }
+function showFoodLoading() {
+  const cam = document.getElementById("cameraPage");
+  const lb = document.getElementById("loadingPage");
+  if (cam) cam.classList.add("hidden");
+  if (lb) lb.classList.remove("hidden");
+
+  // 🖼️ ใส่ภาพจริงของผู้ใช้
+  const img = document.getElementById("scanImageFood");
+  if (selectedImage && img) {
+    img.src = URL.createObjectURL(selectedImage);
+  }
+}
 
         async function submitPhoto() {
   if (!selectedImage) {
@@ -914,7 +928,7 @@ const imageUrl =
 
 if (imageUrl) {
   document.getElementById("previewImage").src = imageUrl;
-  showPage("loadingPage"); // เปิดหน้า "Analyzing your food..."
+  showFoodLoading(); // เปิดหน้า "Analyzing your food..."
 }
 
 // 🧠 แนบรูปภาพเข้า formData (ใช้ selectedImage ก่อน, fallback เป็น src)
