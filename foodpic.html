@@ -367,14 +367,27 @@ body {
             </div>
         </div>
 
-        <!-- หน้าผลลัพธ์ -->
-        <div id="resultPage" class="hidden">
-            <!-- แสดงรูปอาหารที่ส่ง -->
-            <div class="food-image-container">
-                <img id="resultFoodImage" class="result-food-image" alt="อาหารที่วิเคราะห์">
-                <div id="resultContent"></div>
-            </div>
-        </div>
+        <!-- ===== หน้าแสดงผลลัพธ์ (Full Frame Style) ===== -->
+<div id="resultPage" class="hidden">
+  <div class="food-image-container" style="position: relative; margin: 0; border-radius: 0; overflow: hidden;">
+    <img id="resultFoodImage" class="result-food-image" alt="อาหารที่วิเคราะห์"
+         style="width: 100%; height: 100vh; object-fit: cover; display: block;">
+    <div id="resultContent"></div>
+  </div>
+
+  <!-- ✅ ปุ่มเรียงแนวนอน -->
+  <div class="question-section" style="text-align: center; margin: 20px 0; padding: 0 20px;">
+    <p class="question-text" style="font-size: 13px; margin-bottom: 16px; color: #cc1e0f; font-weight: 500;">
+      Save this meal to your log?
+    </p>
+    <div class="button-group" style="display: flex; justify-content: center; gap: 8px;">
+      <button class="btn btn-secondary" onclick="openEditModal()">✏️ Edit</button>
+      <button class="btn btn-success" onclick="saveToDatabase()">✅ Save</button>
+      <button class="btn btn-danger" onclick="goHome()">❌ Skip</button>
+    </div>
+  </div>
+</div>
+
 
         <!-- หน้าบันทึกสำเร็จ -->
         <div id="successPage" class="hidden">
