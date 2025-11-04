@@ -358,14 +358,38 @@ body {
             </div>
         </div>
 
-        <!-- หน้าโหลด -->
-        <div id="loadingPage" class="hidden">
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>Analyzing your food...</p>
-                <p>Please wait a moment</p>
-            </div>
-        </div>
+        <!-- 📸 หน้าโหลด / กำลังวิเคราะห์อาหาร -->
+<div id="loadingPage" class="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#FFB5C2] to-[#FFECD0] hidden">
+
+  <!-- กล่องแสดงรูปอาหาร -->
+  <div class="relative w-80 h-80 overflow-hidden rounded-2xl shadow-xl border border-white/40">
+    <img id="previewImage" src="" alt="food preview" class="w-full h-full object-cover">
+
+    <!-- เส้นสแกนเคลื่อนไหว -->
+    <div class="absolute top-0 left-0 w-full h-[3px] bg-white/70 animate-scanLine"></div>
+
+    <!-- กรอบสี่เหลี่ยมรอบภาพ -->
+    <div class="absolute inset-0 border-[3px] border-white/60 rounded-2xl pointer-events-none"></div>
+  </div>
+
+  <!-- ข้อความโหลด -->
+  <div class="mt-6 text-center text-white/90">
+    <div class="text-lg font-semibold">Analyzing your food...</div>
+    <div class="text-sm opacity-80">Please wait a moment</div>
+  </div>
+</div>
+
+<!-- 🌈 animation เส้นสแกน -->
+<style>
+@keyframes scanLineMove {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+.animate-scanLine {
+  animation: scanLineMove 1.5s linear infinite alternate;
+}
+</style>
+
 
         <!-- หน้าผลลัพธ์ -->
         <div id="resultPage" class="hidden">
@@ -881,22 +905,35 @@ async function reAnalyze(){
       console.warn('⚠️ ไม่มี line_user_id ถูกแนบไป');
     }
 
-    // attach image (prefer selectedImage; fallback to result image src -> blob)
-    if (window.selectedImage) {
-      formData.append('image', window.selectedImage);
-    } else {
-      const src =
-        document.getElementById('resultFoodImage')?.src ||
-        document.getElementById('previewImage')?.src;
-      if (src) {
-        try {
-          const blob = await fetch(src).then((r) => r.blob());
-          formData.append('image', blob, 'food.jpg');
-        } catch (e) {
-          console.warn('⚠️ โหลดภาพไม่สำเร็จ', e);
-        }
-      }
+    // ✅ แสดงรูปที่ผู้ใช้เลือก และเปิดหน้าโหลด
+const imageUrl =
+  window.selectedImage
+    ? URL.createObjectURL(window.selectedImage)
+    : document.getElementById("previewImage")?.src ||
+      document.getElementById("resultFoodImage")?.src;
+
+if (imageUrl) {
+  document.getElementById("previewImage").src = imageUrl;
+  showPage("loadingPage"); // เปิดหน้า "Analyzing your food..."
+}
+
+// 🧠 แนบรูปภาพเข้า formData (ใช้ selectedImage ก่อน, fallback เป็น src)
+if (window.selectedImage) {
+  formData.append('image', window.selectedImage);
+} else {
+  const src =
+    document.getElementById('resultFoodImage')?.src ||
+    document.getElementById('previewImage')?.src;
+
+  if (src) {
+    try {
+      const blob = await fetch(src).then((r) => r.blob());
+      formData.append('image', blob, 'food.jpg');
+    } catch (e) {
+      console.warn('⚠️ โหลดภาพไม่สำเร็จ', e);
     }
+  }
+}
 
     // ✅ ส่งข้อมูลไป webhook
     const res = await fetch(
