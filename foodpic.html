@@ -406,33 +406,36 @@ if (savedLineId) {
 
         // Initialize LIFF
         async function initializeLIFF() {
-            // Check if we have a real LIFF ID configured
-            const liffId = "2007859046-doqQg8qv"; // Replace with your actual LIFF ID
-            
-            if (liffId === "YOUR_LIFF_ID") {
-                // No real LIFF ID configured - use demo mode
-                console.log("Running in demo mode - no LIFF ID configured");
-                currentUser = {
-                    userId: "demo_user_" + Date.now(),
-                    displayName: "Demo User"
-                };
-                showToast("Running in demo mode", "success");
-                return;
-            }
-            
-            try {
-                await liff.init({ liffId: liffId });
-                
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                    return;
-                }
+    const liffId = "2007859046-doqQg8qv"; // Replace with your actual LIFF ID
 
-                const profile = await liff.getProfile();
-                currentUser = {
-                    userId: profile.userId,
-                    displayName: profile.displayName
-                };
+    if (liffId === "YOUR_LIFF_ID") {
+        console.log("Running in demo mode - no LIFF ID configured");
+        currentUser = {
+            userId: "demo_user_" + Date.now(),
+            displayName: "Demo User"
+        };
+        showToast("Running in demo mode", "success");
+        return;
+    }
+
+    try {
+        await liff.init({ liffId: liffId });
+
+        // 🟢 เพิ่ม 2 บรรทัดนี้
+        await liff.ready;
+        console.log("✅ LIFF Ready:", liff.isInClient());
+
+        if (!liff.isLoggedIn()) {
+            liff.login();
+            return;
+        }
+
+        const profile = await liff.getProfile();
+        currentUser = {
+            userId: profile.userId,
+            displayName: profile.displayName
+        };
+
 // ✅ เพิ่มตรงนี้
 if (profile?.userId) {
     localStorage.setItem('line_user_id', profile.userId);
