@@ -573,48 +573,51 @@ function previewImage(event) {
   const file = event.target.files[0];
   if (file) {
     selectedImage = file;
-    const previewURL = URL.createObjectURL(file);
-    window.__ecalFoodImage = previewURL;
-    localStorage.setItem("ecalFoodPreview", previewURL);
-    console.log("📸 เก็บรูปใน localStorage แล้ว:", previewURL);
+    // ✅ เก็บภาพไว้ใช้ในหน้า Loading
+    window.__ecalFoodImage = URL.createObjectURL(file);
+
+    showToast('Image selected successfully!', 'success');
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('previewImage').src = e.target.result;
+      document.getElementById('previewContainer').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  } else {
+    showToast('No image selected', 'error');
   }
 }
 
-// ✅ แสดงหน้า Loading + โหลดภาพจาก localStorage
-window.showFoodLoading = function () {
-  const cam = document.getElementById("cameraPage");
-  const lb  = document.getElementById("loadingPage");
-  if (cam) cam.classList.add("hidden");
-  if (lb)  lb.classList.remove("hidden");
+        window.showFoodLoading = function() {
+  const cam = document.getElementById('cameraPage');
+  const lb  = document.getElementById('loadingPage');
+  if (cam) cam.classList.add('hidden');
+  if (lb)  lb.classList.remove('hidden');
 
-  const img = document.getElementById("scanImageFood");
-  const storedImage = localStorage.getItem("ecalFoodPreview");
-  const memoryImage = window.__ecalFoodImage;
+  // 🖼️ ใส่ภาพจริงของอาหารที่ผู้ใช้อัปโหลด
+  const img = document.getElementById('scanImageFood');
+  const userImage = window.selectedImage || window.__ecalFoodImage || null;
 
   if (img) {
-    if (storedImage) img.src = storedImage;
-    else if (memoryImage) img.src = memoryImage;
-    else if (selectedImage) img.src = URL.createObjectURL(selectedImage);
-    else img.src = "https://via.placeholder.com/280x280?text=Analyzing+Food...";
+    if (userImage instanceof File) {
+      img.src = URL.createObjectURL(userImage);
+    } else if (typeof userImage === 'string') {
+      img.src = userImage;
+    } else {
+      img.src = "https://via.placeholder.com/280x280?text=Analyzing+Food...";
+    }
   }
 };
 
-// ✅ เคลียร์ cache หลังใช้งานเสร็จ
-function clearFoodCache() {
-  window.__ecalFoodImage = null;
-  localStorage.removeItem("ecalFoodPreview");
-  console.log("🧹 เคลียร์ cache รูปภาพเรียบร้อย");
-}
-
-
-        
-        async function submitPhoto() {
+async function submitPhoto() {
             if (!selectedImage) {
                 showToast('กรุณาเลือกรูปภาพก่อน', 'error');
                 return;
             }
 
             showFoodLoading();
+
             try {
                 const formData = new FormData();
                 formData.append('image', selectedImage);
@@ -628,6 +631,8 @@ function clearFoodCache() {
                     formData.append('amount', '');
                     formData.append('note', '');
                 }
+      
+       
                 
                   
 const response = await fetch('https://primary-production-49d9.up.railway.app/webhook/ecal-image', {
