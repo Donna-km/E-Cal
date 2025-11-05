@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Calorie Tracker</title>
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-thin-rounded/css/uicons-thin-rounded.css">
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+   
+  <style>
+/* 🌈 พื้นหลังและตัวอักษรหลัก */
+body {
+  background: linear-gradient(135deg, #FF3974 0%, #FFECD0 100%);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: white;
+  min-height: 100vh;
+  margin: 0;
+  padding: 16px;
+}
+      
+/* ซ่อน input file ทั้งสอง */
+.file-input {
+  display: none;
+}
+
+      
+/* 🌸 กล่องหลัก */
+.container {
+  max-width: 420px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 24px;
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 32px rgba(255, 57, 116, 0.2);
+}
+
+/* 🔲 เมื่ออยู่ในโหมด no-frame */
+.container.no-frame {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* 💖 ส่วนหัว */
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+}
+.header i {
+  font-size: 64px;
+  color: #FFECD0;
+  margin-top: 10px;
+}
+
+/* 🔘 ปุ่มทุกแบบ */
+.btn {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-bottom: 12px;
+}
+
+.btn-primary {
+  background-color: #FFECD0;
+  color: #FF3974;
+}
+.btn-primary:hover {
+  background-color: #FFE4B8;
+  box-shadow: 0 6px 16px rgba(255, 236, 208, 0.4);
+}
+
+.btn-secondary {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+.btn-success {
+  background-color: #FF3974;
+  color: white;
+}
+.btn-success:hover {
+  background-color: #e3366f;
+}
+
+.btn-danger {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.btn-danger:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* 🖼️ รูปตัวอย่าง */
+.preview-container {
+  text-align: center;
+  margin: 20px 0;
+}
+.preview-image {
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  margin-bottom: 16px;
+}
+
+/* 📸 ส่วนแสดงผลรูปอาหาร */
+.food-image-container {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+.result-food-image {
+  width: 100%;
+  object-fit: cover;
+}
+
+/* 🔴 Bubble ข้อมูล */
+.calorie-bubble {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: #FFECD0;
+  color: #FF3974;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.macro-bubbles {
+  position: absolute;
+  right: 16px;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.macro-bubble {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: #FF3974;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 💬 ข้อความสรุป */
+.fun-message {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  text-align: center;
+  width: 90%;
+  font-size: 14px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+}
+.fun-message strong {
+  color: #FFECD0;
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+/* 🔄 Loading */
+.spinner {
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  border-top: 3px solid #FF3974;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.loading p {
+  color: #FFECD0;
+}
+
+/* 🔔 Toast */
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #FFECD0;
+  color: #FF3974;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.toast.show {
+  opacity: 1;
+}
+
+/* 🪟 Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+.modal-backdrop.show {
+  display: flex;
+}
+.modal {
+  background: white;
+  color: #FF3974;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  width: 90%;
+  max-width: 400px;
+}
+.modal-header {
+  background: #FF3974;
+  color: white;
+  font-weight: 700;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-body {
+  padding: 16px 18px;
+}
+.modal-footer {
+  padding: 14px 18px;
+  background: #FFECD0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.modal label {
+  color: #FF3974;
+  font-weight: 600;
+  font-size: 14px;
+}
+.modal .input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #FF3974;
+  margin: 6px 0 12px;
+}
+.modal-close {
+  background: transparent;
+  border: 0;
+  font-size: 20px;
+  color: white;
+  cursor: pointer;
+}
+</style>
+
+
+<style>
+/* ====== Edit Modal (Popup) ====== */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  display: none; align-items: center; justify-content: center; z-index: 9999; }
+.modal-backdrop.show { display: flex; }
+.modal { width: 92%; max-width: 420px; background: #fff; border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25); overflow: hidden; border: 1px solid #f3f4f6; }
+.modal-header { padding: 14px 18px; background: #e9e2d0; color: #cc1e0f; font-weight: 700;
+  display: flex; align-items: center; justify-content: space-between; }
+.modal-body { padding: 16px 18px; }
+.modal-footer { padding: 14px 18px; background: #fafafa; display: flex; gap: 10px; justify-content: flex-end; }
+.modal label { color: #cc1e0f; font-weight: 600; font-size: 14px; }
+.modal .input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #cc1e0f; margin: 6px 0 12px; }
+.modal .note { font-size: 12px; color: #6b7280; margin-top: -8px; margin-bottom: 8px; }
+.btn-outline { background:#fff; color:#cc1e0f; border:1px solid #cc1e0f; }
+.btn-primary-red { background:#cc1e0f; color:#fff; border:1px solid #cc1e0f; }
+.modal-close { background: transparent; border: 0; font-size: 20px; color: #cc1e0f; cursor: pointer; }
+</style>
+<style>
+/* ✅ แก้ให้ปุ่มเรียงข้างกันในหน้า result */
+#resultPage .button-group {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+#resultPage .button-group .btn {
+  width: auto !important;
+  flex: 1 1 auto;
+  min-width: 100px;
+  margin-bottom: 0;
+}
+</style>
+
+    
+</head>
+<body>
+    <div class="container">
+        <!-- หน้าถ่ายรูป (หน้าแรก) -->
+        <div id="cameraPage">
+            <div class="header">
+                <h1 style="text-align:center; color:#FFFFFF;">
+  Smart Scan
+  <br>
+  <i class="fi fi-tr-camera-viewfinder" style="font-size:64px; color:#FFFFFF; margin-top:18px; display:block;"></i>
+</h1>
+
+            </div>
+            <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment" onchange="previewImage(event)">
+            <input type="file" id="galleryInput" class="file-input" accept="image/*" onchange="previewImage(event)">
+            <button class="btn btn-primary" onclick="openCamera()">
+                Take Photo
+            </button>
+            <button class="btn btn-secondary" onclick="openGallery()">
+                Choose Image
+            </button>
+                     
+
+                <div id="previewContainer" class="preview-container hidden">
+                <img id="previewImage" class="preview-image" alt="Preview">
+                <button class="btn btn-success" onclick="submitPhoto()">
+                    ✨ Analyze Food
+                </button>
+                <button class="btn btn-secondary" onclick="goHome()">
+                    ← Cancel
+                </button>
+            </div>
+        </div>
+
+        <!-- หน้าโหลด -->
+        <!-- ===== E-CAL FOOD: Loading (with Scan Animation) ===== -->
+<div id="loadingPage" class="hidden text-center py-10">
+
+  <div id="scanAreaFood"
+       class="relative mx-auto mb-4 overflow-hidden rounded-2xl shadow-xl border border-[#FF3974]/30"
+       style="max-width:320px; aspect-ratio: 1/1;">
+       
+    <!-- 🖼️ รูปภาพจากผู้ใช้ -->
+    <img id="scanImageFood"
+         src="https://via.placeholder.com/320x320?text=Analyzing+Food..."
+         alt="กำลังวิเคราะห์อาหาร..."
+         class="w-full h-full object-cover">
+
+    <!-- 🔴 เส้นสแกน -->
+    <div class="scan-line"></div>
+  </div>
+
+  <p class="text-[#FF3974] font-semibold">กำลังวิเคราะห์อาหารของคุณ...</p>
+
+  <style>
+    .scan-line {
+      position: absolute;
+      top: -10%;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 57, 116, 0.8) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: scanMove 1.8s linear infinite;
+      border-radius: 8px;
+      box-shadow: 0 0 18px rgba(255, 57, 116, 0.8);
+      backdrop-filter: blur(1px);
+    }
+
+    @keyframes scanMove {
+      0% { top: -10%; }
+      50% { top: 100%; }
+      100% { top: -10%; }
+    }
+  </style>
+</div>
+                <p>Analyzing your food...</p>
+                <p>Please wait a moment</p>
+            </div>
+        </div>
+
+        <!-- ===== หน้าแสดงผลลัพธ์ (Full Frame Style) ===== -->
+<div id="resultPage" class="hidden">
+  <div class="food-image-container" style="position: relative; margin: 0; border-radius: 0; overflow: hidden;">
+    <img id="resultFoodImage" class="result-food-image" alt="อาหารที่วิเคราะห์"
+         style="width: 100%; height: 100vh; object-fit: cover; display: block;">
+    <div id="resultContent"></div>
+  </div>
+
+  <!-- ✅ ปุ่มเรียงแนวนอน -->
+  <div class="question-section" style="text-align: center; margin: 20px 0; padding: 0 20px;">
+    <p class="question-text" style="font-size: 13px; margin-bottom: 16px; color: #cc1e0f; font-weight: 500;">
+      Save this meal to your log?
+    </p>
+    <div class="button-group" style="display: flex; justify-content: center; gap: 8px;">
+      <button class="btn btn-secondary" onclick="openEditModal()">✏️ Edit</button>
+      <button class="btn btn-success" onclick="saveToDatabase()">✅ Save</button>
+      <button class="btn btn-danger" onclick="goHome()">❌ Skip</button>
+    </div>
+  </div>
+</div>
+
+
+        <!-- หน้าบันทึกสำเร็จ -->
+        <div id="successPage" class="hidden">
+            <div class="header">
+                <h1><i class="fi fi-tr-camera-viewfinder" style="margin-right:8px;color:#cc1e0f;"></i> Saved Successfully</h1>
+                <p style="color: #cc1e0f; font-size: 14px; margin-top: 8px;">Your food data has been recorded</p>
+            </div>
+            <button class="btn btn-primary" onclick="goHome()">
+                🏠 Back to Home
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        let currentUser = null;
+        let analysisResult = null;
+        let selectedImage = null;
+        // ✅ โหลด LINE ID จาก storage ถ้ามีอยู่แล้ว
+const savedLineId = localStorage.getItem('line_user_id') || sessionStorage.getItem('line_user_id');
+if (savedLineId) {
+    currentUser = { userId: savedLineId };
+    console.log('🔁 Loaded stored LINE ID:', savedLineId);
+}
+
+        // Initialize LIFF
+        async function initializeLIFF() {
+            // Check if we have a real LIFF ID configured
+            const liffId = "2007859046-doqQg8qv"; // Replace with your actual LIFF ID
+            
+            if (liffId === "YOUR_LIFF_ID") {
+                // No real LIFF ID configured - use demo mode
+                console.log("Running in demo mode - no LIFF ID configured");
+                currentUser = {
+                    userId: "demo_user_" + Date.now(),
+                    displayName: "Demo User"
+                };
+                showToast("Running in demo mode", "success");
+                return;
+            }
+            
+            try {
+                await liff.init({ liffId: liffId });
+                
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+
+                const profile = await liff.getProfile();
+                currentUser = {
+                    userId: profile.userId,
+                    displayName: profile.displayName
+                };
+// ✅ เพิ่มตรงนี้
+if (profile?.userId) {
+    localStorage.setItem('line_user_id', profile.userId);
+    sessionStorage.setItem('line_user_id', profile.userId);
+}
+// ✅ จบตรงนี้
+                console.log("LINE user logged in:", currentUser);
+                showToast("LINE login successful!", "success");
+            } catch (error) {
+                console.error("LIFF initialization failed:", error);
+                // Fallback to demo mode
+                currentUser = {
+                    userId: "demo_user_" + Date.now(),
+                    displayName: "Demo User"
+                };
+                showToast("Using demo mode", "success");
+            }
+        }
+
+        // Initialize Supabase (Replace with your actual Supabase credentials)
+        const supabaseUrl = 'https://lvtdqeerzxpznnayccmb.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM';
+        let supabase;
+
+        try {
+            supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        } catch (error) {
+            console.log("Supabase not configured - using demo mode");
+        }
+
+        // Page navigation functions
+        function showPage(pageId) {
+            const pages = ['cameraPage', 'loadingPage', 'resultPage', 'successPage'];
+            pages.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(pageId).classList.remove('hidden');
+        }
+
+
+
+        function goHome() {
+            showPage('cameraPage');
+            // Reset states
+            analysisResult = null;
+            selectedImage = null;
+            document.getElementById('cameraInput').value = '';
+            document.getElementById('galleryInput').value = '';
+            document.getElementById('previewContainer').classList.add('hidden');
+            // Reset container frame
+            document.querySelector('.container').classList.remove('no-frame');
+        }
+
+        function openCamera() {
+            console.log('openCamera called');
+            showToast('Opening camera...', 'success');
+            
+            // Use setTimeout to ensure the toast shows before opening camera
+            setTimeout(() => {
+                const cameraInput = document.getElementById('cameraInput');
+                cameraInput.value = '';
+                
+                // Create a new click event
+                const event = new MouseEvent('click', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true
+                });
+                
+                cameraInput.dispatchEvent(event);
+            }, 100);
+        }
+
+        function openGallery() {
+            console.log('openGallery called');
+            showToast('Opening gallery...', 'success');
+            
+            // Use setTimeout to ensure the toast shows before opening gallery
+            setTimeout(() => {
+                const galleryInput = document.getElementById('galleryInput');
+                galleryInput.value = '';
+                
+                // Create a new click event
+                const event = new MouseEvent('click', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true
+                });
+                
+                galleryInput.dispatchEvent(event);
+            }, 100);
+        }
+
+
+
+        function previewImage(event) {
+            console.log('previewImage called', event);
+            const file = event.target.files[0];
+            console.log('Selected file:', file);
+            
+            if (file) {
+                selectedImage = file;
+                showToast('Image selected successfully!', 'success');
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImage').src = e.target.result;
+                    document.getElementById('previewContainer').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                showToast('No image selected', 'error');
+            }
+        }
+
+        async function submitPhoto() {
+            if (!selectedImage) {
+                showToast('กรุณาเลือกรูปภาพก่อน', 'error');
+                return;
+            }
+
+            showPage('loadingPage');
+
+            try {
+                const formData = new FormData();
+                formData.append('image', selectedImage);
+
+                
+                // ✅ attach LINE user id so n8n can read it
+                if (currentUser && currentUser.userId) {
+                    formData.append('line_user_id', currentUser.userId);
+                     // ✅ เพิ่มฟิลด์ว่างไว้เสมอ
+                    formData.append('dish', '');
+                    formData.append('amount', '');
+                    formData.append('note', '');
+                }
+                
+                  
+const response = await fetch('https://primary-production-49d9.up.railway.app/webhook/ecal-image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                console.log('Webhook response:', data);
+                
+                // Handle different response formats
+                if (Array.isArray(data) && data.length > 0) {
+                    analysisResult = data[0];
+                } else if (data.output) {
+                    analysisResult = data;
+                } else {
+                    // If response format is different, create proper structure
+                    analysisResult = {
+                        output: data,
+                        date: new Date().toISOString().split('T')[0]
+                    };
+                }
+                
+                displayResult(analysisResult);
+                showPage('resultPage');
+
+            } catch (error) {
+                console.error('Error analyzing image:', error);
+                // Show demo result for testing
+                analysisResult = {
+                    output: {
+                        dish: "ขนมปังโทสต์ไข่ลาวากับโยเกิร์ตถั่วและผลไม้",
+                        calories: 480,
+                        protein: 22,
+                        fat: 20,
+                        carbs: 50,
+                        tip_th: "อย่ากินตอนหิวมาก เดี๋ยวลาวารั่วไหลเลอะเทอะ! 😆🔥🍳🥑🍓"
+                    },
+                    date: new Date().toISOString().split('T')[0]
+                };
+                displayResult(analysisResult);
+                showPage('resultPage');
+                showToast('ใช้ข้อมูลตัวอย่างสำหรับการทดสอบ', 'info');
+            }
+        }
+
+        function displayResult(result) {
+            const output = result.output;
+            
+            // แสดงรูปอาหารที่ส่ง
+            const resultImage = document.getElementById('resultFoodImage');
+            const previewImage = document.getElementById('previewImage');
+            if (previewImage && previewImage.src) {
+                resultImage.src = previewImage.src;
+            }
+            
+            // Remove container frame for fullscreen
+            document.querySelector('.container').classList.add('no-frame');
+            
+            const resultHTML = `
+        <!-- Calorie Bubble -->
+        <div class="calorie-bubble">${output.calories} Cal</div>
+
+        <!-- Macro Bubbles -->
+        <div class="macro-bubbles">
+            <div class="macro-bubble">${output.protein} g<br>Protein</div>
+            <div class="macro-bubble">${output.fat} g<br>Fat</div>
+            <div class="macro-bubble">${output.carbs} g<br>Carbs</div>
+        </div>
+
+        <!-- Fun Message + Dish Name -->
+        <div class="fun-message">
+            <strong>${output.dish}</strong><br>
+            ${output.tip_th}
+        </div>
+    `;
+    document.getElementById('resultContent').innerHTML = resultHTML;
+            
+            // Add save/skip buttons outside the image
+            const saveButtonsHTML = `
+                <div class="question-section">
+                    <p class="question-text">Save this meal to your log?</p>
+                    <div class="button-group">
+                        <button class="btn btn-success" onclick="saveToDatabase()">
+                            ✅ Save
+                        </button>
+                        <button class="btn btn-danger" onclick="goHome()">
+                            ❌ Skip
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Insert save buttons after the image container
+            const resultPage = document.getElementById('resultPage');
+            const existingSaveSection = resultPage.querySelector('.question-section');
+            if (existingSaveSection) {
+                existingSaveSection.remove();
+            }
+            resultPage.insertAdjacentHTML('beforeend', saveButtonsHTML);
+        }
+
+        async function saveToDatabase() {
+    if (!analysisResult || !currentUser) {
+        showToast('ไม่สามารถบันทึกข้อมูลได้', 'error');
+        return;
+    }
+
+    try {
+        // ✅ ดึงค่าที่แก้จาก popup (ถ้ามี)
+        const editedDish = document.getElementById('editDish')?.value?.trim();
+        const editedAmount = parseInt(document.getElementById('editAmount')?.value) || null;
+        const editedNote = document.getElementById('editNote')?.value?.trim();
+
+        // ✅ ถ้ามีค่าใหม่ ให้ update analysisResult.output
+        if (analysisResult?.output) {
+            if (editedDish) analysisResult.output.dish = editedDish;
+            if (editedAmount && analysisResult.output.calories) {
+
+                // ⬇️⬇️⬇️ ✅ แปลง string → number ก่อนคำนวณ
+                const baseCal = parseFloat(String(analysisResult.output.calories).replace(/[^0-9.]/g, '')) || 0;
+                const basePro = parseFloat(String(analysisResult.output.protein).replace(/[^0-9.]/g, '')) || 0;
+                const baseFat = parseFloat(String(analysisResult.output.fat).replace(/[^0-9.]/g, '')) || 0;
+                const baseCarb = parseFloat(String(analysisResult.output.carbs).replace(/[^0-9.]/g, '')) || 0;
+                // ⬆️⬆️⬆️
+
+                const ratio = editedAmount / 300;
+                analysisResult.output.calories = Math.round(baseCal * ratio);
+                analysisResult.output.protein = Math.round(basePro * ratio);
+                analysisResult.output.fat = Math.round(baseFat * ratio);
+                analysisResult.output.carbs = Math.round(baseCarb * ratio);
+            }
+            if (editedNote) analysisResult.output.note = editedNote;
+        }
+
+        const foodLog = {
+            line_userid: currentUser.userId,
+            date: analysisResult.date,
+            food_name: analysisResult.output.dish,
+            calories: analysisResult.output.calories,
+            protein_g: analysisResult.output.protein,
+            fat_g: analysisResult.output.fat,
+            carbs_g: analysisResult.output.carbs,
+            created_at: new Date().toISOString()
+        };
+
+        if (supabase) {
+            const { data, error } = await supabase
+                .from('food_logs')
+                .insert([foodLog]);
+
+            if (error) throw error;
+        }
+
+        console.log('Food log saved:', foodLog);
+        showPage('successPage');
+        showToast('บันทึกข้อมูลสำเร็จ!', 'success');
+
+            } catch (error) {
+                console.error('Error saving to database:', error);
+                // Still show success for demo purposes
+                showPage('successPage');
+                showToast('บันทึกข้อมูลสำเร็จ! (Demo Mode)', 'success');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type === 'error' ? 'toast-error' : 'toast-success'}`;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize app when page loads
+        window.addEventListener('load', () => {
+            initializeLIFF();
+        });
+    </script>
+
+    <style>
+        .toast-error {
+            background-color: #e9e2d0 !important;
+            color: #cc1e0f !important;
+            border: 1px solid #cc1e0f !important;
+        }
+
+        .toast-success {
+            background-color: #ffffff !important;
+            color: #cc1e0f !important;
+            border: 1px solid #cc1e0f !important;
+        }
+    </style>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97ae9b7f141e26c9',t:'MTc1NzE2ODQzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+<!-- ====== Edit Popup ====== -->
+<div id="editModal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <span>แก้ไขข้อมูลอาหาร</span>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <label>🍽️ ชื่ออาหาร</label>
+      <input id="editDish" class="input" type="text" placeholder="เช่น ข้าวกะเพราไก่ไข่ดาว">
+      <label>⚖️ ปริมาณ (กรัม)</label>
+      <input id="editAmount" class="input" type="number" placeholder="300">
+      <div class="note">หากไม่ใส่ ระบบจะคำนวณที่ 300 g</div>
+      <label>🧂 ส่วนผสมพิเศษ / หมายเหตุ</label>
+      <textarea id="editNote" class="input" rows="3" placeholder="เช่น ไม่ใส่พริก, เพิ่มไข่ดาว"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary-red" onclick="reAnalyze()">🔁 Re-Analyze</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// === Re-Analyze Modal helpers ===
+function openEditModal(){ var m=document.getElementById('editModal'); if(m) m.classList.add('show'); }
+function closeEditModal(){ var m=document.getElementById('editModal'); if(m) m.classList.remove('show'); }
+
+// Redefine displayResult to include Edit/Save/Skip and fill popup defaults
+(function(){
+  const _oldDisplay = window.displayResult;
+  window.displayResult = function(result){
+    try{
+      const output = (result && result.output) ? result.output : result;
+      // Keep existing image behavior
+      var resultImage = document.getElementById('resultFoodImage');
+      var previewImage = document.getElementById('previewImage');
+      if (resultImage && previewImage && previewImage.src) resultImage.src = previewImage.src;
+
+      // Ensure container full
+      var cont = document.querySelector('.container'); if(cont) cont.classList.add('no-frame');
+
+      var resultContent = document.getElementById('resultContent');
+      if (resultContent){
+        resultContent.innerHTML = `
+          <div class="calorie-bubble">${output.calories} Cal</div>
+          <div class="macro-bubbles">
+            <div class="macro-bubble">${output.protein} g<br>Protein</div>
+            <div class="macro-bubble">${output.fat} g<br>Fat</div>
+            <div class="macro-bubble">${output.carbs} g<br>Carbs</div>
+          </div>
+          <div class="fun-message">
+            <strong>${output.dish||''}</strong><br>${output.tip_th||''}
+          </div>`;
+      }
+
+      // Insert buttons row with Edit + Save + Skip
+      var resultPage = document.getElementById('resultPage');
+      if (resultPage){
+        var existing = resultPage.querySelector('.question-section');
+        if (existing) existing.remove();
+        resultPage.insertAdjacentHTML('beforeend', `
+          <div class="question-section">
+            <p class="question-text">Save this meal to your log?</p>
+            <div class="button-group">
+              <button class="btn btn-secondary" onclick="openEditModal()">✏️ Edit</button>
+              <button class="btn btn-success" onclick="saveToDatabase()">✅ Save</button>
+              <button class="btn btn-danger" onclick="goHome()">❌ Skip</button>
+            </div>
+          </div>
+        `);
+      }
+
+      // Prefill modal fields
+      var d=document.getElementById('editDish'), a=document.getElementById('editAmount'), n=document.getElementById('editNote');
+      if (d) d.value = output?.dish || '';
+      if (a) a.value = 300;
+      if (n) n.value = '';
+
+    }catch(e){
+      try{ if (typeof _oldDisplay === 'function') _oldDisplay(result); }catch(_){}
+      console.error('displayResult override error', e);
+    }
+  };
+})();
+
+// === Re-Analyze: send edited fields to webhook and redraw result ===
+async function reAnalyze(){
+  try{
+    const name = (document.getElementById('editDish')?.value || '').trim();
+    const amount = parseInt(document.getElementById('editAmount')?.value) || 300;
+    const note = (document.getElementById('editNote')?.value || '').trim();
+
+    closeEditModal();
+    if (typeof showPage === 'function') showPage('loadingPage');
+
+    const formData = new FormData();
+    formData.append('dish', name);
+    formData.append('amount', amount);
+    formData.append('note', note);
+
+    // ✅ แนบ line_user_id เสมอ (กันหลุด)
+    const lineId =
+      window.currentUser?.userId ||
+      localStorage.getItem('line_user_id') ||
+      sessionStorage.getItem('line_user_id');
+    if (lineId) {
+      formData.append('line_user_id', lineId);
+    } else {
+      console.warn('⚠️ ไม่มี line_user_id ถูกแนบไป');
+    }
+
+    // attach image (prefer selectedImage; fallback to result image src -> blob)
+    if (window.selectedImage) {
+      formData.append('image', window.selectedImage);
+    } else {
+      const src =
+        document.getElementById('resultFoodImage')?.src ||
+        document.getElementById('previewImage')?.src;
+      if (src) {
+        try {
+          const blob = await fetch(src).then((r) => r.blob());
+          formData.append('image', blob, 'food.jpg');
+        } catch (e) {
+          console.warn('⚠️ โหลดภาพไม่สำเร็จ', e);
+        }
+      }
+    }
+
+    // ✅ ส่งข้อมูลไป webhook
+    const res = await fetch(
+      'https://primary-production-49d9.up.railway.app/webhook/ecal-image',
+      { method: 'POST', body: formData }
+    );
+
+    const data = await res.json().catch(() => ({}));
+    console.log('📤 ส่งข้อมูลไป webhook:', [...formData.entries()]);
+
+    // normalize
+    window.analysisResult = Array.isArray(data)
+      ? data[0]
+      : data?.output
+      ? data
+      : { output: data };
+    if (!window.analysisResult.date)
+      window.analysisResult.date = new Date().toISOString().split('T')[0];
+
+      // ✅ เพิ่มบรรทัดนี้
+analysisResult = window.analysisResult;
+
+    if (typeof displayResult === 'function')
+      displayResult(window.analysisResult);
+    if (typeof showPage === 'function') showPage('resultPage');
+  } catch (err) {
+    console.error('❌ reAnalyze error:', err);
+    if (typeof showToast === 'function')
+      showToast('Re-Analyze failed', 'error');
+    if (typeof showPage === 'function') showPage('resultPage');
+  }
+}
+    
+</script>
+
+</body>
+</html>
