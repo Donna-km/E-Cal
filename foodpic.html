@@ -957,9 +957,22 @@ function closeEditModal(){ var m=document.getElementById('editModal'); if(m) m.c
           </div>
           <div class="fun-message">
             <strong>${output.dish||''}</strong><br>${output.tip_th||''}
-          </div>`;
-      }
-
+            
+           <!-- ✅ Healthy Score Section -->
+    ${output.healthy_score ? `
+      <div class="mt-3 text-left w-full">
+        <div class="text-xs text-[#FFECD0]/90 mb-1">
+          Healthy Score: ${output.healthy_score}/10
+          ${output.healthy_reason ? ` - ${output.healthy_reason}` : ""}
+        </div>
+        <div class="w-full h-2 rounded-full bg-white/20 overflow-hidden">
+        <div style="width:${output.healthy_score * 10}%; background:#FFECD0; height:100%;" 
+             class="transition-all duration-500"></div>
+      </div>
+    </div>
+  ` : ''}
+</div>
+`;
       // Insert buttons row with Edit + Save + Skip
       var resultPage = document.getElementById('resultPage');
       if (resultPage){
