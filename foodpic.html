@@ -1027,7 +1027,17 @@ analysisResult = window.analysisResult;
     if (typeof showPage === 'function') showPage('resultPage');
   }
 }
-    
+    // ✅ คืนค่า displayResult กลับให้ browser เรียกได้ตรง ๆ
+if (window.displayResult === undefined && typeof window !== 'undefined') {
+  window.displayResult = function(result) {
+    // เรียกใช้ displayResult ตัวหลักที่เราประกาศไว้ใน (function(){ ... })();
+    if (typeof result === "object") {
+      console.log("✅ Re-linked displayResult");
+      window.dispatchEvent(new CustomEvent("renderResult", { detail: result }));
+    }
+  };
+}
+
 </script>
 
 </body>
