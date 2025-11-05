@@ -377,14 +377,26 @@ body {
             </div>
         </div>
 
-        <!-- หน้าโหลด -->
-        <div id="loadingPage" class="hidden">
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>Analyzing your food...</p>
-                <p>Please wait a moment</p>
-            </div>
-        </div>
+        <!-- ===== 📸 หน้า Loading พร้อมเส้นสแกน ===== -->
+<div id="loadingPage" class="fixed inset-0 flex flex-col items-center justify-center bg-[#FFECD0] hidden z-[9999]">
+  <div class="relative w-80 h-80 overflow-hidden rounded-2xl shadow-lg border border-[#372329]/20">
+    <img id="scanImageFood" src="https://via.placeholder.com/280x280?text=Analyzing+Food..." 
+         class="w-full h-full object-cover rounded-2xl">
+    <div class="absolute top-0 left-0 w-full h-[4px] bg-[#FF3974]/80 animate-scanLine"></div>
+  </div>
+  <p class="mt-6 text-[#372329] font-semibold">Analyzing your food...</p>
+</div>
+
+<style>
+@keyframes scanLineMove {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+.animate-scanLine {
+  animation: scanLineMove 1.8s ease-in-out infinite alternate;
+}
+</style>
+
 
         <!-- ===== หน้าแสดงผลลัพธ์ (Full Frame Style) ===== -->
 <div id="resultPage" class="hidden">
@@ -556,36 +568,53 @@ if (profile?.userId) {
             }, 100);
         }
 
+// ✅ เมื่อผู้ใช้เลือกรูป
+function previewImage(event) {
+  const file = event.target.files[0];
+  if (file) {
+    selectedImage = file;
+    const previewURL = URL.createObjectURL(file);
+    window.__ecalFoodImage = previewURL;
+    localStorage.setItem("ecalFoodPreview", previewURL);
+    console.log("📸 เก็บรูปใน localStorage แล้ว:", previewURL);
+  }
+}
+
+// ✅ แสดงหน้า Loading + โหลดภาพจาก localStorage
+window.showFoodLoading = function () {
+  const cam = document.getElementById("cameraPage");
+  const lb  = document.getElementById("loadingPage");
+  if (cam) cam.classList.add("hidden");
+  if (lb)  lb.classList.remove("hidden");
+
+  const img = document.getElementById("scanImageFood");
+  const storedImage = localStorage.getItem("ecalFoodPreview");
+  const memoryImage = window.__ecalFoodImage;
+
+  if (img) {
+    if (storedImage) img.src = storedImage;
+    else if (memoryImage) img.src = memoryImage;
+    else if (selectedImage) img.src = URL.createObjectURL(selectedImage);
+    else img.src = "https://via.placeholder.com/280x280?text=Analyzing+Food...";
+  }
+};
+
+// ✅ เคลียร์ cache หลังใช้งานเสร็จ
+function clearFoodCache() {
+  window.__ecalFoodImage = null;
+  localStorage.removeItem("ecalFoodPreview");
+  console.log("🧹 เคลียร์ cache รูปภาพเรียบร้อย");
+}
 
 
-        function previewImage(event) {
-            console.log('previewImage called', event);
-            const file = event.target.files[0];
-            console.log('Selected file:', file);
-            
-            if (file) {
-                selectedImage = file;
-                showToast('Image selected successfully!', 'success');
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('previewImage').src = e.target.result;
-                    document.getElementById('previewContainer').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            } else {
-                showToast('No image selected', 'error');
-            }
-        }
-
+        
         async function submitPhoto() {
             if (!selectedImage) {
                 showToast('กรุณาเลือกรูปภาพก่อน', 'error');
                 return;
             }
 
-            showPage('loadingPage');
-
+            showFoodLoading();
             try {
                 const formData = new FormData();
                 formData.append('image', selectedImage);
