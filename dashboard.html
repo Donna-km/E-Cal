@@ -1324,30 +1324,57 @@ window.addEventListener('load', initApp);
     </script>  
     
 <script>
-// ✅ ตรวจสอบค่า TDEE แล้วแสดงกล่องเตือนถ้ายังไม่มีข้อมูล
-window.addEventListener("load", () => {
-  setTimeout(() => {
-    const tdeeValue = document.getElementById("tdeeValue");
+// ✅ ตรวจสอบค่า TDEE จาก Supabase โดยตรง
+window.addEventListener("load", async () => {
+  try {
+    // 1️⃣ เริ่มต้น LIFF เพื่อดึง line_user_id
+    await liff.init({ liffId: "2007859046-BpXDWpXe" }); // 👉 ใช้ LIFF ID ของเธอ
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
+
+    const profile = await liff.getProfile();
+    const lineUserId = profile.userId;
+
+    // 2️⃣ ตั้งค่าเชื่อมต่อ Supabase
+    const supabaseUrl = "https://lvtdqeerzxpznnayccmb.supabase.co";
+    const supabaseKey =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM";
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // 3️⃣ ดึงข้อมูล tdee จากตาราง tdee_form
+    const { data, error } = await supabase
+      .from("tdee_form")
+      .select("tdee")
+      .eq("line_user_id", lineUserId)
+      .maybeSingle(); // ✅ ปลอดภัยกว่า single() ถ้า record ยังไม่มี
+
+    // 4️⃣ ตรวจสอบผลลัพธ์
     const warningBox = document.getElementById("tdeeWarningBox");
 
-    if (!tdeeValue || !warningBox) return;
-
-    const currentTdee = parseInt(tdeeValue.textContent.replace(/[^0-9]/g, "")) || 0;
-
-    if (currentTdee === 0) {
-      warningBox.classList.remove("hidden");
-      console.warn("⚠️ ยังไม่มีค่า TDEE — แสดง popup เตือน");
-    } else {
-      warningBox.classList.add("hidden");
-      console.log(`✅ มีค่า TDEE แล้ว: ${currentTdee} kcal`);
+    if (error) {
+      console.warn("⚠️ ไม่พบข้อมูล TDEE หรือเกิดข้อผิดพลาด:", error.message);
+      warningBox?.classList.remove("hidden");
+      return;
     }
-  }, 1500); // ⏱ รอ 1.5 วินาทีให้ Supabase โหลดเสร็จ
-});
 
-     </script> 
+    const tdeeValue = data?.tdee || 0;
+
+    if (tdeeValue === 0) {
+      warningBox?.classList.remove("hidden");
+      console.warn("⚠️ ยังไม่มีค่า TDEE ในฐานข้อมูล — แสดง popup เตือน");
+    } else {
+      warningBox?.classList.add("hidden");
+      console.log(`✅ พบค่า TDEE แล้ว: ${tdeeValue} kcal`);
+    }
+
+  } catch (err) {
+    console.error("❌ เกิดข้อผิดพลาดในการตรวจสอบค่า TDEE:", err);
+    const warningBox = document.getElementById("tdeeWarningBox");
+    warningBox?.classList.remove("hidden");
+  }
+});
+</script>
 </body>
 </html>
-
-
-
-
