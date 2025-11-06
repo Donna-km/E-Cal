@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Cal Food Scan (Stable)</title>
+  <style>
+    body {
+      background-color: #1a1a1a;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .scan-line {
+      position: absolute;
+      top: -10%;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 57, 116, 0.9) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: scanMove 1.8s linear infinite;
+      border-radius: 6px;
+      box-shadow: 0 0 16px rgba(255, 57, 116, 0.8);
+    }
+    @keyframes scanMove {
+      0% { top: -10%; }
+      50% { top: 100%; }
+      100% { top: -10%; }
+    }
+    .container { text-align: center; }
+  </style>
+</head>
+<body>
+  <!-- หน้าโหลด -->
+  <div id="loadingPage" class="flex flex-col items-center justify-center min-h-screen bg-transparent text-center">
+    <div id="scanAreaFood"
+         class="relative mx-auto mb-6 overflow-hidden rounded-2xl shadow-xl border border-[#FF3974]/30"
+         style="max-width:320px; aspect-ratio:1/1;">
+      <img id="scanImageFood"
+           src="https://via.placeholder.com/320x320?text=Analyzing+Food..."
+           alt="กำลังวิเคราะห์อาหาร..."
+           class="w-full h-full object-cover rounded-2xl opacity-95 transition-all duration-500 ease-in-out">
+      <div class="scan-line"></div>
+    </div>
+    <p class="text-[#FF3974] font-semibold animate-pulse mt-2">กำลังวิเคราะห์อาหารของคุณ...</p>
+  </div>
+
+  <script>
+  // ✅ ฟังก์ชันเวอร์ชันเสถียร: รูปจะขึ้นทุกครั้ง
+  window.showFoodLoading = function() {
+    const cam = document.getElementById('cameraPage');
+    const lb  = document.getElementById('loadingPage');
+    const img = document.getElementById('scanImageFood');
+    const userImage = window.selectedImage || window.__ecalFoodImage || null;
+
+    // ✅ ซ่อนกล้องและแสดงหน้าโหลด
+    if (cam) cam.classList.add('hidden');
+    if (lb)  lb.classList.remove('hidden');
+
+    console.log('🧠 แสดงภาพในหน้า Loading:', userImage);
+
+    // ✅ helper สำหรับตั้งค่าภาพ
+    function setImage(src) {
+      if (!img) return;
+      img.onload = () => console.log("✅ Loaded user image on loading page");
+      img.onerror = () => {
+        console.warn("⚠️ Failed to load user image, using placeholder");
+        img.src = "https://via.placeholder.com/320x320?text=Analyzing+Food...";
+      };
+      img.src = src;
+    }
+
+    // ✅ ถ้ามีภาพพร้อมแล้ว
+    if (userImage instanceof File) {
+      const blobURL = URL.createObjectURL(userImage);
+      setImage(blobURL);
+    } 
+    else if (typeof userImage === 'string' && userImage.trim() !== '') {
+      setImage(userImage);
+    } 
+    else {
+      // ⚙️ ถ้ายังไม่มีรูป → รออีก 300ms แล้วลองใหม่
+      console.warn("⏳ No user image yet, retrying...");
+      setTimeout(() => {
+        const retry = window.selectedImage || window.__ecalFoodImage;
+        if (retry instanceof File) {
+          setImage(URL.createObjectURL(retry));
+        } else if (typeof retry === 'string' && retry.trim() !== '') {
+          setImage(retry);
+        } else {
+          setImage("https://via.placeholder.com/320x320?text=Analyzing+Food...");
+        }
+      }, 300);
+    }
+  };
+  </script>
+</body>
+</html>
