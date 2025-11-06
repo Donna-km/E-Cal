@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TDEE Calculator</title>
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brown': {
+                            50: '#fdf8f6',
+                            100: '#f2e8e5',
+                            200: '#eaddd7',
+                            300: '#e0cfc5',
+                            400: '#d2bab0',
+                            500: '#bfa094',
+                            600: '#a18072',
+                            700: '#977669',
+                            800: '#846358',
+                            900: '#43302b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-out {
+            animation: fadeOut 0.3s ease-out;
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans" style="background-color: #cc1e0f;">
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2">TDEE Calculator</h1>
+            <p class="text-white opacity-90">คำนวณความต้องการพลังงานรายวันของคุณ</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-white" id="progress-text">ข้อมูลพื้นฐาน</span>
+                <span class="text-sm font-medium text-white" id="progress-count">1/5</span>
+            </div>
+            <div class="w-full bg-white bg-opacity-30 rounded-full h-2">
+                <div class="bg-white h-2 rounded-full transition-all duration-300" id="progress-bar" style="width: 20%"></div>
+            </div>
+        </div>
+
+        <!-- Page 1: Basic Information -->
+        <div id="page1" class="fade-in">
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #e9e2d0;">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-brown-600 rounded-full flex items-center justify-center mr-3">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-semibold text-brown-900">ข้อมูลพื้นฐาน</h2>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Name Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-brown-700 mb-2">ชื่อ-นามสกุล</label>
+                        <input type="text" id="full-name" class="w-full px-4 py-3 border-2 border-brown-200 rounded-xl focus:border-brown-400 focus:outline-none transition-colors" placeholder="กรอกชื่อ-นามสกุลของคุณ">
+                    </div>
+
+                    <!-- Gender Selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-brown-700 mb-3">เพศ</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button type="button" class="gender-btn flex items-center justify-center p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200" data-gender="male" onclick="selectGender('male')">
+                                <span class="font-medium text-brown-700">ชาย</span>
+                            </button>
+                            <button type="button" class="gender-btn flex items-center justify-center p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200" data-gender="female" onclick="selectGender('female')">
+                                <span class="font-medium text-brown-700">หญิง</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Age Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-brown-700 mb-2">อายุ (ปี)</label>
+                        <input type="number" id="age" class="w-full px-4 py-3 border-2 border-brown-200 rounded-xl focus:border-brown-400 focus:outline-none transition-colors" placeholder="กรอกอายุของคุณ" min="1" max="120">
+                    </div>
+
+                    <!-- Height Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-brown-700 mb-2">ส่วนสูง (ซม.)</label>
+                        <input type="number" id="height" class="w-full px-4 py-3 border-2 border-brown-200 rounded-xl focus:border-brown-400 focus:outline-none transition-colors" placeholder="กรอกส่วนสูงของคุณ" min="100" max="250">
+                    </div>
+
+                    <!-- Weight Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-brown-700 mb-2">น้ำหนักปัจจุบัน (กก.)</label>
+                        <input type="number" id="weight" class="w-full px-4 py-3 border-2 border-brown-200 rounded-xl focus:border-brown-400 focus:outline-none transition-colors" placeholder="กรอกน้ำหนักปัจจุบันของคุณ" min="30" max="300" step="0.1">
+                    </div>
+
+                    <!-- Target Weight Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-brown-700 mb-2">น้ำหนักเป้าหมาย (กก.)</label>
+                        <input type="number" id="target-weight" class="w-full px-4 py-3 border-2 border-brown-200 rounded-xl focus:border-brown-400 focus:outline-none transition-colors" placeholder="กรอกน้ำหนักที่ต้องการ" min="30" max="300" step="0.1">
+                    </div>
+
+                    <!-- Timeline Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-brown-700 mb-2">ระยะเวลาที่ต้องการ (เดือน)</label>
+                        <input type="number" id="timeline" class="w-full px-4 py-3 border-2 border-brown-200 rounded-xl focus:border-brown-400 focus:outline-none transition-colors" placeholder="กรอกระยะเวลาที่ต้องการ" min="1" max="24">
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <button type="button" class="w-full bg-brown-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-brown-700 transition-colors duration-200" onclick="nextPage(1)">
+                        ถัดไป
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 2: Activity Level -->
+        <div id="page2" class="hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #e9e2d0;">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-brown-600 rounded-full flex items-center justify-center mr-3">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-semibold text-brown-900">ระดับกิจกรรม</h2>
+                </div>
+
+                <div class="space-y-4">
+                    <button type="button" class="activity-btn w-full text-left p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200" data-activity="1.2" onclick="selectActivity(1.2, this)">
+                        <div class="font-medium text-brown-800">นั่งทำงาน ไม่ออกกำลังกาย</div>
+                        <div class="text-sm text-brown-600 mt-1">ไม่ออกกำลังกายเลย หรือออกกำลังกายน้อยมาก</div>
+                    </button>
+                    
+                    <button type="button" class="activity-btn w-full text-left p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200" data-activity="1.375" onclick="selectActivity(1.375, this)">
+                        <div class="font-medium text-brown-800">ออกกำลังกายเบาๆ</div>
+                        <div class="text-sm text-brown-600 mt-1">ออกกำลังกาย 1-3 วัน/สัปดาห์</div>
+                    </button>
+                    
+                    <button type="button" class="activity-btn w-full text-left p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200" data-activity="1.55" onclick="selectActivity(1.55, this)">
+                        <div class="font-medium text-brown-800">ออกกำลังกายปานกลาง</div>
+                        <div class="text-sm text-brown-600 mt-1">ออกกำลังกาย 3-5 วัน/สัปดาห์</div>
+                    </button>
+                    
+                    <button type="button" class="activity-btn w-full text-left p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200" data-activity="1.725" onclick="selectActivity(1.725, this)">
+                        <div class="font-medium text-brown-800">ออกกำลังกายหนัก</div>
+                        <div class="text-sm text-brown-600 mt-1">ออกกำลังกาย 6-7 วัน/สัปดาห์</div>
+                    </button>
+                    
+                    <button type="button" class="activity-btn w-full text-left p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200" data-activity="1.9" onclick="selectActivity(1.9, this)">
+                        <div class="font-medium text-brown-800">ออกกำลังกายหนักมาก</div>
+                        <div class="text-sm text-brown-600 mt-1">ออกกำลังกายหนักทุกวัน หรือ 2 ครั้ง/วัน</div>
+                    </button>
+                </div>
+
+                <div class="mt-8 flex gap-4">
+                    <button type="button" class="flex-1 bg-brown-200 text-brown-700 py-3 px-6 rounded-xl font-medium hover:bg-brown-300 transition-colors duration-200" onclick="prevPage(2)">
+                        ย้อนกลับ
+                    </button>
+                    <button type="button" class="flex-1 bg-brown-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-brown-700 transition-colors duration-200" onclick="nextPage(2)">
+                        ถัดไป
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 3: Goal -->
+        <div id="page3" class="hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #e9e2d0;">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-brown-600 rounded-full flex items-center justify-center mr-3">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-semibold text-brown-900">เป้าหมาย</h2>
+                </div>
+
+                <div class="space-y-4">
+                    <button type="button" class="goal-btn w-full text-left p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200" data-goal="lose" onclick="selectGoal('lose', this)">
+                        <div class="font-medium text-brown-800">ลดน้ำหนัก</div>
+                        <div class="text-sm text-brown-600 mt-1">ลดแคลอรี่ 500 แคล/วัน (ลดน้ำหนัก 0.5 กก./สัปดาห์)</div>
+                    </button>
+                    
+                    <button type="button" class="goal-btn w-full text-left p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200" data-goal="maintain" onclick="selectGoal('maintain', this)">
+                        <div class="font-medium text-brown-800">รักษาน้ำหนัก</div>
+                        <div class="text-sm text-brown-600 mt-1">รักษาน้ำหนักปัจจุบัน</div>
+                    </button>
+                    
+                    <button type="button" class="goal-btn w-full text-left p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200" data-goal="gain" onclick="selectGoal('gain', this)">
+                        <div class="font-medium text-brown-800">เพิ่มน้ำหนัก</div>
+                        <div class="text-sm text-brown-600 mt-1">เพิ่มแคลอรี่ 500 แคล/วัน (เพิ่มน้ำหนัก 0.5 กก./สัปดาห์)</div>
+                    </button>
+                    
+                    <button type="button" class="goal-btn w-full text-left p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200" data-goal="muscle" onclick="selectGoal('muscle', this)">
+                        <div class="font-medium text-brown-800">เพิ่มกล้ามเนื้อ</div>
+                        <div class="text-sm text-brown-600 mt-1">เพิ่มแคลอรี่ 300-400 แคล/วัน พร้อมโปรตีนสูง</div>
+                    </button>
+                </div>
+
+                <div class="mt-8 flex gap-4">
+                    <button type="button" class="flex-1 bg-brown-200 text-brown-700 py-3 px-6 rounded-xl font-medium hover:bg-brown-300 transition-colors duration-200" onclick="prevPage(3)">
+                        ย้อนกลับ
+                    </button>
+                    <button type="button" class="flex-1 bg-brown-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-brown-700 transition-colors duration-200" onclick="nextPage(3)">
+                        ถัดไป
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 4: Food Allergies -->
+        <div id="page4" class="hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #e9e2d0;">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-brown-600 rounded-full flex items-center justify-center mr-3">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-semibold text-brown-900">ข้อมูลการแพ้อาหาร</h2>
+                </div>
+
+                <div class="mb-6">
+                    <p class="text-sm text-brown-600 mb-4">เลือกอาหารที่คุณแพ้ (สามารถเลือกได้หลายรายการ)</p>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center p-3 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200 cursor-pointer">
+                            <input type="checkbox" class="allergy-checkbox mr-3 text-brown-600 focus:ring-brown-500" value="milk" onchange="toggleAllergy('milk')">
+                            <span class="text-brown-700">นม/ผลิตภัณฑ์นม</span>
+                        </label>
+                        
+                        <label class="flex items-center p-3 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200 cursor-pointer">
+                            <input type="checkbox" class="allergy-checkbox mr-3 text-brown-600 focus:ring-brown-500" value="eggs" onchange="toggleAllergy('eggs')">
+                            <span class="text-brown-700">ไข่</span>
+                        </label>
+                        
+                        <label class="flex items-center p-3 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200 cursor-pointer">
+                            <input type="checkbox" class="allergy-checkbox mr-3 text-brown-600 focus:ring-brown-500" value="nuts" onchange="toggleAllergy('nuts')">
+                            <span class="text-brown-700">ถั่ว/เมล็ดแข็ง</span>
+                        </label>
+                        
+                        <label class="flex items-center p-3 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200 cursor-pointer">
+                            <input type="checkbox" class="allergy-checkbox mr-3 text-brown-600 focus:ring-brown-500" value="seafood" onchange="toggleAllergy('seafood')">
+                            <span class="text-brown-700">อาหารทะเล</span>
+                        </label>
+                        
+                        <label class="flex items-center p-3 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200 cursor-pointer">
+                            <input type="checkbox" class="allergy-checkbox mr-3 text-brown-600 focus:ring-brown-500" value="gluten" onchange="toggleAllergy('gluten')">
+                            <span class="text-brown-700">กลูเตน</span>
+                        </label>
+                        
+                        <label class="flex items-center p-3 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200 cursor-pointer">
+                            <input type="checkbox" class="allergy-checkbox mr-3 text-brown-600 focus:ring-brown-500" value="soy" onchange="toggleAllergy('soy')">
+                            <span class="text-brown-700">ถั่วเหลือง</span>
+                        </label>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="flex items-center p-3 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200 cursor-pointer">
+                            <input type="checkbox" class="allergy-checkbox mr-3 text-brown-600 focus:ring-brown-500" value="none" onchange="toggleAllergy('none')">
+                            <span class="text-brown-700">ไม่แพ้อาหารใดๆ</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-4">
+                    <button type="button" class="flex-1 bg-brown-200 text-brown-700 py-3 px-6 rounded-xl font-medium hover:bg-brown-300 transition-colors duration-200" onclick="prevPage(4)">
+                        ย้อนกลับ
+                    </button>
+                    <button type="button" class="flex-1 bg-brown-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-brown-700 transition-colors duration-200" onclick="nextPage(4)">
+                        ถัดไป
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 5: Medical Conditions -->
+        <div id="page5" class="hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #e9e2d0;">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-brown-600 rounded-full flex items-center justify-center mr-3">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-semibold text-brown-900">โรคประจำตัว</h2>
+                </div>
+
+                <div class="mb-6">
+                    <p class="text-sm text-brown-600 mb-4">เลือกโรคประจำตัวที่คุณมี (สามารถเลือกได้หลายรายการ)</p>
+                    
+                    <div class="space-y-3">
+                        <label class="flex items-center p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200 cursor-pointer">
+                            <input type="checkbox" class="condition-checkbox mr-3 text-brown-600 focus:ring-brown-500" value="diabetes" onchange="toggleCondition('diabetes')">
+                            <div>
+                                <div class="font-medium text-brown-800">เบาหวาน</div>
+                                <div class="text-sm text-brown-600">ต้องควบคุมน้ำตาลในเลือด</div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200 cursor-pointer">
+                            <input type="checkbox" class="condition-checkbox mr-3 text-brown-600 focus:ring-brown-500" value="hypertension" onchange="toggleCondition('hypertension')">
+                            <div>
+                                <div class="font-medium text-brown-800">ความดันโลหิตสูง</div>
+                                <div class="text-sm text-brown-600">ต้องจำกัดโซเดียม</div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200 cursor-pointer">
+                            <input type="checkbox" class="condition-checkbox mr-3 text-brown-600 focus:ring-brown-500" value="heart" onchange="toggleCondition('heart')">
+                            <div>
+                                <div class="font-medium text-brown-800">โรคหัวใจ</div>
+                                <div class="text-sm text-brown-600">ต้องควบคุมไขมันและโซเดียม</div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200 cursor-pointer">
+                            <input type="checkbox" class="condition-checkbox mr-3 text-brown-600 focus:ring-brown-500" value="kidney" onchange="toggleCondition('kidney')">
+                            <div>
+                                <div class="font-medium text-brown-800">โรคไต</div>
+                                <div class="text-sm text-brown-600">ต้องจำกัดโปรตีนและโซเดียม</div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200 cursor-pointer">
+                            <input type="checkbox" class="condition-checkbox mr-3 text-brown-600 focus:ring-brown-500" value="thyroid" onchange="toggleCondition('thyroid')">
+                            <div>
+                                <div class="font-medium text-brown-800">โรคไทรอยด์</div>
+                                <div class="text-sm text-brown-600">อาจส่งผลต่อการเผาผลาญ</div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-4 border-2 border-brown-200 rounded-xl hover:border-brown-400 hover:bg-brown-50 transition-all duration-200 cursor-pointer">
+                            <input type="checkbox" class="condition-checkbox mr-3 text-brown-600 focus:ring-brown-500" value="none" onchange="toggleCondition('none')">
+                            <div>
+                                <div class="font-medium text-brown-800">ไม่มีโรคประจำตัว</div>
+                                <div class="text-sm text-brown-600">สุขภาพแข็งแรงดี</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-4">
+                    <button type="button" class="flex-1 bg-brown-200 text-brown-700 py-3 px-6 rounded-xl font-medium hover:bg-brown-300 transition-colors duration-200" onclick="prevPage(5)">
+                        ย้อนกลับ
+                    </button>
+                    <button type="button" class="flex-1 bg-brown-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-brown-700 transition-colors duration-200" onclick="calculateTDEE()">
+                        คำนวณ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Page -->
+        <div id="results" class="hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #e9e2d0;">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-brown-900 mb-2">ผลการคำนวณ</h2>
+                    <p class="text-brown-600">ความต้องการพลังงานรายวันของคุณ</p>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- BMR -->
+                    <div class="bg-brown-50 rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-semibold text-brown-900">BMR (อัตราการเผาผลาญพื้นฐาน)</h3>
+                                <p class="text-sm text-brown-600 mt-1">พลังงานที่ร่างกายต้องการในการดำรงชีวิต</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-brown-900" id="bmr-result">-</div>
+                                <div class="text-sm text-brown-600">แคลอรี่/วัน</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TDEE -->
+                    <div class="bg-blue-50 rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-semibold text-blue-900">TDEE (ความต้องการพลังงานรวม)</h3>
+                                <p class="text-sm text-blue-600 mt-1">พลังงานที่ต้องการรวมกิจกรรมต่างๆ</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-blue-900" id="tdee-result">-</div>
+                                <div class="text-sm text-blue-600">แคลอรี่/วัน</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Goal Calories -->
+                    <div class="bg-green-50 rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-semibold text-green-900" id="goal-title">แคลอรี่สำหรับเป้าหมาย</h3>
+                                <p class="text-sm text-green-600 mt-1" id="goal-description">-</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-green-900" id="goal-calories">-</div>
+                                <div class="text-sm text-green-600">แคลอรี่/วัน</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BMI -->
+                    <div class="bg-purple-50 rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-semibold text-purple-900">BMI (ดัชนีมวลกาย)</h3>
+                                <p class="text-sm text-purple-600 mt-1" id="bmi-status">-</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-purple-900" id="bmi-result">-</div>
+                                <div class="text-sm text-purple-600">kg/m²</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Weight Goal Info -->
+                    <div class="bg-orange-50 rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-semibold text-orange-900">เป้าหมายน้ำหนัก</h3>
+                                <p class="text-sm text-orange-600 mt-1" id="weight-goal-description">-</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-orange-900" id="target-weight-result">-</div>
+                                <div class="text-sm text-orange-600">กก.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Info -->
+                    <div class="bg-teal-50 rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-semibold text-teal-900">ระยะเวลา</h3>
+                                <p class="text-sm text-teal-600 mt-1" id="timeline-description">-</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-teal-900" id="timeline-result">-</div>
+                                <div class="text-sm text-teal-600">เดือน</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <button type="button" class="w-full bg-brown-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-brown-700 transition-colors duration-200" onclick="resetCalculator()">
+                        คำนวณใหม่
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentPage = 1;
+        let userData = {
+            fullName: '',
+            gender: '',
+            age: 0,
+            height: 0,
+            weight: 0,
+            targetWeight: 0,
+            timeline: 0,
+            activity: 0,
+            goal: '',
+            allergies: [],
+            conditions: []
+        };
+
+        // LIFF and Supabase configuration
+        let lineUserId = null;
+        let supabaseClient = null;
+
+        // Initialize LIFF
+        async function initializeLIFF() {
+            try {
+                await liff.init({ liffId: "2007859046-AM0LQo0g" }); // Replace with your actual LIFF ID
+
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+
+                const profile = await liff.getProfile();
+                lineUserId = profile.userId;
+                console.log("LINE user ID:", lineUserId);
+                
+                // Auto-fill name field with LINE display name
+                if (profile.displayName) {
+                    const nameInput = document.getElementById('full-name');
+                    nameInput.value = profile.displayName;
+                    userData.fullName = profile.displayName;
+                }
+
+                // Check for existing data
+                await checkForExistingData();
+            } catch (error) {
+                console.error("LIFF initialization failed:", error);
+                // Continue without LINE integration
+            }
+        }
+
+        // Check if user has existing data
+        async function checkForExistingData() {
+            if (!supabaseClient || !lineUserId) {
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('tdee_form')
+                    .select('*')
+                    .eq('line_user_id', lineUserId)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+
+                if (error) {
+                    console.error("Error checking existing data:", error);
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    showExistingDataDialog(data[0]);
+                }
+            } catch (error) {
+                console.error("Error checking existing data:", error);
+            }
+        }
+
+        // Show dialog for existing data
+        function showExistingDataDialog(existingData) {
+            const userName = existingData.full_name || 'คุณ';
+            const lastUpdate = new Date(existingData.created_at).toLocaleDateString('th-TH');
+            
+            const confirmed = confirm(
+                `สวัสดี ${userName}!\n\n` +
+                `เราพบว่าคุณเคยบันทึกข้อมูล TDEE ไว้แล้วเมื่อวันที่ ${lastUpdate}\n\n` +
+                `คุณต้องการ:\n` +
+                `✅ กด "ตกลง" เพื่อแก้ไขข้อมูลเดิม\n` +
+                `❌ กด "ยกเลิก" เพื่อเริ่มใหม่`
+            );
+
+            if (confirmed) {
+                loadExistingData(existingData);
+            }
+        }
+
+        // Load existing data into form
+        function loadExistingData(existingData) {
+            userData.fullName = existingData.full_name || '';
+            userData.gender = existingData.gender || '';
+            userData.age = existingData.age || 0;
+            userData.height = existingData.height || 0;
+            userData.weight = existingData.weight || 0;
+            userData.targetWeight = existingData.target_weight || 0;
+            userData.timeline = existingData.timeline_months || 0;
+            userData.allergies = existingData.allergies || [];
+            userData.conditions = existingData.medical_conditions || [];
+
+            // Fill form inputs
+            document.getElementById('full-name').value = userData.fullName;
+            document.getElementById('age').value = userData.age;
+            document.getElementById('height').value = userData.height;
+            document.getElementById('weight').value = userData.weight;
+            document.getElementById('target-weight').value = userData.targetWeight;
+            document.getElementById('timeline').value = userData.timeline;
+
+            // Set gender selection
+            if (userData.gender) {
+                selectGender(userData.gender);
+            }
+
+            // Set activity level based on text
+            const activityMap = {
+                'นั่งทำงาน ไม่ออกกำลังกาย': 1.2,
+                'ออกกำลังกายเบาๆ': 1.375,
+                'ออกกำลังกายปานกลาง': 1.55,
+                'ออกกำลังกายหนัก': 1.725,
+                'ออกกำลังกายหนักมาก': 1.9
+            };
+            if (existingData.activity_level && activityMap[existingData.activity_level]) {
+                userData.activity = activityMap[existingData.activity_level];
+                // Highlight the selected activity button
+                setTimeout(() => {
+                    const activityBtn = document.querySelector(`[data-activity="${userData.activity}"]`);
+                    if (activityBtn) {
+                        selectActivity(userData.activity, activityBtn);
+                    }
+                }, 100);
+            }
+
+            // Set goal based on text
+            const goalMap = {
+                'ลดน้ำหนัก': 'lose',
+                'รักษาน้ำหนัก': 'maintain',
+                'เพิ่มน้ำหนัก': 'gain',
+                'เพิ่มกล้ามเนื้อ': 'muscle'
+            };
+            if (existingData.goal && goalMap[existingData.goal]) {
+                userData.goal = goalMap[existingData.goal];
+                // Highlight the selected goal button
+                setTimeout(() => {
+                    const goalBtn = document.querySelector(`[data-goal="${userData.goal}"]`);
+                    if (goalBtn) {
+                        selectGoal(userData.goal, goalBtn);
+                    }
+                }, 100);
+            }
+
+            // Set allergies checkboxes
+            userData.allergies.forEach(allergy => {
+                const checkbox = document.querySelector(`.allergy-checkbox[value="${allergy}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+
+            // Set conditions checkboxes
+            userData.conditions.forEach(condition => {
+                const checkbox = document.querySelector(`.condition-checkbox[value="${condition}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+
+            // Show notification that data was loaded
+            setTimeout(() => {
+                alert(`✅ โหลดข้อมูลเดิมของคุณเรียบร้อยแล้ว!\n\nคุณสามารถแก้ไขข้อมูลและคำนวณใหม่ได้`);
+            }, 500);
+        }
+
+        // Initialize Supabase
+        function initializeSupabase() {
+            try {
+                // Replace with your actual Supabase URL and anon key
+                const SUPABASE_URL = 'https://lvtdqeerzxpznnayccmb.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM';
+                
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log("Supabase initialized successfully");
+            } catch (error) {
+                console.error("Supabase initialization failed:", error);
+            }
+        }
+
+        // Save data to Supabase
+        async function saveToSupabase(calculationData) {
+            if (!supabaseClient) {
+                console.error("Supabase client not initialized - Please set your Supabase URL and API key");
+                return false;
+            }
+
+            try {
+                console.log("Attempting to save data:", calculationData);
+                
+                const { data, error } = await supabaseClient
+                    .from('tdee_form')
+                    .insert([calculationData]);
+
+                if (error) {
+                    console.error("Error saving to Supabase:", error);
+                    console.error("Error details:", error.message);
+                    
+                    // Show user-friendly error message
+                    if (error.message.includes('relation "tdee_form" does not exist')) {
+                        console.error("Table 'tdee_form' not found. Please create the table first.");
+                        alert("ระบบฐานข้อมูลยังไม่พร้อม กรุณาติดต่อผู้ดูแลระบบ");
+                    }
+                    return false;
+                }
+
+                console.log("Data saved successfully to tdee_form table:", data);
+                return true;
+            } catch (error) {
+                console.error("Error saving to Supabase:", error);
+                return false;
+            }
+        }
+
+        // Gender selection
+        function selectGender(gender) {
+            userData.gender = gender;
+            document.querySelectorAll('.gender-btn').forEach(btn => {
+                btn.classList.remove('border-brown-400', 'bg-brown-50');
+                btn.classList.add('border-brown-200');
+            });
+            document.querySelector(`[data-gender="${gender}"]`).classList.add('border-brown-400', 'bg-brown-50');
+            document.querySelector(`[data-gender="${gender}"]`).classList.remove('border-brown-200');
+        }
+
+        // Activity selection
+        function selectActivity(activity, element) {
+            userData.activity = activity;
+            document.querySelectorAll('.activity-btn').forEach(btn => {
+                btn.classList.remove('border-brown-400', 'bg-brown-50');
+                btn.classList.add('border-brown-200');
+            });
+            element.classList.add('border-brown-400', 'bg-brown-50');
+            element.classList.remove('border-brown-200');
+        }
+
+        // Goal selection
+        function selectGoal(goal, element) {
+            userData.goal = goal;
+            document.querySelectorAll('.goal-btn').forEach(btn => {
+                btn.classList.remove('border-brown-400', 'bg-brown-50');
+                btn.classList.add('border-brown-200');
+            });
+            element.classList.add('border-brown-400', 'bg-brown-50');
+            element.classList.remove('border-brown-200');
+        }
+
+        // Allergy selection
+        function toggleAllergy(allergy) {
+            if (allergy === 'none') {
+                // If "none" is selected, clear all other allergies
+                userData.allergies = ['none'];
+                document.querySelectorAll('.allergy-checkbox').forEach(checkbox => {
+                    checkbox.checked = checkbox.value === 'none';
+                });
+            } else {
+                // Remove "none" if other allergies are selected
+                const noneIndex = userData.allergies.indexOf('none');
+                if (noneIndex > -1) {
+                    userData.allergies.splice(noneIndex, 1);
+                    document.querySelector('.allergy-checkbox[value="none"]').checked = false;
+                }
+                
+                // Toggle the selected allergy
+                const index = userData.allergies.indexOf(allergy);
+                if (index > -1) {
+                    userData.allergies.splice(index, 1);
+                } else {
+                    userData.allergies.push(allergy);
+                }
+            }
+        }
+
+        // Condition selection
+        function toggleCondition(condition) {
+            if (condition === 'none') {
+                // If "none" is selected, clear all other conditions
+                userData.conditions = ['none'];
+                document.querySelectorAll('.condition-checkbox').forEach(checkbox => {
+                    checkbox.checked = checkbox.value === 'none';
+                });
+            } else {
+                // Remove "none" if other conditions are selected
+                const noneIndex = userData.conditions.indexOf('none');
+                if (noneIndex > -1) {
+                    userData.conditions.splice(noneIndex, 1);
+                    document.querySelector('.condition-checkbox[value="none"]').checked = false;
+                }
+                
+                // Toggle the selected condition
+                const index = userData.conditions.indexOf(condition);
+                if (index > -1) {
+                    userData.conditions.splice(index, 1);
+                } else {
+                    userData.conditions.push(condition);
+                }
+            }
+        }
+
+        // Helper functions to get selected data
+        function getSelectedAllergies() {
+            return userData.allergies.length > 0 ? userData.allergies : ['none'];
+        }
+
+        function getSelectedConditions() {
+            return userData.conditions.length > 0 ? userData.conditions : ['none'];
+        }
+
+        function getActivityLevelText(activityValue) {
+            const activityMap = {
+                1.2: 'นั่งทำงาน ไม่ออกกำลังกาย',
+                1.375: 'ออกกำลังกายเบาๆ',
+                1.55: 'ออกกำลังกายปานกลาง',
+                1.725: 'ออกกำลังกายหนัก',
+                1.9: 'ออกกำลังกายหนักมาก'
+            };
+            return activityMap[activityValue] || 'ไม่ระบุ';
+        }
+
+        function getGoalText(goalValue) {
+            const goalMap = {
+                'lose': 'ลดน้ำหนัก',
+                'maintain': 'รักษาน้ำหนัก',
+                'gain': 'เพิ่มน้ำหนัก',
+                'muscle': 'เพิ่มกล้ามเนื้อ'
+            };
+            return goalMap[goalValue] || 'ไม่ระบุ';
+        }
+
+        // Navigation functions
+        function nextPage(page) {
+            if (page === 1) {
+                // Validate basic information
+                const fullName = document.getElementById('full-name').value.trim();
+                const age = parseInt(document.getElementById('age').value);
+                const height = parseInt(document.getElementById('height').value);
+                const weight = parseFloat(document.getElementById('weight').value);
+                const targetWeight = parseFloat(document.getElementById('target-weight').value);
+                const timeline = parseInt(document.getElementById('timeline').value);
+                
+                if (!fullName) {
+                    alert('กรุณากรอกชื่อ-นามสกุล');
+                    return;
+                }
+                if (!userData.gender) {
+                    alert('กรุณาเลือกเพศ');
+                    return;
+                }
+                if (!age || age < 1 || age > 120) {
+                    alert('กรุณากรอกอายุที่ถูกต้อง (1-120 ปี)');
+                    return;
+                }
+                if (!height || height < 100 || height > 250) {
+                    alert('กรุณากรอกส่วนสูงที่ถูกต้อง (100-250 ซม.)');
+                    return;
+                }
+                if (!weight || weight < 30 || weight > 300) {
+                    alert('กรุณากรอกน้ำหนักปัจจุบันที่ถูกต้อง (30-300 กก.)');
+                    return;
+                }
+                if (!targetWeight || targetWeight < 30 || targetWeight > 300) {
+                    alert('กรุณากรอกน้ำหนักเป้าหมายที่ถูกต้อง (30-300 กก.)');
+                    return;
+                }
+                if (!timeline || timeline < 1 || timeline > 24) {
+                    alert('กรุณากรอกระยะเวลาที่ถูกต้อง (1-24 เดือน)');
+                    return;
+                }
+                
+                userData.fullName = fullName;
+                userData.age = age;
+                userData.height = height;
+                userData.weight = weight;
+                userData.targetWeight = targetWeight;
+                userData.timeline = timeline;
+                
+                showPage(2);
+            } else if (page === 2) {
+                if (!userData.activity) {
+                    alert('กรุณาเลือกระดับกิจกรรม');
+                    return;
+                }
+                showPage(3);
+            } else if (page === 3) {
+                if (!userData.goal) {
+                    alert('กรุณาเลือกเป้าหมาย');
+                    return;
+                }
+                showPage(4);
+            } else if (page === 4) {
+                showPage(5);
+            }
+        }
+
+        function prevPage(page) {
+            showPage(page - 1);
+        }
+
+        function showPage(pageNum) {
+            // Hide all pages
+            document.querySelectorAll('[id^="page"], #results').forEach(page => {
+                page.classList.add('hidden');
+                page.classList.remove('fade-in');
+            });
+            
+            // Show target page
+            const targetPage = document.getElementById(`page${pageNum}`);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+                targetPage.classList.add('fade-in');
+                currentPage = pageNum;
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const progressTexts = {
+                1: 'ข้อมูลพื้นฐาน',
+                2: 'ระดับกิจกรรม', 
+                3: 'เป้าหมาย',
+                4: 'ข้อมูลการแพ้อาหาร',
+                5: 'โรคประจำตัว'
+            };
+            
+            const progressPercent = (currentPage / 5) * 100;
+            
+            document.getElementById('progress-text').textContent = progressTexts[currentPage];
+            document.getElementById('progress-count').textContent = `${currentPage}/5`;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+        }
+
+        // TDEE Calculation
+        async function calculateTDEE() {
+            if (!userData.goal) {
+                alert('กรุณาเลือกเป้าหมาย');
+                return;
+            }
+
+            // Calculate BMR using Mifflin-St Jeor Equation
+            let bmr;
+            if (userData.gender === 'male') {
+                bmr = (10 * userData.weight) + (6.25 * userData.height) - (5 * userData.age) + 5;
+            } else {
+                bmr = (10 * userData.weight) + (6.25 * userData.height) - (5 * userData.age) - 161;
+            }
+
+            // Calculate TDEE
+            const tdee = bmr * userData.activity;
+
+            // Calculate goal calories
+            let goalCalories = tdee;
+            let goalTitle = '';
+            let goalDescription = '';
+
+            switch (userData.goal) {
+                case 'lose':
+                    goalCalories = tdee - 500;
+                    goalTitle = 'แคลอรี่สำหรับลดน้ำหนัก';
+                    goalDescription = 'ลดแคลอรี่ 500 แคล/วัน เพื่อลดน้ำหนัก 0.5 กก./สัปดาห์';
+                    break;
+                case 'maintain':
+                    goalCalories = tdee;
+                    goalTitle = 'แคลอรี่สำหรับรักษาน้ำหนัก';
+                    goalDescription = 'รักษาน้ำหนักปัจจุบัน';
+                    break;
+                case 'gain':
+                    goalCalories = tdee + 500;
+                    goalTitle = 'แคลอรี่สำหรับเพิ่มน้ำหนัก';
+                    goalDescription = 'เพิ่มแคลอรี่ 500 แคล/วัน เพื่อเพิ่มน้ำหนัก 0.5 กก./สัปดาห์';
+                    break;
+                case 'muscle':
+                    goalCalories = tdee + 350;
+                    goalTitle = 'แคลอรี่สำหรับเพิ่มกล้ามเนื้อ';
+                    goalDescription = 'เพิ่มแคลอรี่ 350 แคล/วัน พร้อมโปรตีน 1.6-2.2 กรัม/กก.น้ำหนัก';
+                    break;
+            }
+
+            // Calculate BMI
+            const heightInMeters = userData.height / 100;
+            const bmi = userData.weight / (heightInMeters * heightInMeters);
+            
+            let bmiStatus = '';
+            if (bmi < 18.5) {
+                bmiStatus = 'น้ำหนักน้อย';
+            } else if (bmi < 25) {
+                bmiStatus = 'น้ำหนักปกติ';
+            } else if (bmi < 30) {
+                bmiStatus = 'น้ำหนักเกิน';
+            } else {
+                bmiStatus = 'อ้วน';
+            }
+
+            // Calculate weight difference and weekly rate
+            const weightDifference = userData.targetWeight - userData.weight;
+            const weeklyWeightChange = weightDifference / (userData.timeline * 4.33); // 4.33 weeks per month
+            
+            // Determine if goal is realistic
+            let timelineDescription = '';
+            let weightGoalDescription = '';
+            
+            if (Math.abs(weightDifference) < 0.5) {
+                weightGoalDescription = 'รักษาน้ำหนักปัจจุบัน';
+                timelineDescription = 'เหมาะสำหรับการรักษาน้ำหนัก';
+            } else if (weightDifference > 0) {
+                weightGoalDescription = `เพิ่มน้ำหนัก ${Math.abs(weightDifference).toFixed(1)} กก.`;
+                if (weeklyWeightChange > 0.5) {
+                    timelineDescription = 'เป้าหมายค่อนข้างท้าทาย แนะนำให้เพิ่มระยะเวลา';
+                } else {
+                    timelineDescription = `เพิ่มน้ำหนักประมาณ ${Math.abs(weeklyWeightChange).toFixed(2)} กก./สัปดาห์`;
+                }
+            } else {
+                weightGoalDescription = `ลดน้ำหนัก ${Math.abs(weightDifference).toFixed(1)} กก.`;
+                if (Math.abs(weeklyWeightChange) > 1) {
+                    timelineDescription = 'เป้าหมายค่อนข้างท้าทาย แนะนำให้เพิ่มระยะเวลา';
+                } else {
+                    timelineDescription = `ลดน้ำหนักประมาณ ${Math.abs(weeklyWeightChange).toFixed(2)} กก./สัปดาห์`;
+                }
+            }
+
+            // Prepare data for Supabase
+            const calculationData = {
+                line_user_id: lineUserId || null,
+                full_name: userData.fullName || null, // Use form input, fallback to LINE profile
+                age: userData.age,
+                gender: userData.gender,
+                weight: userData.weight,
+                height: userData.height,
+                target_weight: userData.targetWeight,
+                timeline_months: userData.timeline,
+                activity_level: getActivityLevelText(userData.activity),
+                goal: getGoalText(userData.goal),
+                allergies: getSelectedAllergies(),
+                medical_conditions: getSelectedConditions(),
+                bmr: Math.round(bmr),
+                tdee: Math.round(tdee),
+                goal_calories: Math.round(goalCalories),
+                bmi: parseFloat(bmi.toFixed(1)),
+                bmi_status: bmiStatus,
+                weight_difference: parseFloat(weightDifference.toFixed(1)),
+                weekly_weight_change: parseFloat(weeklyWeightChange.toFixed(2)),
+                created_at: new Date().toISOString()
+            };
+
+            // Get full name from LINE profile if form name is empty
+            try {
+                if (liff && liff.isLoggedIn() && !userData.fullName) {
+                    const profile = await liff.getProfile();
+                    calculationData.full_name = profile.displayName || null;
+                }
+            } catch (error) {
+                console.log("Could not get LINE profile:", error);
+            }
+
+            // Save to Supabase
+            const saveSuccess = await saveToSupabase(calculationData);
+            if (saveSuccess) {
+                console.log("Data saved to Supabase successfully");
+                // Show success notification
+                setTimeout(() => {
+                    alert(`✅ บันทึกข้อมูลเรียบร้อยแล้ว!\n\nข้อมูล TDEE ของคุณถูกบันทึกเรียบร้อยแล้ว\nคุณสามารถกลับมาแก้ไขได้ทุกเมื่อ`);
+                }, 1000);
+            } else {
+                console.log("Failed to save data to Supabase");
+                // Show error notification
+                setTimeout(() => {
+                    alert(`❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล\n\nกรุณาลองใหม่อีกครั้ง หรือติดต่อผู้ดูแลระบบ`);
+                }, 1000);
+            }
+
+            // Display results
+            document.getElementById('bmr-result').textContent = Math.round(bmr).toLocaleString();
+            document.getElementById('tdee-result').textContent = Math.round(tdee).toLocaleString();
+            document.getElementById('goal-calories').textContent = Math.round(goalCalories).toLocaleString();
+            document.getElementById('goal-title').textContent = goalTitle;
+            document.getElementById('goal-description').textContent = goalDescription;
+            document.getElementById('bmi-result').textContent = bmi.toFixed(1);
+            document.getElementById('bmi-status').textContent = bmiStatus;
+            document.getElementById('target-weight-result').textContent = userData.targetWeight.toFixed(1);
+            document.getElementById('weight-goal-description').textContent = weightGoalDescription;
+            document.getElementById('timeline-result').textContent = userData.timeline;
+            document.getElementById('timeline-description').textContent = timelineDescription;
+
+            // Show results page
+            document.querySelectorAll('[id^="page"]').forEach(page => {
+                page.classList.add('hidden');
+            });
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('results').classList.add('fade-in');
+            
+            // Update progress bar to show completion
+            document.getElementById('progress-text').textContent = 'เสร็จสิ้น';
+            document.getElementById('progress-count').textContent = '5/5';
+            document.getElementById('progress-bar').style.width = '100%';
+        }
+
+        function resetCalculator() {
+            userData = {
+                fullName: '',
+                gender: '',
+                age: 0,
+                height: 0,
+                weight: 0,
+                targetWeight: 0,
+                timeline: 0,
+                activity: 0,
+                goal: '',
+                allergies: [],
+                conditions: []
+            };
+            
+            // Reset form inputs
+            document.getElementById('full-name').value = '';
+            document.getElementById('age').value = '';
+            document.getElementById('height').value = '';
+            document.getElementById('weight').value = '';
+            document.getElementById('target-weight').value = '';
+            document.getElementById('timeline').value = '';
+            
+            // Reset button selections
+            document.querySelectorAll('.gender-btn, .activity-btn, .goal-btn').forEach(btn => {
+                btn.classList.remove('border-brown-400', 'bg-brown-50');
+                btn.classList.add('border-brown-200');
+            });
+            
+            // Reset checkboxes
+            document.querySelectorAll('.allergy-checkbox, .condition-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Go back to first page
+            showPage(1);
+        }
+
+        function shareResults() {
+            const bmr = document.getElementById('bmr-result').textContent;
+            const tdee = document.getElementById('tdee-result').textContent;
+            const goalCalories = document.getElementById('goal-calories').textContent;
+            const bmi = document.getElementById('bmi-result').textContent;
+            const bmiStatus = document.getElementById('bmi-status').textContent;
+            
+            const shareText = `🔥 ผลการคำนวณ TDEE ของฉัน\n\n` +
+                            `📊 BMR: ${bmr} แคลอรี่/วัน\n` +
+                            `⚡ TDEE: ${tdee} แคลอรี่/วัน\n` +
+                            `🎯 เป้าหมาย: ${goalCalories} แคลอรี่/วัน\n` +
+                            `📏 BMI: ${bmi} (${bmiStatus})\n\n` +
+                            `คำนวณ TDEE ของคุณได้ที่นี่!`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'ผลการคำนวณ TDEE',
+                    text: shareText
+                });
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('คัดลอกผลลัพธ์แล้ว!');
+                }).catch(() => {
+                    // If clipboard API fails, show the text in an alert
+                    alert(shareText);
+                });
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            updateProgress();
+            
+            // Initialize Supabase
+            initializeSupabase();
+            
+            // Initialize LIFF
+            await initializeLIFF();
+        });
+    </script>
+
+    <a href="https://liff.line.me/2007859046-BpXDWpXe"
+   class="fixed bottom-6 right-6 bg-[#FF3974] text-white 
+          w-14 h-14 flex items-center justify-center 
+          rounded-full shadow-md hover:bg-pink-600 text-3xl z-50 transition">
+   <i class="fi fi-rr-home"></i>
+</a>
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96adcabb649ad036',t:'MTc1NDQ3NTUyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+
+
+
