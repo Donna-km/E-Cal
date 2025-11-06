@@ -157,24 +157,29 @@
 </head>
 <body class="min-h-screen" style="background-color: #FFECD0;">
     <!-- Header -->
-    <header class="custom-brown text-white p-4 sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto flex items-center justify-between">
-           <div class="flex items-center space-x-3">
-  <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-   <i class="fi fi-rr-salad text-white" style="font-size:28px;"></i>
+<header class="glass-effect text-white p-4 sticky top-0 z-50 shadow-lg fade-in rounded-b-2xl">
+  <div class="max-w-6xl mx-auto flex items-center justify-between">
+    
+    <!-- ซ้าย: ไอคอน + หัวข้อ -->
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 bg-white bg-opacity-25 rounded-lg flex items-center justify-center shadow-sm">
+        <i class="fi fi-rr-salad text-white" style="font-size:22px;"></i>
+      </div>
+      <h1 class="text-lg sm:text-xl font-semibold tracking-wide">Food Dashboard</h1>
+    </div>
+
+    <!-- ขวา: รูปโปรไฟล์ + ชื่อ -->
+    <div class="flex items-center space-x-2">
+      <div class="w-8 h-8 rounded-full overflow-hidden bg-white bg-opacity-20 flex items-center justify-center border border-white/30 shadow-inner">
+        <img id="userProfilePic" class="w-full h-full object-cover hidden" alt="Profile">
+        <span class="text-sm" id="userInitial">👤</span>
+      </div>
+      <span class="text-sm font-medium text-white drop-shadow-sm" id="userName">Loading...</span>
+    </div>
+
   </div>
-         
-                <h1 class="text-xl font-semibold">Food Dashboard</h1>
-            </div>
-            <div class="flex items-center space-x-2">
-                <div class="w-8 h-8 rounded-full overflow-hidden bg-white bg-opacity-20 flex items-center justify-center">
-  <img id="userProfilePic" class="w-full h-full object-cover hidden" alt="Profile">
-  <span class="text-sm" id="userInitial">👤</span>
-</div>
-                <span class="text-sm" id="userName">Loading...</span>
-            </div>
-        </div>
-    </header>
+</header>
+
 
     <!-- Loading Screen -->
     <div id="loadingScreen" class="fixed inset-0 flex items-center justify-center z-40" style="background-color: #FFECD0;">
