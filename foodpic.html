@@ -379,13 +379,13 @@ body {
         </div>
 
         <!-- หน้าโหลด -->
-        <!-- ===== E-CAL FOOD: Loading (with Scan Animation) ===== -->
+       <!-- ===== E-CAL FOOD: Loading (with Scan Animation) ===== -->
 <div id="loadingPage" class="hidden flex flex-col items-center justify-center min-h-screen bg-transparent text-center">
 
   <div id="scanAreaFood"
        class="relative mx-auto mb-6 overflow-hidden rounded-2xl shadow-xl border border-[#FF3974]/30"
        style="max-width:320px; aspect-ratio:1/1;">
-       
+
     <!-- 🖼️ รูปอาหารจากผู้ใช้ -->
     <img id="scanImageFood"
          src="https://via.placeholder.com/320x320?text=Analyzing+Food..."
@@ -396,7 +396,9 @@ body {
     <div class="scan-line"></div>
   </div>
 
-  <p class="text-[#FF3974] font-semibold animate-pulse mt-2">กำลังวิเคราะห์อาหารของคุณ...</p>
+  <p class="text-[#FF3974] font-semibold animate-pulse mt-2">
+    กำลังวิเคราะห์อาหารของคุณ... 🍱
+  </p>
 
   <style>
     .scan-line {
@@ -425,29 +427,58 @@ body {
 </div>
 
 <script>
-// ✅ ฟังก์ชันนี้ทำให้แน่ใจว่ารูปจริงของผู้ใช้แสดงแน่นอน
-window.showFoodLoading = function() {
-  const cam = document.getElementById('cameraPage');
-  const lb  = document.getElementById('loadingPage');
-  if (cam) cam.classList.add('hidden');
-  if (lb)  lb.classList.remove('hidden');
+// ✅ ฟังก์ชันนี้แสดงรูปผู้ใช้ในหน้า Loading อย่างเสถียรทุกครั้ง
+window.showFoodLoading = async function (file) {
+  const cam = document.getElementById("cameraPage");
+  const lb = document.getElementById("loadingPage");
+  const img = document.getElementById("scanImageFood");
 
-  // 🖼️ ใส่ภาพจริงของอาหารที่ผู้ใช้อัปโหลด
-  const img = document.getElementById('scanImageFood');
-  const userImage = window.selectedImage || window.__ecalFoodImage || null;
+  if (cam) cam.classList.add("hidden");
+  if (lb) lb.classList.remove("hidden");
 
-  console.log('🧠 แสดงภาพในหน้า Loading:', userImage);
+  const userImage = file || window.__ecalFoodImage || window.selectedImage || null;
+  console.log("🧠 กำลังโหลดภาพ:", userImage);
+
+  await new Promise((r) => setTimeout(r, 300)); // หน่วง DOM ให้พร้อม
 
   if (img) {
     if (userImage instanceof File) {
-      img.src = URL.createObjectURL(userImage);
-    } else if (typeof userImage === 'string') {
+      const blobUrl = URL.createObjectURL(userImage);
+      img.src = blobUrl;
+
+      await new Promise((resolve, reject) => {
+        img.onload = () => {
+          console.log("✅ โหลดรูปสำเร็จ");
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+          resolve();
+        };
+        img.onerror = (err) => {
+          console.warn("❌ โหลดรูปไม่สำเร็จ:", err);
+          img.src = "https://via.placeholder.com/320x320?text=Analyzing+Food...";
+          reject(err);
+        };
+      });
+    } else if (typeof userImage === "string" && userImage.startsWith("http")) {
       img.src = userImage;
     } else {
       img.src = "https://via.placeholder.com/320x320?text=Analyzing+Food...";
     }
   }
 };
+
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("foodInput") || document.getElementById("cameraInput") || document.getElementById("galleryInput");
+  if (!input) return;
+
+  input.addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      window.__ecalFoodImage = file;
+      console.log("📸 ได้รูปจากผู้ใช้:", file.name);
+      await showFoodLoading(file);
+    }
+  });
+});
 </script>
 
                 <p></p>
