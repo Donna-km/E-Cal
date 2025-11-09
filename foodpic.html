@@ -1069,14 +1069,39 @@ analysisResult = window.analysisResult;
   }
 }
 </script>
-    
-       <a href="https://liff.line.me/2007859046-BpXDWpXe"
+    <a id="homeButton" href="https://liff.line.me/2007859046-BpXDWpXe"
    class="fixed bottom-6 right-6 bg-[#FF3974] text-white 
           w-14 h-14 flex items-center justify-center 
           rounded-full shadow-md hover:bg-pink-600 text-3xl z-[99999] transition">
    <i class="fi fi-rr-home text-white"></i>
 </a>
-    
+<script>
+function toggleHomeButton(pageId) {
+  const homeBtn = document.getElementById('homeButton');
+  if (!homeBtn) return;
 
+  // ✅ โชว์เฉพาะหน้าแรกเท่านั้น
+  if (pageId === 'cameraPage') {
+    homeBtn.classList.remove('hidden');
+  } else {
+    homeBtn.classList.add('hidden');
+  }
+}
+
+// ✨ แทรกฟังก์ชันนี้ในทุกครั้งที่เปลี่ยนหน้า
+const originalShowPage = window.showPage;
+window.showPage = function(pageId) {
+  if (typeof originalShowPage === 'function') {
+    originalShowPage(pageId);
+  }
+  toggleHomeButton(pageId);
+};
+
+// เรียกตอนโหลดครั้งแรก
+window.addEventListener('load', () => {
+  toggleHomeButton('cameraPage');
+});
+</script>
+     
 </body>
 </html>
