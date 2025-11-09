@@ -1,0 +1,101 @@
+<!-- ===== E-CAL FOOD: Loading (with Scan Animation) ===== -->
+<div id="loadingPage" class="hidden flex flex-col items-center justify-center min-h-screen bg-transparent text-center">
+
+  <div id="scanAreaFood"
+       class="relative mx-auto mb-6 overflow-hidden rounded-2xl shadow-xl border border-[#FF3974]/30"
+       style="max-width:320px; aspect-ratio:1/1;">
+
+    <!-- 🖼️ รูปอาหารจากผู้ใช้ -->
+    <img id="scanImageFood"
+         src="https://via.placeholder.com/320x320?text=Analyzing+Food..."
+         alt="กำลังวิเคราะห์อาหาร..."
+         class="w-full h-full object-cover rounded-2xl opacity-95 transition-all duration-500 ease-in-out">
+
+    <!-- 🔴 เส้นสแกน -->
+    <div class="scan-line"></div>
+  </div>
+
+  <p class="text-[#FF3974] font-semibold animate-pulse mt-2">
+    กำลังวิเคราะห์อาหารของคุณ... 🍱
+  </p>
+
+  <style>
+    .scan-line {
+      position: absolute;
+      top: -10%;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 57, 116, 0.9) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: scanMove 1.8s linear infinite;
+      border-radius: 6px;
+      box-shadow: 0 0 16px rgba(255, 57, 116, 0.8);
+    }
+
+    @keyframes scanMove {
+      0% { top: -10%; }
+      50% { top: 100%; }
+      100% { top: -10%; }
+    }
+  </style>
+</div>
+
+<script>
+// ✅ ฟังก์ชันนี้แสดงรูปผู้ใช้ในหน้า Loading อย่างเสถียรทุกครั้ง
+window.showFoodLoading = async function (file) {
+  const cam = document.getElementById("cameraPage");
+  const lb = document.getElementById("loadingPage");
+  const img = document.getElementById("scanImageFood");
+
+  if (cam) cam.classList.add("hidden");
+  if (lb) lb.classList.remove("hidden");
+
+  const userImage = file || window.__ecalFoodImage || window.selectedImage || null;
+  console.log("🧠 กำลังโหลดภาพ:", userImage);
+
+  await new Promise((r) => setTimeout(r, 300)); // หน่วง DOM ให้พร้อม
+
+  if (img) {
+    if (userImage instanceof File) {
+      const blobUrl = URL.createObjectURL(userImage);
+      img.src = blobUrl;
+
+      await new Promise((resolve, reject) => {
+        img.onload = () => {
+          console.log("✅ โหลดรูปสำเร็จ");
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+          resolve();
+        };
+        img.onerror = (err) => {
+          console.warn("❌ โหลดรูปไม่สำเร็จ:", err);
+          img.src = "https://via.placeholder.com/320x320?text=Analyzing+Food...";
+          reject(err);
+        };
+      });
+    } else if (typeof userImage === "string" && userImage.startsWith("http")) {
+      img.src = userImage;
+    } else {
+      img.src = "https://via.placeholder.com/320x320?text=Analyzing+Food...";
+    }
+  }
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("foodInput") || document.getElementById("cameraInput") || document.getElementById("galleryInput");
+  if (!input) return;
+
+  input.addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      window.__ecalFoodImage = file;
+      console.log("📸 ได้รูปจากผู้ใช้:", file.name);
+      await showFoodLoading(file);
+    }
+  });
+});
+</script>
