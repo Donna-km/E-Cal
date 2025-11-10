@@ -996,10 +996,14 @@ function closeEditModal(){ var m=document.getElementById('editModal'); if(m) m.c
                   <div style="width:${output.healthy_score * 10}%; background:#FFECD0; height:100%;" 
                        class="transition-all duration-500"></div>
                 </div>
-              </div>
-            ` : ''}
-          </div>`;
-      }
+                 <!-- 📌 Note: ผลนี้คำนวณจากปริมาณ 300g -->
+    <div class="text-[11px] text-[#FFECD0]/70 italic text-center mt-1">
+      *ผลนี้คำนวณจากปริมาณ 300 g (ค่าเฉลี่ย)*
+    </div>
+  </div>
+` : ''}
+</div>`;
+      
 
       // Insert buttons row with Edit + Save + Skip
       var resultPage = document.getElementById('resultPage');
