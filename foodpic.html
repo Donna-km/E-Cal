@@ -700,67 +700,7 @@ function previewImage(event) {
     showToast('No image selected', 'error');
   }
 }
-
-        window.showFoodLoading = async function (file) {
-  const cam = document.getElementById("cameraPage");
-  const lb = document.getElementById("loadingPage");
-  const img = document.getElementById("scanImageFood");
-
-  // 🧩 รอ DOM พร้อมแน่นอน
-  for (let i = 0; i < 5 && !img; i++) {
-    await new Promise(r => setTimeout(r, 200));
-  }
-
-  if (cam) cam.classList.add("hidden");
-  if (lb) lb.classList.remove("hidden");
-
-  const userImage = file || window.__ecalFoodImage || window.selectedImage || null;
-
-  if (!img) {
-    console.warn("❌ ไม่พบ element #scanImageFood");
-    return;
-  }
-
-  // 🧼 เคลียร์ src เพื่อบังคับโหลดใหม่ทุกครั้ง
-  img.src = "";
-  img.removeAttribute("src");
-
-  let loaded = false;
-  const setImage = (src) => {
-    return new Promise((resolve) => {
-      img.onload = () => { loaded = true; resolve(true); };
-      img.onerror = () => { resolve(false); };
-      img.src = src;
-    });
-  };
-
-  // 🧩 เตรียม source
-  let src = "https://via.placeholder.com/320x320?text=Analyzing+Food...";
-  if (userImage instanceof File) {
-    src = URL.createObjectURL(userImage);
-  } else if (typeof userImage === "string" && userImage.length > 5) {
-    src = userImage;
-  }
-
-  // 🔁 พยายามโหลดซ้ำสูงสุด 3 รอบ
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    const success = await setImage(src);
-    await new Promise(r => setTimeout(r, 400));
-    if (success && img.naturalHeight > 0) break;
-  }
-
-  // ❌ ถ้ายังไม่โหลดหลัง 3 รอบ → ใช้ placeholder
-  if (!loaded || img.naturalHeight === 0) {
-    img.src = "https://via.placeholder.com/320x320?text=Analyzing+Food...";
-  }
-
-  // 🔚 ปิด blob URL หลังแสดงเสร็จ
-  if (userImage instanceof File) {
-    setTimeout(() => { try { URL.revokeObjectURL(img.src); } catch (e) {} }, 3000);
-  }
-};
-
-
+        
        async function submitPhoto() {
             if (!selectedImage) {
                 showToast('กรุณาเลือกรูปภาพก่อน', 'error');
