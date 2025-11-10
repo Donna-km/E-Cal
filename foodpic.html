@@ -427,59 +427,88 @@ body {
 </div>
 
 <script>
-// ✅ ฟังก์ชันนี้แสดงรูปผู้ใช้ในหน้า Loading อย่างเสถียรทุกครั้ง
 window.showFoodLoading = async function (file) {
   const cam = document.getElementById("cameraPage");
   const lb = document.getElementById("loadingPage");
   const img = document.getElementById("scanImageFood");
 
+  // 🧩 หน่วงเล็กน้อยให้ DOM render ทัน
+  await new Promise(r => setTimeout(r, 200));
+
+  // 🔹 สลับหน้าจอ
   if (cam) cam.classList.add("hidden");
   if (lb) lb.classList.remove("hidden");
 
   const userImage = file || window.__ecalFoodImage || window.selectedImage || null;
-  console.log("🧠 กำลังโหลดภาพ:", userImage);
+  console.log("🧠 โหลดภาพจาก:", userImage);
 
-  await new Promise((r) => setTimeout(r, 300)); // หน่วง DOM ให้พร้อม
+  if (!img) return;
 
-  if (img) {
-    if (userImage instanceof File) {
-      const blobUrl = URL.createObjectURL(userImage);
-      img.src = blobUrl;
+  // 🧩 เคลียร์ src ก่อนเพื่อบังคับรีโหลดแน่ ๆ
+  img.removeAttribute("src");
+  img.src = "";
 
-      await new Promise((resolve, reject) => {
-        img.onload = () => {
-          console.log("✅ โหลดรูปสำเร็จ");
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-          resolve();
-        };
-        img.onerror = (err) => {
-          console.warn("❌ โหลดรูปไม่สำเร็จ:", err);
-          img.src = "https://via.placeholder.com/320x320?text=Analyzing+Food...";
-          reject(err);
-        };
-      });
-    } else if (typeof userImage === "string" && userImage.startsWith("http")) {
-      img.src = userImage;
-    } else {
-      img.src = "https://via.placeholder.com/320x320?text=Analyzing+Food...";
-    }
+  // 🧠 ถ้าเป็น File → ใช้ blob URL
+  if (userImage instanceof File) {
+    const blobUrl = URL.createObjectURL(userImage);
+    img.src = blobUrl;
+    console.log("📸 Blob URL set:", blobUrl);
+
+    // ✅ ถ้าภาพโหลดสำเร็จ
+    img.onload = () => {
+      console.log("✅ โหลด blob สำเร็จ");
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+    };
+
+    // ⚠️ ถ้าไม่ขึ้นใน 1 วิ → รีเซ็ต src อีกครั้ง
+    setTimeout(() => {
+      if (!img.complete || img.naturalHeight === 0) {
+        console.warn("⚠️ Blob ยังไม่โหลด รีเซ็ต src...");
+        img.src = blobUrl;
+      }
+    }, 1000);
+  }
+
+  // 🧠 ถ้าเป็น string (เช่น base64 หรือ url)
+  else if (typeof userImage === "string" && userImage.length > 5) {
+    img.src = userImage;
+    console.log("🌐 แสดงรูปจาก URL/base64");
+
+    setTimeout(() => {
+      if (!img.complete || img.naturalHeight === 0) {
+        console.warn("⚠️ URL ยังไม่โหลด รีเซ็ตอีกครั้ง...");
+        img.src = userImage;
+      }
+    }, 800);
+  }
+
+  // ❌ ถ้าไม่มีภาพ → ใช้ placeholder
+  else {
+    console.log("🟡 ไม่มีภาพใน memory ใช้ placeholder");
+    img.src = "https://via.placeholder.com/320x320?text=Analyzing+Food...";
   }
 };
 
+// ✅ ฟังก์ชันจัดการเมื่อผู้ใช้เลือกรูป
 document.addEventListener("DOMContentLoaded", () => {
-  const input = document.getElementById("foodInput") || document.getElementById("cameraInput") || document.getElementById("galleryInput");
+  const input =
+    document.getElementById("foodInput") ||
+    document.getElementById("cameraInput") ||
+    document.getElementById("galleryInput");
+
   if (!input) return;
 
   input.addEventListener("change", async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       window.__ecalFoodImage = file;
-      console.log("📸 ได้รูปจากผู้ใช้:", file.name);
+      console.log("📸 ผู้ใช้เลือก:", file.name);
       await showFoodLoading(file);
     }
   });
 });
 </script>
+
 
                 <p></p>
             </div>
