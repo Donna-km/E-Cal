@@ -521,7 +521,7 @@ window.showFoodLoading = async function (file) {
   <!-- ✅ ปุ่มเรียงแนวนอน -->
   <div class="question-section" style="text-align: center; margin: 20px 0; padding: 0 20px;">
     <p class="question-text" style="font-size: 13px; margin-bottom: 16px; color: #cc1e0f; font-weight: 500;">
-      Save this meal to your log?
+      *ผลนี้คำนวณจากปริมาณ 300 g (ค่าเฉลี่ย)*
     </p>
     <div class="button-group" style="display: flex; justify-content: center; gap: 8px;">
       <button class="btn btn-secondary" onclick="openEditModal()">✏️ Edit</button>
@@ -1027,7 +1027,7 @@ function closeEditModal(){ var m=document.getElementById('editModal'); if(m) m.c
         if (existing) existing.remove();
         resultPage.insertAdjacentHTML('beforeend', `
           <div class="question-section">
-            <p class="question-text">Save this meal to your log?</p>
+            <p class="question-text">*ผลนี้คำนวณจากปริมาณ 300 g (ค่าเฉลี่ย)*</p>
             <div class="button-group">
               <button class="btn btn-secondary" onclick="openEditModal()">✏️ Edit</button>
               <button class="btn btn-success" onclick="saveToDatabase()">✅ Save</button>
