@@ -92,6 +92,20 @@ iframe[src*="line.me"],
   opacity: 0 !important;
   pointer-events: none !important;
 }
+/* ===== Hide LINE Profile Box (after login) ===== */
+div[style*="LINE"], 
+#liffProfile, 
+#userProfile, 
+.profile-box, 
+.profile-container, 
+div:has(img[src*='profile.line-scdn.net']) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
 
 </style>
 
