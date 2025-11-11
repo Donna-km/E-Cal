@@ -110,6 +110,51 @@ svg, i {
   color: #FFFFFF !important;
 }
 </style>
+    <style>
+/* ===== ACTIVE BUTTON STYLE FIX (for all selectable buttons) ===== */
+
+/* 🔹 Default (inactive) state */
+.gender-btn, .activity-btn, .goal-btn,
+.allergy-checkbox + span, .condition-checkbox + div,
+button[data-activity], button[data-goal] {
+  background-color: #000000 !important;
+  border: 1px solid #C1272D !important;
+  color: #FFFFFF !important;
+  transition: all 0.25s ease;
+}
+
+/* 🔹 Active (selected) state */
+.gender-btn.border-brown-400, 
+.activity-btn.border-brown-400, 
+.goal-btn.border-brown-400,
+.gender-btn.active,
+.activity-btn.active,
+.goal-btn.active {
+  background-color: #C1272D !important;
+  color: #FFFFFF !important;
+  border-color: #C1272D !important;
+}
+
+/* 🔹 Hover effect (still black base) */
+.gender-btn:hover, .activity-btn:hover, .goal-btn:hover {
+  background-color: #1a1a1a !important;
+  border-color: #C1272D !important;
+  color: #FFFFFF !important;
+}
+
+/* 🔹 Checkbox (Allergies / Conditions) */
+.allergy-checkbox:checked + span,
+.condition-checkbox:checked + div > .font-medium,
+.condition-checkbox:checked + div > .text-sm {
+  color: #FFFFFF !important;
+}
+.allergy-checkbox:checked + span::before,
+.condition-checkbox:checked + div::before {
+  background-color: #C1272D !important;
+  border-color: #C1272D !important;
+}
+</style>
+
 
 </head>
 <body class="min-h-screen font-sans gradient-bg text-white">
