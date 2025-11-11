@@ -492,55 +492,82 @@ function renderCalendar() {
         }
 
         // Chart functions
-        function initializeChart() {
-            const ctx = document.getElementById('calorieChart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'แคลอรี่บริโภค',
-                        data: [],
-                        borderColor: '#FF3974',
-                        backgroundColor: 'rgba(255, 57, 116, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }, {
-                        label: 'เป้าหมาย TDEE',
-                        data: [],
-                        borderColor: '#FFA500',
-                        borderDash: [5, 5],
-                        tension: 0
-                    }]
-                },
-                options: {
-                    responsive: false,
-                    maintainAspectRatio: true,
-                    scales: {
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            min: 0,
-                            max: Math.max(userTDEE + 500, 2500),
-                            grid: {
-                                display: false
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top'
-                        }
-                    },
-                    animation: false
-                }
-            });
-            updateChart();
+function initializeChart() {
+  const ctx = document.getElementById('calorieChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: 'แคลอรี่บริโภค',
+          data: [],
+          borderColor: '#C1272D',        // 🔴 สีแดงหลัก
+          backgroundColor: 'rgba(193, 39, 45, 0.25)',
+          pointBackgroundColor: '#FFFFFF',
+          pointBorderColor: '#C1272D',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          borderWidth: 2,
+          tension: 0.4,                   // เส้นโค้งนุ่ม
+          fill: true
+        },
+        {
+          label: 'เป้าหมาย TDEE',
+          data: [],
+          borderColor: 'rgba(255,255,255,0.4)',
+          borderDash: [6, 6],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          tension: 0
         }
+      ]
+    },
+    options: {
+      responsive: false,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: '#FFFFFF',
+            font: { size: 11, family: 'Inter' },
+            usePointStyle: true
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          titleFont: { size: 11, family: 'Inter' },
+          bodyFont: { size: 11, family: 'Inter' },
+          titleColor: '#FFFFFF',
+          bodyColor: '#FFFFFF',
+          borderColor: '#C1272D',
+          borderWidth: 1
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.1)' },
+          ticks: { color: 'rgba(255,255,255,0.7)', font: { size: 10 } }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.1)' },
+          ticks: {
+            color: 'rgba(255,255,255,0.7)',
+            font: { size: 10 },
+            callback: (v) => v.toFixed(0)
+          }
+        }
+      },
+      layout: {
+        padding: { top: 10, bottom: 10, left: 10, right: 10 }
+      },
+      animation: { duration: 700, easing: 'easeOutQuart' }
+    }
+  });
+
+  updateChart();
+}
 
         function updateChart() {
             // Check if chart exists before trying to update
