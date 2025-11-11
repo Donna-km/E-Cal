@@ -82,6 +82,17 @@ button:hover, .btn:hover, [type="button"]:hover, [type="submit"]:hover, a.button
 #homeButton:hover, .fixed.bottom-6.right-6:hover {
   background-color: #a01f24 !important;
 }
+    /* ===== Hide LIFF Login Frame (Keep Logic Active) ===== */
+iframe[src*="line.me"], 
+#liffLoginFrame, 
+#liffAppContainer, 
+.liff-login-frame {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 </style>
 
 </head>
