@@ -1,0 +1,1589 @@
+<!doctype html>
+<html lang="th">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TDEE Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brown': {
+                            50: '#fdf8f6',
+                            100: '#f2e8e5',
+                            200: '#eaddd7',
+                            300: '#e0cfc5',
+                            400: '#d2bab0',
+                            500: '#bfa094',
+                            600: '#a18072',
+                            700: '#977669',
+                            800: '#846358',
+                            900: '#43302b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+  <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-out {
+            animation: fadeOut 0.3s ease-out;
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="min-h-screen font-sans" style="background-color: #000000;">
+  <div class="container mx-auto px-4 py-8 max-w-2xl"><!-- Header -->
+   <div class="text-center mb-8">
+    <h1 class="text-3xl font-bold text-white mb-2">TDEE Calculator</h1>
+    <p class="text-white opacity-90">คำนวณความต้องการพลังงานรายวันของคุณ</p>
+   </div><!-- Progress Bar -->
+   <div class="mb-8">
+    <div class="flex items-center justify-between mb-2"><span class="text-sm font-medium text-white" id="progress-text">ข้อมูลพื้นฐาน</span> <span class="text-sm font-medium text-white" id="progress-count">1/7</span>
+    </div>
+    <div class="w-full bg-white bg-opacity-30 rounded-full h-2">
+     <div class="h-2 rounded-full transition-all duration-300" id="progress-bar" style="width: 14.3%; background-color: #C1272D;"></div>
+    </div>
+   </div><!-- Page 1: Basic Information -->
+   <div id="page1" class="fade-in">
+    <div class="bg-black rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #C1272D;">
+     <div class="flex items-center mb-6">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3" style="background-color: #C1272D;">
+       <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+       </svg>
+      </div>
+      <h2 class="text-xl font-semibold text-white">ข้อมูลพื้นฐาน</h2>
+     </div>
+     <div class="space-y-6"><!-- Name Input -->
+      <div><label class="block text-sm font-medium mb-2 text-white">ชื่อ-นามสกุล</label> <input type="text" id="full-name" class="w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors text-white bg-black" style="border-color: #C1272D;" placeholder="กรอกชื่อ-นามสกุลของคุณ">
+      </div><!-- Gender Selection -->
+      <div><label class="block text-sm font-medium mb-3 text-white">เพศ</label>
+       <div class="grid grid-cols-2 gap-4"><button type="button" class="gender-btn flex items-center justify-center p-4 border-2 rounded-xl transition-all duration-200" style="border-color: #C1272D;" data-gender="male" onclick="selectGender('male')"> <span class="font-medium text-white">ชาย</span> </button> <button type="button" class="gender-btn flex items-center justify-center p-4 border-2 rounded-xl transition-all duration-200" style="border-color: #C1272D;" data-gender="female" onclick="selectGender('female')"> <span class="font-medium text-white">หญิง</span> </button>
+       </div>
+      </div><!-- Age Input -->
+      <div><label class="block text-sm font-medium mb-2 text-white">อายุ (ปี)</label> <input type="number" id="age" class="w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors text-white bg-black" style="border-color: #C1272D;" placeholder="กรอกอายุของคุณ" min="1" max="120">
+      </div><!-- Height Input -->
+      <div><label class="block text-sm font-medium mb-2 text-white">ส่วนสูง (ซม.)</label> <input type="number" id="height" class="w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors text-white bg-black" style="border-color: #C1272D;" placeholder="กรอกส่วนสูงของคุณ" min="100" max="250">
+      </div><!-- Weight Input -->
+      <div><label class="block text-sm font-medium mb-2 text-white">น้ำหนักปัจจุบัน (กก.)</label> <input type="number" id="weight" class="w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors text-white bg-black" style="border-color: #C1272D;" placeholder="กรอกน้ำหนักปัจจุบันของคุณ" min="30" max="300" step="0.1">
+      </div><!-- Target Weight Input -->
+      <div><label class="block text-sm font-medium mb-2 text-white">น้ำหนักเป้าหมาย (กก.)</label> <input type="number" id="target-weight" class="w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors text-white bg-black" style="border-color: #C1272D;" placeholder="กรอกน้ำหนักที่ต้องการ" min="30" max="300" step="0.1">
+      </div><!-- Timeline Input -->
+      <div><label class="block text-sm font-medium mb-2 text-white">ระยะเวลาที่ต้องการ (เดือน)</label> <input type="number" id="timeline" class="w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors text-white bg-black" style="border-color: #C1272D;" placeholder="กรอกระยะเวลาที่ต้องการ" min="1" max="24">
+      </div>
+     </div>
+     <div class="mt-8"><button type="button" class="w-full text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="background-color: #C1272D;" onclick="nextPage(1)"> ถัดไป </button>
+     </div>
+    </div>
+   </div><!-- Page 2: Activity Level -->
+   <div id="page2" class="hidden">
+    <div class="bg-black rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #C1272D;">
+     <div class="flex items-center mb-6">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3" style="background-color: #C1272D;">
+       <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+       </svg>
+      </div>
+      <h2 class="text-xl font-semibold text-white">ระดับกิจกรรม</h2>
+     </div>
+     <div class="space-y-4"><button type="button" class="activity-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200" style="border-color: #C1272D;" data-activity="1.2" onclick="selectActivity(1.2, this)">
+       <div class="font-medium text-white">
+        นั่งทำงาน ไม่ออกกำลังกาย
+       </div>
+       <div class="text-sm text-gray-300 mt-1">
+        ไม่ออกกำลังกายเลย หรือออกกำลังกายน้อยมาก
+       </div></button> <button type="button" class="activity-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200" style="border-color: #C1272D;" data-activity="1.375" onclick="selectActivity(1.375, this)">
+       <div class="font-medium text-white">
+        ออกกำลังกายเบาๆ
+       </div>
+       <div class="text-sm text-gray-300 mt-1">
+        ออกกำลังกาย 1-3 วัน/สัปดาห์
+       </div></button> <button type="button" class="activity-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200" style="border-color: #C1272D;" data-activity="1.55" onclick="selectActivity(1.55, this)">
+       <div class="font-medium text-white">
+        ออกกำลังกายปานกลาง
+       </div>
+       <div class="text-sm text-gray-300 mt-1">
+        ออกกำลังกาย 3-5 วัน/สัปดาห์
+       </div></button> <button type="button" class="activity-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200" style="border-color: #C1272D;" data-activity="1.725" onclick="selectActivity(1.725, this)">
+       <div class="font-medium text-white">
+        ออกกำลังกายหนัก
+       </div>
+       <div class="text-sm text-gray-300 mt-1">
+        ออกกำลังกาย 6-7 วัน/สัปดาห์
+       </div></button> <button type="button" class="activity-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200" style="border-color: #C1272D;" data-activity="1.9" onclick="selectActivity(1.9, this)">
+       <div class="font-medium text-white">
+        ออกกำลังกายหนักมาก
+       </div>
+       <div class="text-sm text-gray-300 mt-1">
+        ออกกำลังกายหนักทุกวัน หรือ 2 ครั้ง/วัน
+       </div></button>
+     </div>
+     <div class="mt-8 flex gap-4"><button type="button" class="flex-1 border-2 text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="border-color: #C1272D;" onclick="prevPage(2)"> ย้อนกลับ </button> <button type="button" class="flex-1 text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="background-color: #C1272D;" onclick="nextPage(2)"> ถัดไป </button>
+     </div>
+    </div>
+   </div><!-- Page 3: Goal -->
+   <div id="page3" class="hidden">
+    <div class="bg-black rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #C1272D;">
+     <div class="flex items-center mb-6">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3" style="background-color: #C1272D;">
+       <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+       </svg>
+      </div>
+      <h2 class="text-xl font-semibold text-white">เป้าหมาย</h2>
+     </div>
+     <div class="space-y-4"><button type="button" class="goal-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200" style="border-color: #C1272D;" data-goal="lose" onclick="selectGoal('lose', this)">
+       <div class="font-medium text-white">
+        ลดน้ำหนัก
+       </div>
+       <div class="text-sm text-gray-300 mt-1">
+        ลดแคลอรี่ 500 แคล/วัน (ลดน้ำหนัก 0.5 กก./สัปดาห์)
+       </div></button> <button type="button" class="goal-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200" style="border-color: #C1272D;" data-goal="maintain" onclick="selectGoal('maintain', this)">
+       <div class="font-medium text-white">
+        รักษาน้ำหนัก
+       </div>
+       <div class="text-sm text-gray-300 mt-1">
+        รักษาน้ำหนักปัจจุบัน
+       </div></button> <button type="button" class="goal-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200" style="border-color: #C1272D;" data-goal="gain" onclick="selectGoal('gain', this)">
+       <div class="font-medium text-white">
+        เพิ่มน้ำหนัก
+       </div>
+       <div class="text-sm text-gray-300 mt-1">
+        เพิ่มแคลอรี่ 500 แคล/วัน (เพิ่มน้ำหนัก 0.5 กก./สัปดาห์)
+       </div></button> <button type="button" class="goal-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200" style="border-color: #C1272D;" data-goal="muscle" onclick="selectGoal('muscle', this)">
+       <div class="font-medium text-white">
+        เพิ่มกล้ามเนื้อ
+       </div>
+       <div class="text-sm text-gray-300 mt-1">
+        เพิ่มแคลอรี่ 300-400 แคล/วัน พร้อมโปรตีนสูง
+       </div></button>
+     </div>
+     <div class="mt-8 flex gap-4"><button type="button" class="flex-1 border-2 text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="border-color: #C1272D;" onclick="prevPage(3)"> ย้อนกลับ </button> <button type="button" class="flex-1 text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="background-color: #C1272D;" onclick="nextPage(3)"> ถัดไป </button>
+     </div>
+    </div>
+   </div><!-- Page 4: Food Allergies -->
+   <div id="page4" class="hidden">
+    <div class="bg-black rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #C1272D;">
+     <div class="flex items-center mb-6">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3" style="background-color: #C1272D;">
+       <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+       </svg>
+      </div>
+      <h2 class="text-xl font-semibold text-white">ข้อมูลการแพ้อาหาร</h2>
+     </div>
+     <div class="mb-6">
+      <p class="text-sm text-white opacity-90 mb-4">เลือกอาหารที่คุณแพ้ (สามารถเลือกได้หลายรายการ)</p>
+      <div class="grid grid-cols-2 gap-3"><label class="allergy-label flex items-center p-3 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleAllergyStyle(this, 'milk')"> <input type="checkbox" class="allergy-checkbox mr-3 hidden" value="milk" onchange="toggleAllergy('milk')"> <span>นม/ผลิตภัณฑ์นม</span> </label> <label class="allergy-label flex items-center p-3 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleAllergyStyle(this, 'eggs')"> <input type="checkbox" class="allergy-checkbox mr-3 hidden" value="eggs" onchange="toggleAllergy('eggs')"> <span>ไข่</span> </label> <label class="allergy-label flex items-center p-3 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleAllergyStyle(this, 'nuts')"> <input type="checkbox" class="allergy-checkbox mr-3 hidden" value="nuts" onchange="toggleAllergy('nuts')"> <span>ถั่ว/เมล็ดแข็ง</span> </label> <label class="allergy-label flex items-center p-3 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleAllergyStyle(this, 'seafood')"> <input type="checkbox" class="allergy-checkbox mr-3 hidden" value="seafood" onchange="toggleAllergy('seafood')"> <span>อาหารทะเล</span> </label> <label class="allergy-label flex items-center p-3 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleAllergyStyle(this, 'gluten')"> <input type="checkbox" class="allergy-checkbox mr-3 hidden" value="gluten" onchange="toggleAllergy('gluten')"> <span>กลูเตน</span> </label> <label class="allergy-label flex items-center p-3 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleAllergyStyle(this, 'soy')"> <input type="checkbox" class="allergy-checkbox mr-3 hidden" value="soy" onchange="toggleAllergy('soy')"> <span>ถั่วเหลือง</span> </label>
+      </div>
+      <div class="mt-4"><label class="allergy-label flex items-center p-3 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleAllergyStyle(this, 'none')"> <input type="checkbox" class="allergy-checkbox mr-3 hidden" value="none" onchange="toggleAllergy('none')"> <span>ไม่แพ้อาหารใดๆ</span> </label>
+      </div><!-- Other Allergies Input -->
+      <div class="mt-4"><label class="block text-sm font-medium mb-2 text-white">อื่นๆ (ระบุ)</label> <textarea id="other-allergies" class="w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors resize-none text-white bg-black" style="border-color: #C1272D;" rows="3" placeholder="กรอกอาหารที่แพ้อื่นๆ (ถ้ามี)"></textarea>
+      </div>
+     </div>
+     <div class="mt-8 flex gap-4"><button type="button" class="flex-1 border-2 text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="border-color: #C1272D;" onclick="prevPage(4)"> ย้อนกลับ </button> <button type="button" class="flex-1 text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="background-color: #C1272D;" onclick="nextPage(4)"> ถัดไป </button>
+     </div>
+    </div>
+   </div><!-- Page 5: Medical Conditions -->
+   <div id="page5" class="hidden">
+    <div class="bg-black rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #C1272D;">
+     <div class="flex items-center mb-6">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3" style="background-color: #C1272D;">
+       <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+       </svg>
+      </div>
+      <h2 class="text-xl font-semibold text-white">โรคประจำตัว</h2>
+     </div>
+     <div class="mb-6">
+      <p class="text-sm text-white opacity-90 mb-4">เลือกโรคประจำตัวที่คุณมี (สามารถเลือกได้หลายรายการ)</p>
+      <div class="space-y-3"><label class="condition-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleConditionStyle(this, 'diabetes')"> <input type="checkbox" class="condition-checkbox mr-3 hidden" value="diabetes" onchange="toggleCondition('diabetes')">
+        <div>
+         <div class="font-medium">
+          เบาหวาน
+         </div>
+         <div class="text-sm opacity-75">
+          ต้องควบคุมน้ำตาลในเลือด
+         </div>
+        </div></label> <label class="condition-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleConditionStyle(this, 'hypertension')"> <input type="checkbox" class="condition-checkbox mr-3 hidden" value="hypertension" onchange="toggleCondition('hypertension')">
+        <div>
+         <div class="font-medium">
+          ความดันโลหิตสูง
+         </div>
+         <div class="text-sm opacity-75">
+          ต้องจำกัดโซเดียม
+         </div>
+        </div></label> <label class="condition-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleConditionStyle(this, 'heart')"> <input type="checkbox" class="condition-checkbox mr-3 hidden" value="heart" onchange="toggleCondition('heart')">
+        <div>
+         <div class="font-medium">
+          โรคหัวใจ
+         </div>
+         <div class="text-sm opacity-75">
+          ต้องควบคุมไขมันและโซเดียม
+         </div>
+        </div></label> <label class="condition-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleConditionStyle(this, 'kidney')"> <input type="checkbox" class="condition-checkbox mr-3 hidden" value="kidney" onchange="toggleCondition('kidney')">
+        <div>
+         <div class="font-medium">
+          โรคไต
+         </div>
+         <div class="text-sm opacity-75">
+          ต้องจำกัดโปรตีนและโซเดียม
+         </div>
+        </div></label> <label class="condition-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleConditionStyle(this, 'thyroid')"> <input type="checkbox" class="condition-checkbox mr-3 hidden" value="thyroid" onchange="toggleCondition('thyroid')">
+        <div>
+         <div class="font-medium">
+          โรคไทรอยด์
+         </div>
+         <div class="text-sm opacity-75">
+          อาจส่งผลต่อการเผาผลาญ
+         </div>
+        </div></label> <label class="condition-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleConditionStyle(this, 'none')"> <input type="checkbox" class="condition-checkbox mr-3 hidden" value="none" onchange="toggleCondition('none')">
+        <div>
+         <div class="font-medium">
+          ไม่มีโรคประจำตัว
+         </div>
+         <div class="text-sm opacity-75">
+          สุขภาพแข็งแรงดี
+         </div>
+        </div></label>
+      </div><!-- Other Conditions Input -->
+      <div class="mt-4"><label class="block text-sm font-medium mb-2 text-white">โรคประจำตัวอื่นๆ (ระบุ)</label> <textarea id="other-conditions" class="w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors resize-none text-white bg-black" style="border-color: #C1272D;" rows="3" placeholder="กรอกโรคประจำตัวอื่นๆ (ถ้ามี)"></textarea>
+      </div>
+     </div>
+     <div class="mt-8 flex gap-4"><button type="button" class="flex-1 border-2 text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="border-color: #C1272D;" onclick="prevPage(5)"> ย้อนกลับ </button> <button type="button" class="flex-1 text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="background-color: #C1272D;" onclick="nextPage(5)"> ถัดไป </button>
+     </div>
+    </div>
+   </div><!-- Page 6: Diet Preference -->
+   <div id="page6" class="hidden">
+    <div class="bg-black rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #C1272D;">
+     <div class="flex items-center mb-6">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3" style="background-color: #C1272D;">
+       <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+       </svg>
+      </div>
+      <h2 class="text-xl font-semibold text-white">สไตล์อาหารของคุณ</h2>
+     </div>
+     <div class="mb-6">
+      <p class="text-lg text-white mb-2 font-medium">เธอเป็นสายกินแบบไหน เลือกที่ใช่ที่สุดน้าา 😋💕</p>
+      <p class="text-sm text-white opacity-90 mb-4">เลือกได้หลายรายการ</p>
+      <div class="grid grid-cols-1 gap-3"><label class="diet-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleDietStyle(this, 'rice_curry')"> <input type="checkbox" class="diet-checkbox mr-3 hidden" value="rice_curry" onchange="toggleDiet('rice_curry')">
+        <div class="flex items-center"><span class="text-2xl mr-3">🍛</span>
+         <div>
+          <div class="font-medium">
+           สายข้าวแกง / อาหารตามสั่ง
+          </div>
+          <div class="text-sm opacity-75">
+           ข้าวผัด แกงต่างๆ ผัดไทย ส้มตำ
+          </div>
+         </div>
+        </div></label> <label class="diet-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleDietStyle(this, 'clean_eating')"> <input type="checkbox" class="diet-checkbox mr-3 hidden" value="clean_eating" onchange="toggleDiet('clean_eating')">
+        <div class="flex items-center"><span class="text-2xl mr-3">🥗</span>
+         <div>
+          <div class="font-medium">
+           สายคลีน
+          </div>
+          <div class="text-sm opacity-75">
+           สลัด ผักผลไม้ อาหารไม่ปรุงแต่ง
+          </div>
+         </div>
+        </div></label> <label class="diet-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleDietStyle(this, 'sweet_dessert')"> <input type="checkbox" class="diet-checkbox mr-3 hidden" value="sweet_dessert" onchange="toggleDiet('sweet_dessert')">
+        <div class="flex items-center"><span class="text-2xl mr-3">🧁</span>
+         <div>
+          <div class="font-medium">
+           สายหวาน ชานม เค้ก
+          </div>
+          <div class="text-sm opacity-75">
+           ของหวาน เค้ก ชานม ไอศกรีม
+          </div>
+         </div>
+        </div></label> <label class="diet-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleDietStyle(this, 'grilled_hotpot')"> <input type="checkbox" class="diet-checkbox mr-3 hidden" value="grilled_hotpot" onchange="toggleDiet('grilled_hotpot')">
+        <div class="flex items-center"><span class="text-2xl mr-3">🍖</span>
+         <div>
+          <div class="font-medium">
+           สายปิ้งย่าง ชาบู
+          </div>
+          <div class="text-sm opacity-75">
+           หมูย่าง ชาบู บาร์บีคิว หมูกะทะ
+          </div>
+         </div>
+        </div></label> <label class="diet-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleDietStyle(this, 'coffee_lover')"> <input type="checkbox" class="diet-checkbox mr-3 hidden" value="coffee_lover" onchange="toggleDiet('coffee_lover')">
+        <div class="flex items-center"><span class="text-2xl mr-3">☕</span>
+         <div>
+          <div class="font-medium">
+           สายกาแฟ
+          </div>
+          <div class="text-sm opacity-75">
+           กาแฟ เอสเปรสโซ่ ลาเต้ คาปูชิโน่
+          </div>
+         </div>
+        </div></label> <label class="diet-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleDietStyle(this, 'snack_lover')"> <input type="checkbox" class="diet-checkbox mr-3 hidden" value="snack_lover" onchange="toggleDiet('snack_lover')">
+        <div class="flex items-center"><span class="text-2xl mr-3">🍿</span>
+         <div>
+          <div class="font-medium">
+           สาย Snack ชอบกินจุกจิก
+          </div>
+          <div class="text-sm opacity-75">
+           ขนม ถั่ว ผลไม้แห้ง ขนมปัง
+          </div>
+         </div>
+        </div></label> <label class="diet-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleDietStyle(this, 'high_carb')"> <input type="checkbox" class="diet-checkbox mr-3 hidden" value="high_carb" onchange="toggleDiet('high_carb')">
+        <div class="flex items-center"><span class="text-2xl mr-3">🍝</span>
+         <div>
+          <div class="font-medium">
+           สายคาร์บเยอะ
+          </div>
+          <div class="text-sm opacity-75">
+           ข้าว ขนมปัง พาสต้า บะหมี่
+          </div>
+         </div>
+        </div></label> <label class="diet-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleDietStyle(this, 'high_protein')"> <input type="checkbox" class="diet-checkbox mr-3 hidden" value="high_protein" onchange="toggleDiet('high_protein')">
+        <div class="flex items-center"><span class="text-2xl mr-3">🥩</span>
+         <div>
+          <div class="font-medium">
+           สายโปรตีนเยอะ
+          </div>
+          <div class="text-sm opacity-75">
+           เนื้อ ไก่ ปลา ไข่ ถั่ว
+          </div>
+         </div>
+        </div></label>
+      </div>
+     </div>
+     <div class="mt-8 flex gap-4"><button type="button" class="flex-1 border-2 text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="border-color: #C1272D;" onclick="prevPage(6)"> ย้อนกลับ </button> <button type="button" class="flex-1 text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="background-color: #C1272D;" onclick="nextPage(6)"> ถัดไป </button>
+     </div>
+    </div>
+   </div><!-- Page 7: Time Availability -->
+   <div id="page7" class="hidden">
+    <div class="bg-black rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #C1272D;">
+     <div class="flex items-center mb-6">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3" style="background-color: #C1272D;">
+       <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+       </svg>
+      </div>
+      <h2 class="text-xl font-semibold text-white">Time Availability</h2>
+     </div>
+     <div class="mb-6">
+      <p class="text-lg text-white mb-2 font-medium">วันนึงเธอมีเวลาให้ตัวเองประมาณกี่นาที? 💕</p>
+      <p class="text-sm text-white opacity-90 mb-4">เลือกช่วงเวลาที่เหมาะกับไลฟ์สไตล์ของคุณ</p>
+      <div class="space-y-3"><button type="button" class="time-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200 bg-black text-white" style="border-color: #C1272D;" data-time="0-10" onclick="selectTime('0-10', this)">
+        <div class="flex items-center"><span class="text-2xl mr-3">⏰</span>
+         <div>
+          <div class="font-medium">
+           0–10 นาที (ยุ่งมาก)
+          </div>
+          <div class="text-sm opacity-75">
+           เหมาะกับการยืดเหยียดเบาๆ หรือเดินสั้นๆ
+          </div>
+         </div>
+        </div></button> <button type="button" class="time-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200 bg-black text-white" style="border-color: #C1272D;" data-time="10-20" onclick="selectTime('10-20', this)">
+        <div class="flex items-center"><span class="text-2xl mr-3">⏱️</span>
+         <div>
+          <div class="font-medium">
+           10–20 นาที (พอมีเวลา)
+          </div>
+          <div class="text-sm opacity-75">
+           เหมาะกับ HIIT สั้นๆ หรือโยคะเบื้องต้น
+          </div>
+         </div>
+        </div></button> <button type="button" class="time-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200 bg-black text-white" style="border-color: #C1272D;" data-time="20-30" onclick="selectTime('20-30', this)">
+        <div class="flex items-center"><span class="text-2xl mr-3">🕐</span>
+         <div>
+          <div class="font-medium">
+           20–30 นาที
+          </div>
+          <div class="text-sm opacity-75">
+           เหมาะกับการออกกำลังกายแบบครบรอบ
+          </div>
+         </div>
+        </div></button> <button type="button" class="time-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200 bg-black text-white" style="border-color: #C1272D;" data-time="30-45" onclick="selectTime('30-45', this)">
+        <div class="flex items-center"><span class="text-2xl mr-3">🕕</span>
+         <div>
+          <div class="font-medium">
+           30–45 นาที
+          </div>
+          <div class="text-sm opacity-75">
+           เหมาะกับการออกกำลังกายแบบเข้มข้น
+          </div>
+         </div>
+        </div></button> <button type="button" class="time-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200 bg-black text-white" style="border-color: #C1272D;" data-time="45-60" onclick="selectTime('45-60', this)">
+        <div class="flex items-center"><span class="text-2xl mr-3">🕘</span>
+         <div>
+          <div class="font-medium">
+           45–60 นาที
+          </div>
+          <div class="text-sm opacity-75">
+           เหมาะกับการออกกำลังกายแบบเต็มรูปแบบ
+          </div>
+         </div>
+        </div></button> <button type="button" class="time-btn w-full text-left p-4 border-2 rounded-xl transition-all duration-200 bg-black text-white" style="border-color: #C1272D;" data-time="60+" onclick="selectTime('60+', this)">
+        <div class="flex items-center"><span class="text-2xl mr-3">🔥</span>
+         <div>
+          <div class="font-medium">
+           60+ นาที (สายฟิตของจริง 🔥)
+          </div>
+          <div class="text-sm opacity-75">
+           เหมาะกับการออกกำลังกายแบบมืออาชีพ
+          </div>
+         </div>
+        </div></button>
+      </div>
+     </div>
+     <div class="mt-8 flex gap-4"><button type="button" class="flex-1 border-2 text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="border-color: #C1272D;" onclick="prevPage(7)"> ย้อนกลับ </button> <button type="button" class="flex-1 text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="background-color: #C1272D;" onclick="nextPage(7)"> ถัดไป </button>
+     </div>
+    </div>
+   </div><!-- Page 8: Workout Preference -->
+   <div id="page8" class="hidden">
+    <div class="bg-black rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #C1272D;">
+     <div class="flex items-center mb-6">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3" style="background-color: #C1272D;">
+       <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+       </svg>
+      </div>
+      <h2 class="text-xl font-semibold text-white">สไตล์ออกกำลังกาย</h2>
+     </div>
+     <div class="mb-6">
+      <p class="text-lg text-white mb-2 font-medium">เธอชอบออกกำลังกายแนวไหน 💪🔥</p>
+      <p class="text-sm text-white opacity-90 mb-4">เลือกได้หลายรายการ</p>
+      <div class="space-y-3"><label class="workout-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleWorkoutStyle(this, 'cardio_dance')"> <input type="checkbox" class="workout-checkbox mr-3 hidden" value="cardio_dance" onchange="toggleWorkout('cardio_dance')">
+        <div class="flex items-center"><span class="text-2xl mr-3">💃</span>
+         <div>
+          <div class="font-medium">
+           Cardio / เต้น
+          </div>
+          <div class="text-sm opacity-75">
+           เต้นแอโรบิค ซุมบ้า เต้นตามเพลง
+          </div>
+         </div>
+        </div></label> <label class="workout-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleWorkoutStyle(this, 'yoga_pilates')"> <input type="checkbox" class="workout-checkbox mr-3 hidden" value="yoga_pilates" onchange="toggleWorkout('yoga_pilates')">
+        <div class="flex items-center"><span class="text-2xl mr-3">🧘‍♀️</span>
+         <div>
+          <div class="font-medium">
+           โยคะ / Pilates / ยืดเหยียด
+          </div>
+          <div class="text-sm opacity-75">
+           โยคะ พิลาทิส ยืดกล้ามเนื้อ
+          </div>
+         </div>
+        </div></label> <label class="workout-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleWorkoutStyle(this, 'walking_running')"> <input type="checkbox" class="workout-checkbox mr-3 hidden" value="walking_running" onchange="toggleWorkout('walking_running')">
+        <div class="flex items-center"><span class="text-2xl mr-3">🏃‍♀️</span>
+         <div>
+          <div class="font-medium">
+           เดินเร็ว / วิ่ง
+          </div>
+          <div class="text-sm opacity-75">
+           เดินเร็ว จ๊อกกิ้ง วิ่งมาราธอน
+          </div>
+         </div>
+        </div></label> <label class="workout-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleWorkoutStyle(this, 'hiit')"> <input type="checkbox" class="workout-checkbox mr-3 hidden" value="hiit" onchange="toggleWorkout('hiit')">
+        <div class="flex items-center"><span class="text-2xl mr-3">⚡</span>
+         <div>
+          <div class="font-medium">
+           HIIT
+          </div>
+          <div class="text-sm opacity-75">
+           High Intensity Interval Training
+          </div>
+         </div>
+        </div></label> <label class="workout-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleWorkoutStyle(this, 'weight_training')"> <input type="checkbox" class="workout-checkbox mr-3 hidden" value="weight_training" onchange="toggleWorkout('weight_training')">
+        <div class="flex items-center"><span class="text-2xl mr-3">🏋️‍♀️</span>
+         <div>
+          <div class="font-medium">
+           Weight training
+          </div>
+          <div class="text-sm opacity-75">
+           ยกน้ำหนัก เล่นเครื่องออกกำลังกาย
+          </div>
+         </div>
+        </div></label> <label class="workout-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleWorkoutStyle(this, 'trekking')"> <input type="checkbox" class="workout-checkbox mr-3 hidden" value="trekking" onchange="toggleWorkout('trekking')">
+        <div class="flex items-center"><span class="text-2xl mr-3">🥾</span>
+         <div>
+          <div class="font-medium">
+           เดินป่า (Trekking)
+          </div>
+          <div class="text-sm opacity-75">
+           เดินป่า ปีนเขา เดินธรรมชาติ
+          </div>
+         </div>
+        </div></label> <label class="workout-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleWorkoutStyle(this, 'cycling')"> <input type="checkbox" class="workout-checkbox mr-3 hidden" value="cycling" onchange="toggleWorkout('cycling')">
+        <div class="flex items-center"><span class="text-2xl mr-3">🚴‍♀️</span>
+         <div>
+          <div class="font-medium">
+           ปั่นจักรยาน
+          </div>
+          <div class="text-sm opacity-75">
+           ปั่นจักรยาน ปั่นในร่ม ปั่นกลางแจ้ง
+          </div>
+         </div>
+        </div></label> <label class="workout-label flex items-center p-4 border-2 rounded-xl transition-all duration-200 cursor-pointer bg-black text-white" style="border-color: #C1272D;" onclick="toggleWorkoutStyle(this, 'light_exercise')"> <input type="checkbox" class="workout-checkbox mr-3 hidden" value="light_exercise" onchange="toggleWorkout('light_exercise')">
+        <div class="flex items-center"><span class="text-2xl mr-3">🚶‍♀️</span>
+         <div>
+          <div class="font-medium">
+           ไม่ค่อยชอบออกกำลังกาย เริ่มเบา ๆ ก่อนนะ
+          </div>
+          <div class="text-sm opacity-75">
+           เดินเบา ๆ ยืดเหยียดง่าย ๆ
+          </div>
+         </div>
+        </div></label>
+      </div>
+     </div>
+     <div class="mt-8 flex gap-4"><button type="button" class="flex-1 border-2 text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="border-color: #C1272D;" onclick="prevPage(8)"> ย้อนกลับ </button> <button type="button" class="flex-1 text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="background-color: #C1272D;" onclick="calculateTDEE()"> คำนวณ </button>
+     </div>
+    </div>
+   </div><!-- Results Page -->
+   <div id="results" class="hidden">
+    <div class="bg-black rounded-2xl shadow-lg p-8 mb-6" style="border: 2px solid #C1272D;">
+     <div class="text-center mb-8">
+      <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style="background-color: #C1272D;">
+       <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+       </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-white mb-2">ผลการคำนวณ</h2>
+      <p class="text-white opacity-90">ความต้องการพลังงานรายวันของคุณ</p>
+     </div>
+     <div class="space-y-6"><!-- BMR -->
+      <div class="bg-gray-900 rounded-xl p-6" style="border: 1px solid #C1272D;">
+       <div class="flex items-center justify-between">
+        <div>
+         <h3 class="font-semibold text-white">BMR (อัตราการเผาผลาญพื้นฐาน)</h3>
+         <p class="text-sm text-white opacity-75 mt-1">พลังงานที่ร่างกายต้องการในการดำรงชีวิต</p>
+        </div>
+        <div class="text-right">
+         <div class="text-2xl font-bold text-white" id="bmr-result">
+          -
+         </div>
+         <div class="text-sm text-white opacity-75">
+          แคลอรี่/วัน
+         </div>
+        </div>
+       </div>
+      </div><!-- TDEE -->
+      <div class="bg-gray-900 rounded-xl p-6" style="border: 1px solid #C1272D;">
+       <div class="flex items-center justify-between">
+        <div>
+         <h3 class="font-semibold text-white">TDEE (ความต้องการพลังงานรวม)</h3>
+         <p class="text-sm text-white opacity-75 mt-1">พลังงานที่ต้องการรวมกิจกรรมต่างๆ</p>
+        </div>
+        <div class="text-right">
+         <div class="text-2xl font-bold text-white" id="tdee-result">
+          -
+         </div>
+         <div class="text-sm text-white opacity-75">
+          แคลอรี่/วัน
+         </div>
+        </div>
+       </div>
+      </div><!-- Goal Calories -->
+      <div class="rounded-xl p-6" style="background-color: #C1272D; border: 1px solid #C1272D;">
+       <div class="flex items-center justify-between">
+        <div>
+         <h3 class="font-semibold text-white" id="goal-title">แคลอรี่สำหรับเป้าหมาย</h3>
+         <p class="text-sm text-white opacity-90 mt-1" id="goal-description">-</p>
+        </div>
+        <div class="text-right">
+         <div class="text-2xl font-bold text-white" id="goal-calories">
+          -
+         </div>
+         <div class="text-sm text-white opacity-90">
+          แคลอรี่/วัน
+         </div>
+        </div>
+       </div>
+      </div><!-- BMI -->
+      <div class="bg-gray-900 rounded-xl p-6" style="border: 1px solid #C1272D;">
+       <div class="flex items-center justify-between">
+        <div>
+         <h3 class="font-semibold text-white">BMI (ดัชนีมวลกาย)</h3>
+         <p class="text-sm text-white opacity-75 mt-1" id="bmi-status">-</p>
+        </div>
+        <div class="text-right">
+         <div class="text-2xl font-bold text-white" id="bmi-result">
+          -
+         </div>
+         <div class="text-sm text-white opacity-75">
+          kg/m²
+         </div>
+        </div>
+       </div>
+      </div><!-- Weight Goal Info -->
+      <div class="bg-gray-900 rounded-xl p-6" style="border: 1px solid #C1272D;">
+       <div class="flex items-center justify-between">
+        <div>
+         <h3 class="font-semibold text-white">เป้าหมายน้ำหนัก</h3>
+         <p class="text-sm text-white opacity-75 mt-1" id="weight-goal-description">-</p>
+        </div>
+        <div class="text-right">
+         <div class="text-2xl font-bold text-white" id="target-weight-result">
+          -
+         </div>
+         <div class="text-sm text-white opacity-75">
+          กก.
+         </div>
+        </div>
+       </div>
+      </div><!-- Timeline Info -->
+      <div class="bg-gray-900 rounded-xl p-6" style="border: 1px solid #C1272D;">
+       <div class="flex items-center justify-between">
+        <div>
+         <h3 class="font-semibold text-white">ระยะเวลา</h3>
+         <p class="text-sm text-white opacity-75 mt-1" id="timeline-description">-</p>
+        </div>
+        <div class="text-right">
+         <div class="text-2xl font-bold text-white" id="timeline-result">
+          -
+         </div>
+         <div class="text-sm text-white opacity-75">
+          เดือน
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="mt-8"><button type="button" class="w-full text-white py-3 px-6 rounded-xl font-medium transition-colors duration-200" style="background-color: #C1272D;" onmouseover="this.style.backgroundColor='#A01E24'" onmouseout="this.style.backgroundColor='#C1272D'" onclick="resetCalculator()"> คำนวณใหม่ </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+        // Global variables
+        let currentPage = 1;
+        let userData = {
+            fullName: '',
+            gender: '',
+            age: 0,
+            height: 0,
+            weight: 0,
+            targetWeight: 0,
+            timeline: 0,
+            activity: 0,
+            goal: '',
+            allergies: [],
+            conditions: [],
+            dietPreferences: [],
+            timeAvailability: '',
+            workoutPreferences: [],
+            otherAllergies: '',
+            otherConditions: ''
+        };
+
+        // LIFF and Supabase configuration
+        let lineUserId = null;
+        let supabaseClient = null;
+        let existingRecordId = null; // Track existing record for updates
+
+        // Initialize LIFF
+        async function initializeLIFF() {
+            try {
+                await liff.init({ liffId: "2007859046-AM0LQo0g" }); // Replace with your actual LIFF ID
+
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+
+                const profile = await liff.getProfile();
+                lineUserId = profile.userId;
+                console.log("LINE user ID:", lineUserId);
+                
+                // Auto-fill name field with LINE display name
+                if (profile.displayName) {
+                    const nameInput = document.getElementById('full-name');
+                    nameInput.value = profile.displayName;
+                    userData.fullName = profile.displayName;
+                }
+
+                // Check for existing data
+                await checkForExistingData();
+            } catch (error) {
+                console.error("LIFF initialization failed:", error);
+                // Continue without LINE integration
+            }
+        }
+
+        // Check if user has existing data
+        async function checkForExistingData() {
+            if (!supabaseClient || !lineUserId) {
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('tdee_form')
+                    .select('*')
+                    .eq('line_user_id', lineUserId)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+
+                if (error) {
+                    console.error("Error checking existing data:", error);
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    showExistingDataDialog(data[0]);
+                }
+            } catch (error) {
+                console.error("Error checking existing data:", error);
+            }
+        }
+
+        // Show dialog for existing data
+        function showExistingDataDialog(existingData) {
+            const userName = existingData.full_name || 'คุณ';
+            const lastUpdate = new Date(existingData.created_at).toLocaleDateString('th-TH');
+            
+            const confirmed = confirm(
+                `สวัสดี ${userName}!\n\n` +
+                `เราพบว่าคุณเคยบันทึกข้อมูล TDEE ไว้แล้วเมื่อวันที่ ${lastUpdate}\n\n` +
+                `คุณต้องการ:\n` +
+                `✅ กด "ตกลง" เพื่อแก้ไขข้อมูลเดิม\n` +
+                `❌ กด "ยกเลิก" เพื่อเริ่มใหม่`
+            );
+
+            if (confirmed) {
+                existingRecordId = existingData.id; // Store the record ID for updates
+                loadExistingData(existingData);
+            }
+        }
+
+        // Load existing data into form
+        function loadExistingData(existingData) {
+            console.log("Loading existing data:", existingData);
+            
+            // Load data into userData object
+            userData.fullName = existingData.full_name || '';
+            userData.gender = existingData.gender || '';
+            userData.age = existingData.age || 0;
+            userData.height = existingData.height || 0;
+            userData.weight = existingData.weight || 0;
+            userData.targetWeight = existingData.target_weight || 0;
+            userData.timeline = existingData.timeline_months || 0;
+            userData.allergies = Array.isArray(existingData.allergies) ? existingData.allergies : [];
+            userData.conditions = Array.isArray(existingData.medical_conditions) ? existingData.medical_conditions : [];
+            userData.dietPreferences = Array.isArray(existingData.diet_preferences) ? existingData.diet_preferences : [];
+            userData.timeAvailability = existingData.time_availability || '';
+            userData.workoutPreferences = Array.isArray(existingData.workout_preferences) ? existingData.workout_preferences : [];
+            userData.otherAllergies = existingData.other_allergies || '';
+            userData.otherConditions = existingData.other_conditions || '';
+
+            // Wait for DOM to be ready, then fill form inputs
+            setTimeout(() => {
+                // Fill basic form inputs
+                const fullNameInput = document.getElementById('full-name');
+                const ageInput = document.getElementById('age');
+                const heightInput = document.getElementById('height');
+                const weightInput = document.getElementById('weight');
+                const targetWeightInput = document.getElementById('target-weight');
+                const timelineInput = document.getElementById('timeline');
+                
+                if (fullNameInput) fullNameInput.value = userData.fullName;
+                if (ageInput) ageInput.value = userData.age || '';
+                if (heightInput) heightInput.value = userData.height || '';
+                if (weightInput) weightInput.value = userData.weight || '';
+                if (targetWeightInput) targetWeightInput.value = userData.targetWeight || '';
+                if (timelineInput) timelineInput.value = userData.timeline || '';
+
+                // Set gender selection
+                if (userData.gender) {
+                    selectGender(userData.gender);
+                }
+
+                // Set activity level based on text
+                const activityMap = {
+                    'นั่งทำงาน ไม่ออกกำลังกาย': 1.2,
+                    'ออกกำลังกายเบาๆ': 1.375,
+                    'ออกกำลังกายปานกลาง': 1.55,
+                    'ออกกำลังกายหนัก': 1.725,
+                    'ออกกำลังกายหนักมาก': 1.9
+                };
+                if (existingData.activity_level && activityMap[existingData.activity_level]) {
+                    userData.activity = activityMap[existingData.activity_level];
+                }
+
+                // Set goal based on text
+                const goalMap = {
+                    'ลดน้ำหนัก': 'lose',
+                    'รักษาน้ำหนัก': 'maintain',
+                    'เพิ่มน้ำหนัก': 'gain',
+                    'เพิ่มกล้ามเนื้อ': 'muscle'
+                };
+                if (existingData.goal && goalMap[existingData.goal]) {
+                    userData.goal = goalMap[existingData.goal];
+                }
+
+                // Set allergies checkboxes
+                if (userData.allergies && userData.allergies.length > 0) {
+                    userData.allergies.forEach(allergy => {
+                        const checkbox = document.querySelector(`.allergy-checkbox[value="${allergy}"]`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+                    });
+                }
+
+                // Set conditions checkboxes
+                if (userData.conditions && userData.conditions.length > 0) {
+                    userData.conditions.forEach(condition => {
+                        const checkbox = document.querySelector(`.condition-checkbox[value="${condition}"]`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+                    });
+                }
+
+                // Set diet preferences checkboxes
+                if (userData.dietPreferences && userData.dietPreferences.length > 0) {
+                    userData.dietPreferences.forEach(diet => {
+                        const checkbox = document.querySelector(`.diet-checkbox[value="${diet}"]`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+                    });
+                }
+
+                // Set workout preferences checkboxes
+                if (userData.workoutPreferences && userData.workoutPreferences.length > 0) {
+                    userData.workoutPreferences.forEach(workout => {
+                        const checkbox = document.querySelector(`.workout-checkbox[value="${workout}"]`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+                    });
+                }
+
+                // Set other allergies and conditions text
+                const otherAllergiesInput = document.getElementById('other-allergies');
+                const otherConditionsInput = document.getElementById('other-conditions');
+                
+                if (otherAllergiesInput) otherAllergiesInput.value = userData.otherAllergies;
+                if (otherConditionsInput) otherConditionsInput.value = userData.otherConditions;
+
+                console.log("Form data loaded successfully");
+            }, 200);
+
+            // Set button selections with longer delay to ensure DOM is ready
+            setTimeout(() => {
+                // Highlight activity button
+                if (userData.activity) {
+                    const activityBtn = document.querySelector(`[data-activity="${userData.activity}"]`);
+                    if (activityBtn) {
+                        selectActivity(userData.activity, activityBtn);
+                    }
+                }
+
+                // Highlight goal button
+                if (userData.goal) {
+                    const goalBtn = document.querySelector(`[data-goal="${userData.goal}"]`);
+                    if (goalBtn) {
+                        selectGoal(userData.goal, goalBtn);
+                    }
+                }
+
+                // Highlight time availability button
+                if (userData.timeAvailability) {
+                    const timeBtn = document.querySelector(`[data-time="${userData.timeAvailability}"]`);
+                    if (timeBtn) {
+                        selectTime(userData.timeAvailability, timeBtn);
+                    }
+                }
+            }, 500);
+
+            // Show notification that data was loaded
+            setTimeout(() => {
+                alert(`✅ โหลดข้อมูลเดิมของคุณเรียบร้อยแล้ว!\n\nคุณสามารถแก้ไขข้อมูลและคำนวณใหม่ได้`);
+            }, 800);
+        }
+
+        // Initialize Supabase
+        function initializeSupabase() {
+            try {
+                // Replace with your actual Supabase URL and anon key
+                const SUPABASE_URL = 'https://lvtdqeerzxpznnayccmb.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM';
+                
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log("Supabase initialized successfully");
+            } catch (error) {
+                console.error("Supabase initialization failed:", error);
+            }
+        }
+
+        // Save data to Supabase
+        async function saveToSupabase(calculationData) {
+            if (!supabaseClient) {
+                console.error("Supabase client not initialized - Please set your Supabase URL and API key");
+                return false;
+            }
+
+            try {
+                console.log("Attempting to save data:", calculationData);
+                
+                let result;
+                
+                if (existingRecordId) {
+                    // Update existing record
+                    console.log("Updating existing record with ID:", existingRecordId);
+                    
+                    // Remove created_at from update data since it shouldn't be updated
+                    const updateData = { ...calculationData };
+                    delete updateData.created_at;
+                    // Don't add updated_at since the column doesn't exist in the table
+                    
+                    result = await supabaseClient
+                        .from('tdee_form')
+                        .update(updateData)
+                        .eq('id', existingRecordId);
+                } else {
+                    // Insert new record
+                    console.log("Inserting new record");
+                    result = await supabaseClient
+                        .from('tdee_form')
+                        .insert([calculationData]);
+                }
+
+                const { data, error } = result;
+
+                if (error) {
+                    console.error("Error saving to Supabase:", error);
+                    console.error("Error details:", error.message);
+                    
+                    // Show user-friendly error message
+                    if (error.message.includes('relation "tdee_form" does not exist')) {
+                        console.error("Table 'tdee_form' not found. Please create the table first.");
+                        alert("ระบบฐานข้อมูลยังไม่พร้อม กรุณาติดต่อผู้ดูแลระบบ");
+                    } else {
+                        alert(`เกิดข้อผิดพลาด: ${error.message}`);
+                    }
+                    return false;
+                }
+
+                console.log("Data saved successfully to tdee_form table:", data);
+                return true;
+            } catch (error) {
+                console.error("Error saving to Supabase:", error);
+                alert(`เกิดข้อผิดพลาดในการบันทึก: ${error.message}`);
+                return false;
+            }
+        }
+
+        // Gender selection
+        function selectGender(gender) {
+            userData.gender = gender;
+            document.querySelectorAll('.gender-btn').forEach(btn => {
+                btn.style.backgroundColor = 'black';
+                btn.style.borderColor = '#C1272D';
+                btn.querySelector('span').style.color = 'white';
+            });
+            const selectedBtn = document.querySelector(`[data-gender="${gender}"]`);
+            selectedBtn.style.backgroundColor = '#C1272D';
+            selectedBtn.querySelector('span').style.color = 'white';
+        }
+
+        // Activity selection
+        function selectActivity(activity, element) {
+            userData.activity = activity;
+            document.querySelectorAll('.activity-btn').forEach(btn => {
+                btn.style.backgroundColor = 'black';
+                btn.style.borderColor = '#C1272D';
+                btn.style.color = 'white';
+            });
+            element.style.backgroundColor = '#C1272D';
+            element.style.borderColor = '#C1272D';
+            element.style.color = 'white';
+        }
+
+        // Goal selection
+        function selectGoal(goal, element) {
+            userData.goal = goal;
+            document.querySelectorAll('.goal-btn').forEach(btn => {
+                btn.style.backgroundColor = 'black';
+                btn.style.borderColor = '#C1272D';
+                btn.style.color = 'white';
+            });
+            element.style.backgroundColor = '#C1272D';
+            element.style.borderColor = '#C1272D';
+            element.style.color = 'white';
+        }
+
+        // Allergy selection
+        function toggleAllergy(allergy) {
+            if (allergy === 'none') {
+                // If "none" is selected, clear all other allergies
+                userData.allergies = ['none'];
+                document.querySelectorAll('.allergy-checkbox').forEach(checkbox => {
+                    checkbox.checked = checkbox.value === 'none';
+                });
+            } else {
+                // Remove "none" if other allergies are selected
+                const noneIndex = userData.allergies.indexOf('none');
+                if (noneIndex > -1) {
+                    userData.allergies.splice(noneIndex, 1);
+                    document.querySelector('.allergy-checkbox[value="none"]').checked = false;
+                }
+                
+                // Toggle the selected allergy
+                const index = userData.allergies.indexOf(allergy);
+                if (index > -1) {
+                    userData.allergies.splice(index, 1);
+                } else {
+                    userData.allergies.push(allergy);
+                }
+            }
+        }
+
+        // Condition selection
+        function toggleCondition(condition) {
+            if (condition === 'none') {
+                // If "none" is selected, clear all other conditions
+                userData.conditions = ['none'];
+                document.querySelectorAll('.condition-checkbox').forEach(checkbox => {
+                    checkbox.checked = checkbox.value === 'none';
+                });
+            } else {
+                // Remove "none" if other conditions are selected
+                const noneIndex = userData.conditions.indexOf('none');
+                if (noneIndex > -1) {
+                    userData.conditions.splice(noneIndex, 1);
+                    document.querySelector('.condition-checkbox[value="none"]').checked = false;
+                }
+                
+                // Toggle the selected condition
+                const index = userData.conditions.indexOf(condition);
+                if (index > -1) {
+                    userData.conditions.splice(index, 1);
+                } else {
+                    userData.conditions.push(condition);
+                }
+            }
+        }
+
+        // Diet preference selection
+        function toggleDiet(diet) {
+            const index = userData.dietPreferences.indexOf(diet);
+            if (index > -1) {
+                userData.dietPreferences.splice(index, 1);
+            } else {
+                userData.dietPreferences.push(diet);
+            }
+        }
+
+        // Time availability selection
+        function selectTime(time, element) {
+            userData.timeAvailability = time;
+            document.querySelectorAll('.time-btn').forEach(btn => {
+                btn.style.backgroundColor = 'black';
+                btn.style.borderColor = '#C1272D';
+                btn.style.color = 'white';
+            });
+            element.style.backgroundColor = '#C1272D';
+            element.style.borderColor = '#C1272D';
+            element.style.color = 'white';
+        }
+
+        // Style toggle functions for new pages
+        function toggleAllergyStyle(element, allergy) {
+            const checkbox = element.querySelector('.allergy-checkbox');
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                element.style.backgroundColor = '#C1272D';
+                element.style.borderColor = '#C1272D';
+                element.style.color = 'white';
+            } else {
+                element.style.backgroundColor = 'black';
+                element.style.borderColor = '#C1272D';
+                element.style.color = 'white';
+            }
+            
+            toggleAllergy(allergy);
+        }
+
+        function toggleConditionStyle(element, condition) {
+            const checkbox = element.querySelector('.condition-checkbox');
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                element.style.backgroundColor = '#C1272D';
+                element.style.borderColor = '#C1272D';
+                element.style.color = 'white';
+            } else {
+                element.style.backgroundColor = 'black';
+                element.style.borderColor = '#C1272D';
+                element.style.color = 'white';
+            }
+            
+            toggleCondition(condition);
+        }
+
+        function toggleDietStyle(element, diet) {
+            const checkbox = element.querySelector('.diet-checkbox');
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                element.style.backgroundColor = '#C1272D';
+                element.style.borderColor = '#C1272D';
+                element.style.color = 'white';
+            } else {
+                element.style.backgroundColor = 'black';
+                element.style.borderColor = '#C1272D';
+                element.style.color = 'white';
+            }
+            
+            toggleDiet(diet);
+        }
+
+        function toggleWorkoutStyle(element, workout) {
+            const checkbox = element.querySelector('.workout-checkbox');
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                element.style.backgroundColor = '#C1272D';
+                element.style.borderColor = '#C1272D';
+                element.style.color = 'white';
+            } else {
+                element.style.backgroundColor = 'black';
+                element.style.borderColor = '#C1272D';
+                element.style.color = 'white';
+            }
+            
+            toggleWorkout(workout);
+        }
+
+        // Workout preference selection
+        function toggleWorkout(workout) {
+            const index = userData.workoutPreferences.indexOf(workout);
+            if (index > -1) {
+                userData.workoutPreferences.splice(index, 1);
+            } else {
+                userData.workoutPreferences.push(workout);
+            }
+        }
+
+        // Helper functions to get selected data
+        function getSelectedAllergies() {
+            return userData.allergies.length > 0 ? userData.allergies : ['none'];
+        }
+
+        function getSelectedConditions() {
+            return userData.conditions.length > 0 ? userData.conditions : ['none'];
+        }
+
+        function getActivityLevelText(activityValue) {
+            const activityMap = {
+                1.2: 'นั่งทำงาน ไม่ออกกำลังกาย',
+                1.375: 'ออกกำลังกายเบาๆ',
+                1.55: 'ออกกำลังกายปานกลาง',
+                1.725: 'ออกกำลังกายหนัก',
+                1.9: 'ออกกำลังกายหนักมาก'
+            };
+            return activityMap[activityValue] || 'ไม่ระบุ';
+        }
+
+        function getGoalText(goalValue) {
+            const goalMap = {
+                'lose': 'ลดน้ำหนัก',
+                'maintain': 'รักษาน้ำหนัก',
+                'gain': 'เพิ่มน้ำหนัก',
+                'muscle': 'เพิ่มกล้ามเนื้อ'
+            };
+            return goalMap[goalValue] || 'ไม่ระบุ';
+        }
+
+        // Navigation functions
+        function nextPage(page) {
+            if (page === 1) {
+                // Validate basic information
+                const fullName = document.getElementById('full-name').value.trim();
+                const age = parseInt(document.getElementById('age').value);
+                const height = parseInt(document.getElementById('height').value);
+                const weight = parseFloat(document.getElementById('weight').value);
+                const targetWeight = parseFloat(document.getElementById('target-weight').value);
+                const timeline = parseInt(document.getElementById('timeline').value);
+                
+                if (!fullName) {
+                    alert('กรุณากรอกชื่อ-นามสกุล');
+                    return;
+                }
+                if (!userData.gender) {
+                    alert('กรุณาเลือกเพศ');
+                    return;
+                }
+                if (!age || age < 1 || age > 120) {
+                    alert('กรุณากรอกอายุที่ถูกต้อง (1-120 ปี)');
+                    return;
+                }
+                if (!height || height < 100 || height > 250) {
+                    alert('กรุณากรอกส่วนสูงที่ถูกต้อง (100-250 ซม.)');
+                    return;
+                }
+                if (!weight || weight < 30 || weight > 300) {
+                    alert('กรุณากรอกน้ำหนักปัจจุบันที่ถูกต้อง (30-300 กก.)');
+                    return;
+                }
+                if (!targetWeight || targetWeight < 30 || targetWeight > 300) {
+                    alert('กรุณากรอกน้ำหนักเป้าหมายที่ถูกต้อง (30-300 กก.)');
+                    return;
+                }
+                if (!timeline || timeline < 1 || timeline > 24) {
+                    alert('กรุณากรอกระยะเวลาที่ถูกต้อง (1-24 เดือน)');
+                    return;
+                }
+                
+                userData.fullName = fullName;
+                userData.age = age;
+                userData.height = height;
+                userData.weight = weight;
+                userData.targetWeight = targetWeight;
+                userData.timeline = timeline;
+                
+                showPage(2);
+            } else if (page === 2) {
+                if (!userData.activity) {
+                    alert('กรุณาเลือกระดับกิจกรรม');
+                    return;
+                }
+                showPage(3);
+            } else if (page === 3) {
+                if (!userData.goal) {
+                    alert('กรุณาเลือกเป้าหมาย');
+                    return;
+                }
+                showPage(4);
+            } else if (page === 4) {
+                // Save other allergies data
+                userData.otherAllergies = document.getElementById('other-allergies').value.trim();
+                showPage(5);
+            } else if (page === 5) {
+                // Save other conditions data
+                userData.otherConditions = document.getElementById('other-conditions').value.trim();
+                showPage(6);
+            } else if (page === 6) {
+                showPage(7);
+            } else if (page === 7) {
+                if (!userData.timeAvailability) {
+                    alert('กรุณาเลือกช่วงเวลาที่มีให้ตัวเอง');
+                    return;
+                }
+                showPage(8);
+            }
+        }
+
+        function prevPage(page) {
+            showPage(page - 1);
+        }
+
+        function showPage(pageNum) {
+            // Hide all pages
+            document.querySelectorAll('[id^="page"], #results').forEach(page => {
+                page.classList.add('hidden');
+                page.classList.remove('fade-in');
+            });
+            
+            // Show target page
+            const targetPage = document.getElementById(`page${pageNum}`);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+                targetPage.classList.add('fade-in');
+                currentPage = pageNum;
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const progressTexts = {
+                1: 'ข้อมูลพื้นฐาน',
+                2: 'ระดับกิจกรรม', 
+                3: 'เป้าหมาย',
+                4: 'ข้อมูลการแพ้อาหาร',
+                5: 'โรคประจำตัว',
+                6: 'สไตล์อาหาร',
+                7: 'เวลาที่มีให้ตัวเอง',
+                8: 'สไตล์ออกกำลังกาย'
+            };
+            
+            const progressPercent = (currentPage / 8) * 100;
+            
+            document.getElementById('progress-text').textContent = progressTexts[currentPage];
+            document.getElementById('progress-count').textContent = `${currentPage}/8`;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+        }
+
+        // TDEE Calculation
+        async function calculateTDEE() {
+            if (!userData.goal) {
+                alert('กรุณาเลือกเป้าหมาย');
+                return;
+            }
+
+            // Calculate BMR using Mifflin-St Jeor Equation
+            let bmr;
+            if (userData.gender === 'male') {
+                bmr = (10 * userData.weight) + (6.25 * userData.height) - (5 * userData.age) + 5;
+            } else {
+                bmr = (10 * userData.weight) + (6.25 * userData.height) - (5 * userData.age) - 161;
+            }
+
+            // Calculate TDEE
+            const tdee = bmr * userData.activity;
+
+            // Calculate goal calories
+            let goalCalories = tdee;
+            let goalTitle = '';
+            let goalDescription = '';
+
+            switch (userData.goal) {
+                case 'lose':
+                    goalCalories = tdee - 500;
+                    goalTitle = 'แคลอรี่สำหรับลดน้ำหนัก';
+                    goalDescription = 'ลดแคลอรี่ 500 แคล/วัน เพื่อลดน้ำหนัก 0.5 กก./สัปดาห์';
+                    break;
+                case 'maintain':
+                    goalCalories = tdee;
+                    goalTitle = 'แคลอรี่สำหรับรักษาน้ำหนัก';
+                    goalDescription = 'รักษาน้ำหนักปัจจุบัน';
+                    break;
+                case 'gain':
+                    goalCalories = tdee + 500;
+                    goalTitle = 'แคลอรี่สำหรับเพิ่มน้ำหนัก';
+                    goalDescription = 'เพิ่มแคลอรี่ 500 แคล/วัน เพื่อเพิ่มน้ำหนัก 0.5 กก./สัปดาห์';
+                    break;
+                case 'muscle':
+                    goalCalories = tdee + 350;
+                    goalTitle = 'แคลอรี่สำหรับเพิ่มกล้ามเนื้อ';
+                    goalDescription = 'เพิ่มแคลอรี่ 350 แคล/วัน พร้อมโปรตีน 1.6-2.2 กรัม/กก.น้ำหนัก';
+                    break;
+            }
+
+            // Calculate BMI
+            const heightInMeters = userData.height / 100;
+            const bmi = userData.weight / (heightInMeters * heightInMeters);
+            
+            let bmiStatus = '';
+            if (bmi < 18.5) {
+                bmiStatus = 'น้ำหนักน้อย';
+            } else if (bmi < 25) {
+                bmiStatus = 'น้ำหนักปกติ';
+            } else if (bmi < 30) {
+                bmiStatus = 'น้ำหนักเกิน';
+            } else {
+                bmiStatus = 'อ้วน';
+            }
+
+            // Calculate weight difference and weekly rate
+            const weightDifference = userData.targetWeight - userData.weight;
+            const weeklyWeightChange = weightDifference / (userData.timeline * 4.33); // 4.33 weeks per month
+            
+            // Determine if goal is realistic
+            let timelineDescription = '';
+            let weightGoalDescription = '';
+            
+            if (Math.abs(weightDifference) < 0.5) {
+                weightGoalDescription = 'รักษาน้ำหนักปัจจุบัน';
+                timelineDescription = 'เหมาะสำหรับการรักษาน้ำหนัก';
+            } else if (weightDifference > 0) {
+                weightGoalDescription = `เพิ่มน้ำหนัก ${Math.abs(weightDifference).toFixed(1)} กก.`;
+                if (weeklyWeightChange > 0.5) {
+                    timelineDescription = 'เป้าหมายค่อนข้างท้าทาย แนะนำให้เพิ่มระยะเวลา';
+                } else {
+                    timelineDescription = `เพิ่มน้ำหนักประมาณ ${Math.abs(weeklyWeightChange).toFixed(2)} กก./สัปดาห์`;
+                }
+            } else {
+                weightGoalDescription = `ลดน้ำหนัก ${Math.abs(weightDifference).toFixed(1)} กก.`;
+                if (Math.abs(weeklyWeightChange) > 1) {
+                    timelineDescription = 'เป้าหมายค่อนข้างท้าทาย แนะนำให้เพิ่มระยะเวลา';
+                } else {
+                    timelineDescription = `ลดน้ำหนักประมาณ ${Math.abs(weeklyWeightChange).toFixed(2)} กก./สัปดาห์`;
+                }
+            }
+
+            // Prepare data for Supabase
+            const calculationData = {
+                line_user_id: lineUserId || null,
+                full_name: userData.fullName || null, // Use form input, fallback to LINE profile
+                age: userData.age,
+                gender: userData.gender,
+                weight: userData.weight,
+                height: userData.height,
+                target_weight: userData.targetWeight,
+                timeline_months: userData.timeline,
+                activity_level: getActivityLevelText(userData.activity),
+                goal: getGoalText(userData.goal),
+                allergies: getSelectedAllergies(),
+                medical_conditions: getSelectedConditions(),
+                diet_preferences: userData.dietPreferences.length > 0 ? userData.dietPreferences : null,
+                time_availability: userData.timeAvailability || null,
+                workout_preferences: userData.workoutPreferences.length > 0 ? userData.workoutPreferences : null,
+                other_allergies: userData.otherAllergies || null,
+                other_conditions: userData.otherConditions || null,
+                bmr: Math.round(bmr),
+                tdee: Math.round(tdee),
+                goal_calories: Math.round(goalCalories),
+                bmi: parseFloat(bmi.toFixed(1)),
+                bmi_status: bmiStatus,
+                weight_difference: parseFloat(weightDifference.toFixed(1)),
+                weekly_weight_change: parseFloat(weeklyWeightChange.toFixed(2)),
+                created_at: new Date().toISOString()
+            };
+
+            // Get full name from LINE profile if form name is empty
+            try {
+                if (liff && liff.isLoggedIn() && !userData.fullName) {
+                    const profile = await liff.getProfile();
+                    calculationData.full_name = profile.displayName || null;
+                }
+            } catch (error) {
+                console.log("Could not get LINE profile:", error);
+            }
+
+            // Save to Supabase
+            const saveSuccess = await saveToSupabase(calculationData);
+            if (saveSuccess) {
+                console.log("Data saved to Supabase successfully");
+                // Show success notification based on whether it's update or new record
+                setTimeout(() => {
+                    if (existingRecordId) {
+                        alert(`✅ อัปเดตข้อมูลเรียบร้อยแล้ว!\n\nข้อมูล TDEE ของคุณได้รับการอัปเดตเรียบร้อยแล้ว\nคุณสามารถกลับมาแก้ไขได้ทุกเมื่อ`);
+                    } else {
+                        alert(`✅ บันทึกข้อมูลเรียบร้อยแล้ว!\n\nข้อมูล TDEE ของคุณถูกบันทึกเรียบร้อยแล้ว\nคุณสามารถกลับมาแก้ไขได้ทุกเมื่อ`);
+                    }
+                }, 1000);
+            } else {
+                console.log("Failed to save data to Supabase");
+                // Show error notification
+                setTimeout(() => {
+                    alert(`❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล\n\nกรุณาลองใหม่อีกครั้ง หรือติดต่อผู้ดูแลระบบ`);
+                }, 1000);
+            }
+
+            // Display results
+            document.getElementById('bmr-result').textContent = Math.round(bmr).toLocaleString();
+            document.getElementById('tdee-result').textContent = Math.round(tdee).toLocaleString();
+            document.getElementById('goal-calories').textContent = Math.round(goalCalories).toLocaleString();
+            document.getElementById('goal-title').textContent = goalTitle;
+            document.getElementById('goal-description').textContent = goalDescription;
+            document.getElementById('bmi-result').textContent = bmi.toFixed(1);
+            document.getElementById('bmi-status').textContent = bmiStatus;
+            document.getElementById('target-weight-result').textContent = userData.targetWeight.toFixed(1);
+            document.getElementById('weight-goal-description').textContent = weightGoalDescription;
+            document.getElementById('timeline-result').textContent = userData.timeline;
+            document.getElementById('timeline-description').textContent = timelineDescription;
+
+            // Show results page
+            document.querySelectorAll('[id^="page"]').forEach(page => {
+                page.classList.add('hidden');
+            });
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('results').classList.add('fade-in');
+            
+            // Update progress bar to show completion
+            document.getElementById('progress-text').textContent = 'เสร็จสิ้น';
+            document.getElementById('progress-count').textContent = '8/8';
+            document.getElementById('progress-bar').style.width = '100%';
+        }
+
+        function resetCalculator() {
+            userData = {
+                fullName: '',
+                gender: '',
+                age: 0,
+                height: 0,
+                weight: 0,
+                targetWeight: 0,
+                timeline: 0,
+                activity: 0,
+                goal: '',
+                allergies: [],
+                conditions: [],
+                dietPreferences: [],
+                timeAvailability: '',
+                workoutPreferences: [],
+                otherAllergies: '',
+                otherConditions: ''
+            };
+            
+            // Reset existing record ID so next save will be a new record
+            existingRecordId = null;
+            
+            // Reset form inputs
+            document.getElementById('full-name').value = '';
+            document.getElementById('age').value = '';
+            document.getElementById('height').value = '';
+            document.getElementById('weight').value = '';
+            document.getElementById('target-weight').value = '';
+            document.getElementById('timeline').value = '';
+            
+            // Reset button selections
+            document.querySelectorAll('.gender-btn, .activity-btn, .goal-btn, .time-btn').forEach(btn => {
+                btn.classList.remove('border-brown-400', 'bg-brown-50');
+                btn.classList.add('border-brown-200');
+            });
+            
+            // Reset checkboxes
+            document.querySelectorAll('.allergy-checkbox, .condition-checkbox, .diet-checkbox, .workout-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Reset other text areas
+            document.getElementById('other-allergies').value = '';
+            document.getElementById('other-conditions').value = '';
+            
+            // Go back to first page
+            showPage(1);
+        }
+
+        function shareResults() {
+            const bmr = document.getElementById('bmr-result').textContent;
+            const tdee = document.getElementById('tdee-result').textContent;
+            const goalCalories = document.getElementById('goal-calories').textContent;
+            const bmi = document.getElementById('bmi-result').textContent;
+            const bmiStatus = document.getElementById('bmi-status').textContent;
+            
+            const shareText = `🔥 ผลการคำนวณ TDEE ของฉัน\n\n` +
+                            `📊 BMR: ${bmr} แคลอรี่/วัน\n` +
+                            `⚡ TDEE: ${tdee} แคลอรี่/วัน\n` +
+                            `🎯 เป้าหมาย: ${goalCalories} แคลอรี่/วัน\n` +
+                            `📏 BMI: ${bmi} (${bmiStatus})\n\n` +
+                            `คำนวณ TDEE ของคุณได้ที่นี่!`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'ผลการคำนวณ TDEE',
+                    text: shareText
+                });
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('คัดลอกผลลัพธ์แล้ว!');
+                }).catch(() => {
+                    // If clipboard API fails, show the text in an alert
+                    alert(shareText);
+                });
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            updateProgress();
+            
+            // Initialize Supabase
+            initializeSupabase();
+            
+            // Initialize LIFF
+            await initializeLIFF();
+        });
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99df32f3d3232731',t:'MTc2MzA0NjY1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
