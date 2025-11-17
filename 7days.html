@@ -4,51 +4,62 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>E-Cal 7-Day Challenge</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
+
   <style>
     body {
       font-family: 'Prompt', sans-serif;
-      background-color: #fff5f8;
+      background-color: #000000; /* Black Weight Style */
+      color: #FFFFFF; /* White text */
+    }
+    .card {
+      background-color: #0d0d0d;
+      border: 1px solid #C1272D;
+      border-radius: 1.5rem;
+      box-shadow: 0 0 20px rgba(193, 39, 45, 0.25);
     }
     .highlight {
       color: #FF3974;
       font-weight: 700;
     }
-    .card {
-      background-color: white;
-      border-radius: 1.5rem;
-      box-shadow: 0 10px 25px rgba(255, 57, 116, 0.1);
-    }
   </style>
 </head>
+
 <body class="min-h-screen flex flex-col items-center justify-start py-6 px-4">
-  <!-- Header -->
+
+  <!-- Main Card -->
   <div class="w-full max-w-md card p-5 text-center">
+
+    <!-- Banner (Dark Mode Compatible) -->
     <img src="https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/Dark%20Elegant%20Food%20Product%20Showcase%20Ad%20Instagram%20Post.png"
-      alt="7-Day Challenge Banner" class="rounded-2xl mb-4 shadow-md" />
+      alt="7-Day Challenge Banner"
+      class="rounded-2xl mb-4 shadow-xl border border-[#C1272D]" />
 
     <h1 class="text-2xl font-bold text-[#FF3974] mb-2">7-Day Free Challenge 💪</h1>
-    <p class="text-gray-700 mb-4">
+
+    <p class="text-gray-300 leading-relaxed mb-4">
       พร้อมเปลี่ยนตัวเองใน 7 วันไหม? <br />
-      เข้าร่วมฟรีและให้อีแคลช่วยผลักดันให้ <span class="highlight">เป้าหมายของคุณเป็นจริง!</span>
+      เข้าร่วมฟรีและให้อีแคลช่วยผลักดันให้
+      <span class="highlight">เป้าหมายของคุณเป็นจริง!</span>
     </p>
 
-    <!-- Mission Section -->
-    <div class="text-left bg-pink-50 rounded-xl p-4 mb-5">
+    <!-- Missions -->
+    <div class="text-left bg-[#1a1a1a] border border-[#C1272D]/60 rounded-xl p-4 mb-5">
       <h2 class="font-semibold text-[#FF3974] mb-2">📆 สิ่งที่คุณจะทำ:</h2>
-      <ul class="list-disc list-inside text-gray-700 text-sm">
+      <ul class="list-disc list-inside text-gray-300 text-sm space-y-1">
         <li>ทำภารกิจสุขภาพวันละ 1 อย่าง</li>
         <li>ส่งหลักฐานกลับให้อีแคล (รูป/ลิงก์)</li>
-        <li>รับคำแนะนำ หรือคำด่าจากโค้ชอีแคล 😂</li>
+        <li>รับคำแนะนำหรือคำด่าจากโค้ชอีแคล 😂</li>
       </ul>
     </div>
 
-    <!-- Reward Section -->
-    <div class="bg-white border border-pink-200 rounded-xl p-4 mb-5">
+    <!-- Reward -->
+    <div class="bg-[#111111] border border-[#C1272D]/50 rounded-xl p-4 mb-5">
       <h2 class="font-semibold text-[#FF3974] mb-2">🎁 รางวัลเมื่อทำครบ:</h2>
-      <p class="text-gray-700 text-sm">
+      <p class="text-gray-300 text-sm">
         รับฟรี! <span class="font-bold text-[#FF3974]">Premium Plan 1 เดือน 👑</span><br />
         เข้าถึงทุกฟีเจอร์แบบไม่จำกัด พร้อมภารกิจรายวันส่วนบุคคล!
       </p>
@@ -56,89 +67,104 @@
 
     <!-- Compare Table -->
     <h2 class="font-semibold text-[#FF3974] mb-2 text-lg">📊 เปรียบเทียบ Free vs Premium</h2>
+
     <div class="overflow-x-auto mb-5">
-      <table class="w-full text-sm border border-gray-200">
-        <thead class="bg-[#FF3974] text-white">
+      <table class="w-full text-sm border border-[#C1272D]/40 bg-[#0a0a0a]">
+        <thead class="bg-[#C1272D] text-white">
           <tr>
             <th class="py-2">ฟีเจอร์</th>
             <th class="py-2">Free</th>
             <th class="py-2">Premium</th>
           </tr>
         </thead>
-        <tbody class="text-gray-700">
-          <tr class="border-b"><td class="py-2 px-2">คำนวณ TDEE</td><td class="text-center">✅</td><td class="text-center">✅</td></tr>
-          <tr class="border-b"><td class="py-2 px-2">Smart Scan (AI วิเคราะห์อาหาร)</td><td class="text-center">⚪️ จำกัด 3 ครั้ง/วัน</td><td class="text-center">✅ ไม่จำกัด</td></tr>
-          <tr class="border-b"><td class="py-2 px-2">บันทึกเมนูรายวัน</td><td class="text-center">⚪️ 3 เมนู/วัน</td><td class="text-center">✅ ไม่จำกัด</td></tr>
-          <tr class="border-b"><td class="py-2 px-2">เข้าร่วม Challenge</td><td class="text-center">✅ 7 วัน</td><td class="text-center">✅ ทุก Challenge</td></tr>
-          <tr class="border-b"><td class="py-2 px-2">ภารกิจรายวันส่วนบุคคล</td><td class="text-center">⚪️</td><td class="text-center">✅</td></tr>
-          <tr><td class="py-2 px-2">แผนสุขภาพส่วนตัว</td><td class="text-center">⚪️</td><td class="text-center">✅</td></tr>
+        <tbody class="text-gray-200">
+          <tr class="border-b border-[#C1272D]/30">
+            <td class="py-2 px-2">คำนวณ TDEE</td><td class="text-center">✅</td><td class="text-center">✅</td>
+          </tr>
+          <tr class="border-b border-[#C1272D]/30">
+            <td class="py-2 px-2">Smart Scan (AI วิเคราะห์อาหาร)</td>
+            <td class="text-center">⚪️ จำกัด 3 ครั้ง/วัน</td>
+            <td class="text-center">✅ ไม่จำกัด</td>
+          </tr>
+          <tr class="border-b border-[#C1272D]/30">
+            <td class="py-2 px-2">บันทึกเมนูรายวัน</td>
+            <td class="text-center">⚪️ 3 เมนู/วัน</td>
+            <td class="text-center">✅ ไม่จำกัด</td>
+          </tr>
+          <tr class="border-b border-[#C1272D]/30">
+            <td class="py-2 px-2">เข้าร่วม Challenge</td>
+            <td class="text-center">✅ 7 วัน</td>
+            <td class="text-center">✅ ทุก Challenge</td>
+          </tr>
+          <tr class="border-b border-[#C1272D]/30">
+            <td class="py-2 px-2">ภารกิจรายวันส่วนบุคคล</td>
+            <td class="text-center">⚪️</td>
+            <td class="text-center">✅</td>
+          </tr>
+          <tr>
+            <td class="py-2 px-2">แผนสุขภาพส่วนตัว</td>
+            <td class="text-center">⚪️</td>
+            <td class="text-center">✅</td>
+          </tr>
         </tbody>
       </table>
     </div>
 
     <!-- CTA Buttons -->
     <button id="joinBtn" 
-      class="w-full bg-[#FF3974] text-white text-lg font-semibold py-3 rounded-xl mb-3 hover:bg-pink-600 transition">
+      class="w-full bg-[#C1272D] text-white text-lg font-semibold py-3 rounded-xl mb-3 hover:bg-[#A01F24] transition">
       🚀 เข้าร่วมตอนนี้
     </button>
 
     <button id="cancelBtn"
-      class="w-full bg-gray-200 text-gray-700 text-sm py-2 rounded-xl hover:bg-gray-300 transition">
+      class="w-full bg-[#1a1a1a] border border-[#C1272D] text-gray-300 text-sm py-2 rounded-xl hover:bg-[#2b2b2b] transition">
       กลับหน้าหลัก
     </button>
   </div>
 
- <script>
-  const joinBtn = document.getElementById("joinBtn");
-  const cancelBtn = document.getElementById("cancelBtn");
 
-  // 🔹 Initialize LIFF
-  async function initLiff() {
-    await liff.init({ liffId: "2007859046-96MZOBMp" });
-    if (!liff.isLoggedIn()) return liff.login();
-  }
+  <!-- Script -->
+  <script>
+    const joinBtn = document.getElementById("joinBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
 
-  // 🔹 When user clicks join
-  joinBtn.addEventListener("click", async () => {
-    await initLiff();
-    const profile = await liff.getProfile();
-    const lineId = profile.userId;
-    const fullName = profile.displayName; // ✅ เพิ่มตรงนี้!
+    async function initLiff() {
+      await liff.init({ liffId: "2007859046-96MZOBMp" });
+      if (!liff.isLoggedIn()) return liff.login();
+    }
 
-    // ส่งข้อมูลไป webhook ของ n8n
-    await fetch("https://primary-production-49d9.up.railway.app/webhook-test/line-event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        line_user_id: lineId,
-        full_name: fullName,
-        challenge_name: "7-day challenge"
-      })
+    joinBtn.addEventListener("click", async () => {
+      await initLiff();
+      const profile = await liff.getProfile();
+      const lineId = profile.userId;
+      const fullName = profile.displayName;
+
+      await fetch("https://primary-production-49d9.up.railway.app/webhook-test/line-event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          line_user_id: lineId,
+          full_name: fullName,
+          challenge_name: "7-day challenge"
+        })
+      });
+
+      liff.closeWindow();
     });
 
-    // ✅ ปิดหน้าทันที ไม่ต้อง alert
-    liff.closeWindow();
-  });
+    cancelBtn.addEventListener("click", () => {
+      window.location.href = "https://liff.line.me/2007859046-BpXDWpXe";
+    });
+  </script>
 
-  cancelBtn.addEventListener("click", () => {
-    window.location.href = "https://liff.line.me/2007859046-BpXDWpXe";
-  });
-</script>
+  <!-- Floating Home Button -->
   <a href="https://liff.line.me/2007859046-BpXDWpXe"
-   class="fixed bottom-6 right-6 
-          bg-[#C1272D] text-white 
-          w-14 h-14 flex items-center justify-center 
-          rounded-full shadow-md 
-          hover:bg-[#a01f24] 
-          text-3xl z-50 transition-all duration-300">
-  <i class="fi fi-rr-home text-white text-3xl"></i>
-</a>
+    class="fixed bottom-6 right-6 bg-[#C1272D] text-white w-14 h-14 flex items-center justify-center rounded-full shadow-md hover:bg-[#A01F24] text-3xl z-50 transition">
+    <i class="fi fi-rr-home"></i>
+  </a>
+
 </body>
 </html>
-
-
-
-
 
 
 
