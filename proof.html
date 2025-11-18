@@ -82,50 +82,49 @@
  <body class="bg-black min-h-full overflow-x-hidden">
   <div class="container max-w-lg mx-auto px-5 py-5 relative z-10 min-h-full flex items-center justify-center"><!-- Loading/Login Page -->
    <div id="loginPage" class="page active w-full">
-    <div class="bg-[#101010] rounded-3xl p-10 shadow-2xl backdrop-blur-lg border-3 border-[#C1272D] w-full text-center transition-all duration-300">
-     <div class="text-center text-white text-xl">
-      <div class="text-5xl mb-5">
+    <div class="bg-[#101010] rounded-3xl p-8 shadow-2xl backdrop-blur-lg border-3 border-[#C1272D] w-full text-center transition-all duration-300">
+     <div class="text-center text-white text-base">
+      <div class="text-4xl mb-4">
        🔐
-      </div> กำลังเข้าสู่ระบบ LINE...<br><small class="text-gray-500">กรุณารอสักครู่</small>
+      </div> กำลังเข้าสู่ระบบ LINE...<br><small class="text-gray-500 text-sm">กรุณารอสักครู่</small>
      </div>
     </div>
    </div><!-- PAGE 1: Upload Form -->
    <div id="page1" class="page hidden w-full">
     <div class="bg-[#101010] rounded-3xl p-10 shadow-2xl backdrop-blur-lg border-[3px] border-[#C1272D] w-full text-center transition-all duration-300">
-     <h1 class="text-4xl font-bold text-white mb-4 drop-shadow-lg" id="main-title">📸 อวดอีแคล 👀</h1>
-     <p class="text-lg text-white mb-8 leading-relaxed opacity-90" id="subtitle">อัปโหลดรูป Proof ของคุณให้ประชาชาติได้ชื่นชม 💪</p>
+     <h1 class="text-2xl font-bold text-white mb-3 drop-shadow-lg" id="main-title">📸 อวดอีแคล 👀</h1>
+     <p class="text-sm text-white mb-6 leading-relaxed opacity-90" id="subtitle">อัปโหลดรูป Proof ของคุณให้ประชาชาติได้ชื่นชม 💪</p>
      <form id="uploadForm">
-      <div class="border-[3px] border-dashed border-[#C1272D] rounded-2xl p-10 mb-6 bg-[#C1272D]/10 cursor-pointer transition-all duration-200 hover:border-[#FF3974] hover:bg-[#C1272D]/20 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl relative overflow-hidden" onclick="document.getElementById('fileInput').click()">
-       <div class="text-5xl mb-4">
+      <div class="border-2 border-dashed border-[#C1272D] rounded-xl p-6 mb-4 bg-[#C1272D]/10 cursor-pointer transition-all duration-200 hover:border-[#FF3974] hover:bg-[#C1272D]/20 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl relative overflow-hidden" onclick="document.getElementById('fileInput').click()">
+       <div class="text-3xl mb-2">
         📸
        </div>
-       <div class="text-lg text-white font-semibold mb-2 upload-text">
+       <div class="text-sm text-white font-semibold mb-1 upload-text">
         คลิกเพื่ออัปโหลดรูป/วิดีโอ
        </div>
-       <div class="text-sm text-white/70">
+       <div class="text-xs text-white/70">
         รองรับไฟล์หลายไฟล์ JPG, PNG, MP4
        </div><input type="file" id="fileInput" multiple accept="image/*,video/*" class="hidden">
       </div>
-      <div class="mb-5 text-left"><label for="caption" class="block font-semibold text-white mb-2 text-base">💬 แคปชัน</label> <textarea id="caption" class="w-full px-5 py-4 border-2 border-[#C1272D] rounded-2xl text-base bg-[#1a1a1a] text-white transition-all duration-200 focus:outline-none focus:border-[#FF3974] focus:bg-[#202020] focus:shadow-[0_0_0_3px_rgba(193,39,45,0.2)] resize-y min-h-[80px]" placeholder="พิมพ์แคปชัน เช่น โดนอีแคลด่าอีกแล้ว 😂"></textarea>
+      <div class="mb-4 text-left"><label for="caption" class="block font-medium text-white mb-1.5 text-sm">💬 แคปชัน</label> <textarea id="caption" class="w-full px-3 py-2.5 border border-[#C1272D] rounded-xl text-sm bg-[#1a1a1a] text-white transition-all duration-200 focus:outline-none focus:border-[#FF3974] focus:bg-[#202020] focus:shadow-[0_0_0_3px_rgba(193,39,45,0.2)] resize-y min-h-[60px]" placeholder="พิมพ์แคปชัน เช่น โดนอีแคลด่าอีกแล้ว 😂"></textarea>
       </div>
-      <div class="mb-5 text-left"><label for="instagram" class="block font-semibold text-white mb-2 text-base">📱 Instagram Username</label> <input type="text" id="instagram" class="w-full px-5 py-4 border-2 border-[#C1272D] rounded-2xl text-base bg-[#1a1a1a] text-white transition-all duration-200 focus:outline-none focus:border-[#FF3974] focus:bg-[#202020] focus:shadow-[0_0_0_3px_rgba(193,39,45,0.2)]" placeholder="IG ของคุณ เช่น donna.fitstyle">
+      <div class="mb-4 text-left"><label for="instagram" class="block font-medium text-white mb-1.5 text-sm">📱 Instagram Username</label> <input type="text" id="instagram" class="w-full px-3 py-2.5 border border-[#C1272D] rounded-xl text-sm bg-[#1a1a1a] text-white transition-all duration-200 focus:outline-none focus:border-[#FF3974] focus:bg-[#202020] focus:shadow-[0_0_0_3px_rgba(193,39,45,0.2)]" placeholder="IG ของคุณ เช่น donna.fitstyle">
       </div>
-      <div class="flex items-center mb-6 text-left"><input type="checkbox" id="sendToEcal" class="w-5 h-5 mr-3 accent-[#C1272D]" checked> <label for="sendToEcal" class="text-base text-white font-medium">✅ ส่งให้อีแคลดู</label>
-      </div><button type="submit" class="bg-[#C1272D] text-white border-2 border-[#C1272D] px-10 py-5 rounded-3xl text-xl font-bold cursor-pointer transition-all duration-200 shadow-[0_8px_20px_rgba(0,0,0,0.4)] inline-block my-2 uppercase tracking-wider hover:-translate-y-1 hover:scale-105 hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] hover:bg-[#A01F24] hover:border-[#FF3974] active:translate-y-[-2px] active:scale-[1.02]">ส่งให้อีแคลดู 💅</button>
-      <div class="hidden text-white font-semibold mt-2" id="loading">
+      <div class="flex items-center mb-5 text-left"><input type="checkbox" id="sendToEcal" class="w-4 h-4 mr-2 accent-[#C1272D]" checked> <label for="sendToEcal" class="text-sm text-white font-medium">✅ ส่งให้อีแคลดู</label>
+      </div><button type="submit" class="bg-[#C1272D] text-white border-2 border-[#C1272D] px-6 py-3 rounded-2xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-[0_8px_20px_rgba(0,0,0,0.4)] inline-block my-2 uppercase tracking-wider hover:-translate-y-1 hover:scale-105 hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] hover:bg-[#A01F24] hover:border-[#FF3974] active:translate-y-[-2px] active:scale-[1.02]">ส่งให้อีแคลดู 💅</button>
+      <div class="hidden text-white text-sm font-semibold mt-2" id="loading">
        กำลังส่ง... ✨
       </div>
      </form>
     </div>
    </div><!-- PAGE 2: Success Page -->
    <div id="page2" class="page hidden w-full">
-    <div class="bg-[#101010] rounded-3xl p-10 shadow-2xl backdrop-blur-lg border-[3px] border-[#C1272D] w-full text-center transition-all duration-300">
-     <div class="text-5xl mb-5 bounce-animation">
+    <div class="bg-[#101010] rounded-3xl p-8 shadow-2xl backdrop-blur-lg border-[3px] border-[#C1272D] w-full text-center transition-all duration-300">
+     <div class="text-4xl mb-4 bounce-animation">
       ✨💖✨
      </div>
-     <h1 class="text-4xl font-bold text-white mb-4 drop-shadow-lg" id="success-title">💖 อีแคลภูมิใจในตัวเธอมาก!</h1>
-     <p class="text-lg text-white mb-8 leading-relaxed opacity-90" id="success-subtitle">รูปนี้จะถูกส่งไปยัง @e.cal.official เพื่อให้คนทั้งโลกได้ชื่นชม 👏</p>
-     <div class="my-5"><a href="https://www.instagram.com/e.cal.official/" target="_blank" rel="noopener noreferrer" class="bg-[#C1272D] text-white border-2 border-[#C1272D] px-10 py-5 rounded-3xl text-xl font-bold cursor-pointer transition-all duration-200 shadow-[0_8px_20px_rgba(0,0,0,0.4)] inline-block my-2 uppercase tracking-wider no-underline hover:-translate-y-1 hover:scale-105 hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] hover:bg-[#A01F24] hover:border-[#FF3974] active:translate-y-[-2px] active:scale-[1.02]"> ไปดู IG อีแคล 💅 </a> <button onclick="goBackToPage1()" class="bg-transparent text-white border-2 border-[#C1272D] px-9 py-4 rounded-3xl text-lg font-semibold cursor-pointer transition-all duration-200 shadow-[0_6px_15px_rgba(0,0,0,0.3)] my-2 inline-block hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.5)] hover:bg-[#C1272D]/20 hover:border-[#FF3974] active:translate-y-[-1px]"> กลับไปหน้าแรก 🔄 </button>
+     <h1 class="text-2xl font-bold text-white mb-6 drop-shadow-lg" id="success-title">💖 อีแคลภูมิใจในตัวเธอมาก!</h1>
+     <div class="my-4"><a href="https://www.instagram.com/e.cal.official/" target="_blank" rel="noopener noreferrer" class="bg-[#C1272D] text-white border-2 border-[#C1272D] px-6 py-3 rounded-2xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-[0_8px_20px_rgba(0,0,0,0.4)] inline-block my-2 uppercase tracking-wider no-underline hover:-translate-y-1 hover:scale-105 hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] hover:bg-[#A01F24] hover:border-[#FF3974] active:translate-y-[-2px] active:scale-[1.02]"> ไปดู IG อีแคล 💅 </a> <button onclick="goBackToPage1()" class="bg-transparent text-white border-2 border-[#C1272D] px-6 py-2.5 rounded-2xl text-sm font-semibold cursor-pointer transition-all duration-200 shadow-[0_6px_15px_rgba(0,0,0,0.3)] my-2 inline-block hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.5)] hover:bg-[#C1272D]/20 hover:border-[#FF3974] active:translate-y-[-1px]"> กลับไปหน้าแรก 🔄 </button>
      </div>
     </div><!-- Floating Stickers for Success Page -->
     <div class="fixed text-2xl opacity-70 pointer-events-none z-[5] top-[15%] left-[5%] floating-sticker" style="animation-delay: 0s;">
@@ -144,8 +143,7 @@
         const defaultConfig = {
             main_title: "📸 อวดอีแคล 👀",
             subtitle: "อัปโหลดรูป Proof ของคุณให้ประชาชาติได้ชื่นชม 💪",
-            success_title: "💖 อีแคลภูมิใจในตัวเธอมาก!",
-            success_subtitle: "รูปนี้จะถูกส่งไปยัง @e.cal.official เพื่อให้คนทั้งโลกได้ชื่นชม 👏"
+            success_title: "💖 อีแคลภูมิใจในตัวเธอมาก!"
         };
 
         // Global variables
@@ -222,12 +220,10 @@
                         const mainTitle = document.getElementById('main-title');
                         const subtitle = document.getElementById('subtitle');
                         const successTitle = document.getElementById('success-title');
-                        const successSubtitle = document.getElementById('success-subtitle');
 
                         if (mainTitle) mainTitle.textContent = config.main_title || defaultConfig.main_title;
                         if (subtitle) subtitle.textContent = config.subtitle || defaultConfig.subtitle;
                         if (successTitle) successTitle.textContent = config.success_title || defaultConfig.success_title;
-                        if (successSubtitle) successSubtitle.textContent = config.success_subtitle || defaultConfig.success_subtitle;
                     },
                     mapToCapabilities: (config) => ({
                         recolorables: [],
@@ -238,8 +234,7 @@
                     mapToEditPanelValues: (config) => new Map([
                         ["main_title", config.main_title || defaultConfig.main_title],
                         ["subtitle", config.subtitle || defaultConfig.subtitle],
-                        ["success_title", config.success_title || defaultConfig.success_title],
-                        ["success_subtitle", config.success_subtitle || defaultConfig.success_subtitle]
+                        ["success_title", config.success_title || defaultConfig.success_title]
                     ])
                 });
             }
@@ -346,7 +341,7 @@
             if (!challengeData) {
                 return { 
                     success: false, 
-                    error: 'ไม่พบข้อมูล Challenge ของคุณ กรุณาลงทะเบียน Challenge ก่อน' 
+                    error: 'ไม่พบข้อมูล Challenge ของคุณ กรุณาลงทะเบี��น Challenge ก่อน' 
                 };
             }
             
@@ -561,5 +556,5 @@
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a04a42d67cc7b66',t:'MTc2MzQzOTI3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a04dcf086257b64',t:'MTc2MzQ0MTU5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
