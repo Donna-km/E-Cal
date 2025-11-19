@@ -76,6 +76,21 @@
         .floating-sticker {
             animation: sticker-float 8s ease-in-out infinite;
         }
+
+        .rank-medal {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); }
+        .rank-2 { background: linear-gradient(135deg, #C0C0C0, #808080); }
+        .rank-3 { background: linear-gradient(135deg, #CD7F32, #8B4513); }
     </style>
   <style>@view-transition { navigation: auto; }</style>
  </head>
@@ -92,7 +107,8 @@
    </div><!-- PAGE 1: Upload Form -->
    <div id="page1" class="page hidden w-full">
     <div class="bg-[#101010] rounded-3xl p-10 shadow-2xl backdrop-blur-lg border-[3px] border-[#C1272D] w-full text-center transition-all duration-300">
-    <p class="text-sm text-white mb-6 leading-relaxed opacity-90" id="subtitle">อัปโหลดรูป Completed Mission</p>
+     <h1 class="text-2xl font-bold text-white mb-3 drop-shadow-lg" id="main-title">📸 อวดอีแคล 👀</h1>
+     <p class="text-sm text-white mb-6 leading-relaxed opacity-90" id="subtitle">อัปโหลดรูป Proof ของคุณให้ประชาชาติได้ชื่นชม 💪</p>
      <form id="uploadForm">
       <div class="border-2 border-dashed border-[#C1272D] rounded-xl p-6 mb-4 bg-[#C1272D]/10 cursor-pointer transition-all duration-200 hover:border-[#FF3974] hover:bg-[#C1272D]/20 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl relative overflow-hidden" onclick="document.getElementById('fileInput').click()">
        <div class="text-3xl mb-2">
@@ -105,11 +121,11 @@
         รองรับไฟล์หลายไฟล์ JPG, PNG, MP4
        </div><input type="file" id="fileInput" multiple accept="image/*,video/*" class="hidden">
       </div>
-      <div class="mb-4 text-left"><label for="caption" class="block font-medium text-white mb-1.5 text-sm">แคปชัน</label> <textarea id="caption" class="w-full px-3 py-2.5 border border-[#C1272D] rounded-xl text-sm bg-[#1a1a1a] text-white transition-all duration-200 focus:outline-none focus:border-[#FF3974] focus:bg-[#202020] focus:shadow-[0_0_0_3px_rgba(193,39,45,0.2)] resize-y min-h-[60px]" placeholder="พิมพ์แคปชัน เช่น โดนอีแคลด่าอีกแล้ว 😂"></textarea>
+      <div class="mb-4 text-left"><label for="caption" class="block font-medium text-white mb-1.5 text-sm">💬 แคปชัน</label> <textarea id="caption" class="w-full px-3 py-2.5 border border-[#C1272D] rounded-xl text-sm bg-[#1a1a1a] text-white transition-all duration-200 focus:outline-none focus:border-[#FF3974] focus:bg-[#202020] focus:shadow-[0_0_0_3px_rgba(193,39,45,0.2)] resize-y min-h-[60px]" placeholder="พิมพ์แคปชัน เช่น โดนอีแคลด่าอีกแล้ว 😂"></textarea>
       </div>
-      <div class="mb-4 text-left"><label for="instagram" class="block font-medium text-white mb-1.5 text-sm">Instagram Username</label> <input type="text" id="instagram" class="w-full px-3 py-2.5 border border-[#C1272D] rounded-xl text-sm bg-[#1a1a1a] text-white transition-all duration-200 focus:outline-none focus:border-[#FF3974] focus:bg-[#202020] focus:shadow-[0_0_0_3px_rgba(193,39,45,0.2)]" placeholder="IG ของคุณ เช่น donna.fitstyle">
+      <div class="mb-4 text-left"><label for="instagram" class="block font-medium text-white mb-1.5 text-sm">📱 Instagram Username</label> <input type="text" id="instagram" class="w-full px-3 py-2.5 border border-[#C1272D] rounded-xl text-sm bg-[#1a1a1a] text-white transition-all duration-200 focus:outline-none focus:border-[#FF3974] focus:bg-[#202020] focus:shadow-[0_0_0_3px_rgba(193,39,45,0.2)]" placeholder="IG ของคุณ เช่น donna.fitstyle">
       </div>
-      <div class="flex items-center mb-5 text-left"><input type="checkbox" id="sendToEcal" class="w-4 h-4 mr-2 accent-[#C1272D]" checked> <label for="sendToEcal" class="text-sm text-white font-medium">ส่งให้อีแคลดู</label>
+      <div class="flex items-center mb-5 text-left"><input type="checkbox" id="sendToEcal" class="w-4 h-4 mr-2 accent-[#C1272D]" checked> <label for="sendToEcal" class="text-sm text-white font-medium">✅ ส่งให้อีแคลดู</label>
       </div><button type="submit" class="bg-[#C1272D] text-white border-2 border-[#C1272D] px-6 py-3 rounded-2xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-[0_8px_20px_rgba(0,0,0,0.4)] inline-block my-2 uppercase tracking-wider hover:-translate-y-1 hover:scale-105 hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] hover:bg-[#A01F24] hover:border-[#FF3974] active:translate-y-[-2px] active:scale-[1.02]">ส่งให้อีแคลดู 💅</button>
       <div class="hidden text-white text-sm font-semibold mt-2" id="loading">
        กำลังส่ง... ✨
@@ -122,8 +138,11 @@
      <div class="text-4xl mb-4 bounce-animation">
       ✨💖✨
      </div>
-     <h1 class="text-2xl font-bold text-white mb-6 drop-shadow-lg" id="success-title">💖 อีแคลภูมิใจในตัวเธอมาก!</h1>
-     <div class="my-4"><a href="https://www.instagram.com/e.cal.official/" target="_blank" rel="noopener noreferrer" class="bg-[#C1272D] text-white border-2 border-[#C1272D] px-6 py-3 rounded-2xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-[0_8px_20px_rgba(0,0,0,0.4)] inline-block my-2 uppercase tracking-wider no-underline hover:-translate-y-1 hover:scale-105 hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] hover:bg-[#A01F24] hover:border-[#FF3974] active:translate-y-[-2px] active:scale-[1.02]"> ไปดู IG อีแคล 💅 </a> <button onclick="goBackToPage1()" class="bg-transparent text-white border-2 border-[#C1272D] px-6 py-2.5 rounded-2xl text-sm font-semibold cursor-pointer transition-all duration-200 shadow-[0_6px_15px_rgba(0,0,0,0.3)] my-2 inline-block hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.5)] hover:bg-[#C1272D]/20 hover:border-[#FF3974] active:translate-y-[-1px]"> กลับไปหน้าแรก 🔄 </button>
+     <h1 class="text-2xl font-bold text-white mb-4 drop-shadow-lg" id="success-title">💖 อีแคลภูมิใจในตัวเธอมาก!</h1>
+     <div class="text-lg text-yellow-400 font-bold mb-6">
+      🎉 +5 คะแนน 🎉
+     </div>
+     <div class="my-4"><button onclick="goToLeaderboard()" class="bg-[#C1272D] text-white border-2 border-[#C1272D] px-6 py-3 rounded-2xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-[0_8px_20px_rgba(0,0,0,0.4)] inline-block my-2 uppercase tracking-wider hover:-translate-y-1 hover:scale-105 hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] hover:bg-[#A01F24] hover:border-[#FF3974] active:translate-y-[-2px] active:scale-[1.02]"> ดู Leaderboard 🏆 </button> <button onclick="goBackToPage1()" class="bg-transparent text-white border-2 border-[#C1272D] px-6 py-2.5 rounded-2xl text-sm font-semibold cursor-pointer transition-all duration-200 shadow-[0_6px_15px_rgba(0,0,0,0.3)] my-2 inline-block hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.5)] hover:bg-[#C1272D]/20 hover:border-[#FF3974] active:translate-y-[-1px]"> กลับไปหน้าแรก 🔄 </button>
      </div>
     </div><!-- Floating Stickers for Success Page -->
     <div class="fixed text-2xl opacity-70 pointer-events-none z-[5] top-[15%] left-[5%] floating-sticker" style="animation-delay: 0s;">
@@ -134,6 +153,34 @@
     </div>
     <div class="fixed text-2xl opacity-70 pointer-events-none z-[5] top-[40%] left-[85%] floating-sticker" style="animation-delay: 6s;">
      📸
+    </div>
+   </div><!-- PAGE 3: Leaderboard Page -->
+   <div id="page3" class="page hidden w-full">
+    <div class="bg-[#101010] rounded-3xl p-8 shadow-2xl backdrop-blur-lg border-[3px] border-[#C1272D] w-full transition-all duration-300">
+     <h1 class="text-2xl font-bold text-white mb-6 text-center drop-shadow-lg">🏆 Leaderboard</h1><!-- User Stats -->
+     <div id="userStats" class="bg-[#C1272D]/20 border-2 border-[#C1272D] rounded-xl p-4 mb-6">
+      <div class="text-white text-center">
+       <div class="text-sm opacity-80 mb-1">
+        คะแนนของคุณ
+       </div>
+       <div class="text-3xl font-bold text-yellow-400 mb-2" id="userPoints">
+        0
+       </div>
+       <div class="text-xs" id="userRankInfo">
+        กำลังโหลด...
+       </div>
+      </div>
+     </div><!-- Top 10 Leaderboard -->
+     <div class="mb-6">
+      <h2 class="text-lg font-bold text-white mb-3 text-center">🌟 Top 10 🌟</h2>
+      <div id="leaderboardList" class="space-y-2">
+       <div class="text-white text-center text-sm">
+        กำลังโหลด...
+       </div>
+      </div>
+     </div>
+     <div class="text-center"><button onclick="goBackToPage1()" class="bg-[#C1272D] text-white border-2 border-[#C1272D] px-6 py-3 rounded-2xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-[0_8px_20px_rgba(0,0,0,0.4)] inline-block uppercase tracking-wider hover:-translate-y-1 hover:scale-105 hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] hover:bg-[#A01F24] hover:border-[#FF3974] active:translate-y-[-2px] active:scale-[1.02]"> กลับไปหน้าแรก 🔄 </button>
+     </div>
     </div>
    </div>
   </div>
@@ -159,7 +206,6 @@
         // Data handler for SDK
         const dataHandler = {
             onDataChanged(data) {
-                // Update UI if needed - for this app we don't need to display stored data
                 console.log('Data updated:', data.length, 'submissions');
             }
         };
@@ -174,11 +220,9 @@
                     return;
                 }
                 
-                // Get user profile
                 userProfile = await liff.getProfile();
                 console.log('User profile:', userProfile);
                 
-                // Show main app
                 document.getElementById('loginPage').classList.remove('active');
                 document.getElementById('loginPage').classList.add('hidden');
                 document.getElementById('page1').classList.remove('hidden');
@@ -186,7 +230,6 @@
                 
             } catch (error) {
                 console.error('LIFF initialization failed:', error);
-                // Fallback - show app anyway for testing
                 document.getElementById('loginPage').classList.remove('active');
                 document.getElementById('loginPage').classList.add('hidden');
                 document.getElementById('page1').classList.remove('hidden');
@@ -196,13 +239,9 @@
 
         // Initialize SDKs
         async function initializeApp() {
-            // Initialize Supabase
             initSupabase();
-            
-            // Initialize LIFF
             await initializeLIFF();
             
-            // Initialize Data SDK
             if (window.dataSdk) {
                 const initResult = await window.dataSdk.init(dataHandler);
                 if (!initResult.isOk) {
@@ -210,12 +249,10 @@
                 }
             }
 
-            // Initialize Element SDK
             if (window.elementSdk) {
                 await window.elementSdk.init({
                     defaultConfig,
                     onConfigChange: async (config) => {
-                        // Update text content based on config
                         const mainTitle = document.getElementById('main-title');
                         const subtitle = document.getElementById('subtitle');
                         const successTitle = document.getElementById('success-title');
@@ -286,6 +323,185 @@
             }
         }
 
+        // Add points to user
+        async function addPointsToUser(lineUserId, points, activityType, proofId = null) {
+            if (!supabase) return { success: false };
+            
+            try {
+                // Get or create user points record
+                const { data: existingUser, error: fetchError } = await supabase
+                    .from('user_points')
+                    .select('*')
+                    .eq('line_user_id', lineUserId)
+                    .single();
+                
+                if (fetchError && fetchError.code !== 'PGRST116') {
+                    console.error('Error fetching user points:', fetchError);
+                }
+                
+                if (!existingUser) {
+                    // Create new user points record
+                    const { error: insertError } = await supabase
+                        .from('user_points')
+                        .insert([{
+                            line_user_id: lineUserId,
+                            display_name: userProfile?.displayName || 'Unknown',
+                            profile_picture_url: userProfile?.pictureUrl || null,
+                            total_points: points
+                        }]);
+                    
+                    if (insertError) {
+                        console.error('Error creating user points:', insertError);
+                        return { success: false };
+                    }
+                } else {
+                    // Update existing user points
+                    const { error: updateError } = await supabase
+                        .from('user_points')
+                        .update({ 
+                            total_points: existingUser.total_points + points,
+                            display_name: userProfile?.displayName || existingUser.display_name,
+                            profile_picture_url: userProfile?.pictureUrl || existingUser.profile_picture_url
+                        })
+                        .eq('line_user_id', lineUserId);
+                    
+                    if (updateError) {
+                        console.error('Error updating user points:', updateError);
+                        return { success: false };
+                    }
+                }
+                
+                // Add points history
+                const { error: historyError } = await supabase
+                    .from('points_history')
+                    .insert([{
+                        line_user_id: lineUserId,
+                        points: points,
+                        activity_type: activityType,
+                        proof_id: proofId
+                    }]);
+                
+                if (historyError) {
+                    console.error('Error adding points history:', historyError);
+                }
+                
+                return { success: true };
+            } catch (error) {
+                console.error('Error in addPointsToUser:', error);
+                return { success: false };
+            }
+        }
+
+        // Get leaderboard data
+        async function getLeaderboardData() {
+            if (!supabase) return [];
+            
+            try {
+                const { data, error } = await supabase
+                    .from('user_points')
+                    .select('*')
+                    .order('total_points', { ascending: false })
+                    .limit(10);
+                
+                if (error) {
+                    console.error('Error fetching leaderboard:', error);
+                    return [];
+                }
+                
+                return data || [];
+            } catch (error) {
+                console.error('Error in getLeaderboardData:', error);
+                return [];
+            }
+        }
+
+        // Get user rank and stats
+        async function getUserRankStats(lineUserId) {
+            if (!supabase) return null;
+            
+            try {
+                // Get user's points
+                const { data: userData, error: userError } = await supabase
+                    .from('user_points')
+                    .select('total_points')
+                    .eq('line_user_id', lineUserId)
+                    .single();
+                
+                if (userError || !userData) {
+                    return { rank: 0, points: 0, pointsToNext: 0 };
+                }
+                
+                // Get user's rank
+                const { data: rankData, error: rankError } = await supabase
+                    .from('user_points')
+                    .select('line_user_id, total_points')
+                    .gt('total_points', userData.total_points)
+                    .order('total_points', { ascending: false });
+                
+                const rank = (rankData?.length || 0) + 1;
+                
+                // Get next rank points
+                const { data: nextRankData } = await supabase
+                    .from('user_points')
+                    .select('total_points')
+                    .gt('total_points', userData.total_points)
+                    .order('total_points', { ascending: true })
+                    .limit(1)
+                    .single();
+                
+                const pointsToNext = nextRankData ? nextRankData.total_points - userData.total_points : 0;
+                
+                return {
+                    rank: rank,
+                    points: userData.total_points,
+                    pointsToNext: pointsToNext
+                };
+            } catch (error) {
+                console.error('Error in getUserRankStats:', error);
+                return { rank: 0, points: 0, pointsToNext: 0 };
+            }
+        }
+
+        // Display leaderboard
+        async function displayLeaderboard() {
+            const lineUserId = userProfile?.userId || 'anonymous';
+            
+            // Get leaderboard data
+            const leaderboard = await getLeaderboardData();
+            const leaderboardList = document.getElementById('leaderboardList');
+            
+            if (leaderboard.length === 0) {
+                leaderboardList.innerHTML = '<div class="text-white text-center text-sm">ยังไม่มีข้อมูล</div>';
+            } else {
+                leaderboardList.innerHTML = leaderboard.map((user, index) => {
+                    const isCurrentUser = user.line_user_id === lineUserId;
+                    const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
+                    
+                    return `
+                        <div class="bg-[#1a1a1a] ${isCurrentUser ? 'border-2 border-yellow-400' : 'border border-[#C1272D]'} rounded-xl p-3 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="rank-medal ${rankClass} text-white">${index + 1}</div>
+                                <div class="text-white text-sm font-medium truncate max-w-[150px]">${user.display_name || 'Unknown'}</div>
+                            </div>
+                            <div class="text-yellow-400 font-bold text-sm">${user.total_points} คะแนน</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Get user rank stats
+            const userStats = await getUserRankStats(lineUserId);
+            document.getElementById('userPoints').textContent = userStats.points;
+            
+            if (userStats.rank === 0) {
+                document.getElementById('userRankInfo').innerHTML = 'ยังไม่มีคะแนน - เริ่มส่ง proof เลย!';
+            } else if (userStats.pointsToNext === 0) {
+                document.getElementById('userRankInfo').innerHTML = `🏆 อันดับที่ ${userStats.rank} - คุณอยู่อันดับสูงสุด!`;
+            } else {
+                document.getElementById('userRankInfo').innerHTML = `📍 อันดับที่ ${userStats.rank}<br>อีก ${userStats.pointsToNext} คะแนนถึงอันดับถัดไป`;
+            }
+        }
+
         // Upload files to Supabase Storage
         async function uploadFilesToStorage(files, lineUserId, challengeId, dayNumber) {
             if (!supabase || !files || files.length === 0) return [];
@@ -307,7 +523,6 @@
                         continue;
                     }
                     
-                    // Get public URL
                     const { data: urlData } = supabase.storage
                         .from('proof')
                         .getPublicUrl(fileName);
@@ -333,18 +548,15 @@
             if (!supabase) return { success: false, error: 'Supabase not initialized' };
             
             const lineUserId = userProfile?.userId || 'anonymous';
-            
-            // Get user challenge data first
             const challengeData = await getUserChallengeData(lineUserId);
             
             if (!challengeData) {
                 return { 
                     success: false, 
-                    error: 'ไม่พบข้อมูล Challenge ของคุณ กรุณาลงทะเบี��น Challenge ก่อน' 
+                    error: 'ไม่พบข้อมูล Challenge ของคุณ กรุณาลงทะเบียน Challenge ก่อน' 
                 };
             }
             
-            // Upload files to storage
             const uploadedFiles = await uploadFilesToStorage(files, lineUserId, challengeData.id, challengeData.current_day);
             
             try {
@@ -363,15 +575,19 @@
                             uploaded_files: uploadedFiles
                         }),
                         proof_date: new Date().toISOString()
-                    }]);
+                    }])
+                    .select()
+                    .single();
                 
                 if (error) {
                     console.error('Supabase error:', error);
                     return { success: false, error: error.message };
                 }
 
-                // Update user challenge progress after successful proof submission
                 await updateChallengeProgress(challengeData.id, challengeData.current_day);
+                
+                // Add 5 points to user
+                await addPointsToUser(lineUserId, 5, 'proof_submission', result?.id);
                 
                 return { success: true, data: result, dayNumber: challengeData.current_day };
             } catch (error) {
@@ -391,7 +607,7 @@
                         completed_days: currentDay,
                         current_day: currentDay < 7 ? currentDay + 1 : currentDay,
                         last_submitted_at: new Date().toISOString(),
-                        is_active: currentDay < 7 // Set to false if completed all 7 days
+                        is_active: currentDay < 7
                     })
                     .eq('id', challengeId);
                 
@@ -414,7 +630,6 @@
             const loading = document.getElementById('loading');
             const submitBtn = document.querySelector('button[type="submit"]');
             
-            // Show loading state
             loading.classList.remove('hidden');
             submitBtn.disabled = true;
             submitBtn.style.opacity = '0.7';
@@ -427,10 +642,8 @@
                 uploaded_at: new Date().toISOString()
             };
             
-            // Save to Supabase (with file upload)
             const supabaseResult = await saveToSupabase(submissionData, files);
             
-            // Save to Canva Sheet (Data SDK)
             let canvaResult = { isOk: true };
             if (window.dataSdk) {
                 const canvaData = {
@@ -441,12 +654,10 @@
             }
             
             if (supabaseResult.success || canvaResult.isOk) {
-                // Success - transition to page 2
                 setTimeout(() => {
                     showPage2(supabaseResult.dayNumber || 1);
                 }, 1000);
             } else {
-                // Error handling - show specific error message
                 const errorMessage = supabaseResult.error || 'เกิดข้อผิดพลาด กรุณาลองใหม่ 😅';
                 loading.textContent = errorMessage;
                 loading.classList.add('text-yellow-400');
@@ -468,7 +679,6 @@
             document.getElementById('page2').classList.remove('hidden');
             document.getElementById('page2').classList.add('active');
             
-            // Get proof message from database
             const proofMessage = await getProofMessage(dayNumber);
             if (proofMessage) {
                 const successTitle = document.getElementById('success-title');
@@ -477,7 +687,6 @@
                 }
             }
             
-            // Random sticker selection
             const stickers = [
                 'https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/ecal_sticker1.png',
                 'https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/ecal_sticker2.png',
@@ -485,22 +694,30 @@
             ];
             const randomSticker = stickers[Math.floor(Math.random() * stickers.length)];
             
-            // Update success icon with random sticker
             const successIcon = document.querySelector('.bounce-animation');
             successIcon.innerHTML = `<img src="${randomSticker}" alt="E-Cal Sticker" class="w-[280px] h-[280px] object-contain block mx-auto" onerror="this.style.display='none'; this.parentElement.innerHTML='✨💖✨';">`;
             
-            // Create confetti effect
             createConfetti();
+        }
+
+        // Go to leaderboard page
+        async function goToLeaderboard() {
+            document.getElementById('page2').classList.remove('active');
+            document.getElementById('page2').classList.add('hidden');
+            document.getElementById('page3').classList.remove('hidden');
+            document.getElementById('page3').classList.add('active');
+            
+            await displayLeaderboard();
         }
 
         // Go back to page 1 function
         function goBackToPage1() {
-            document.getElementById('page2').classList.remove('active');
-            document.getElementById('page2').classList.add('hidden');
+            const currentPage = document.querySelector('.page.active');
+            currentPage.classList.remove('active');
+            currentPage.classList.add('hidden');
             document.getElementById('page1').classList.remove('hidden');
             document.getElementById('page1').classList.add('active');
             
-            // Reset form
             document.getElementById('uploadForm').reset();
             const loading = document.getElementById('loading');
             loading.classList.add('hidden');
@@ -508,7 +725,6 @@
             submitBtn.disabled = false;
             submitBtn.style.opacity = '1';
             
-            // Reset upload box
             const uploadText = document.querySelector('.upload-text');
             uploadText.textContent = 'คลิกเพื่ออัปโหลดรูป/วิดีโอ';
         }
@@ -526,7 +742,6 @@
                     confetti.style.animationDelay = Math.random() * 2 + 's';
                     document.body.appendChild(confetti);
                     
-                    // Remove confetti after animation
                     setTimeout(() => {
                         if (confetti.parentNode) {
                             confetti.parentNode.removeChild(confetti);
@@ -552,9 +767,7 @@
             }
         });
 
-        // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a04dcf086257b64',t:'MTc2MzQ0MTU5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a0cad3e61367b3a',t:'MTc2MzUyMzUyNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
-
