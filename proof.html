@@ -216,13 +216,13 @@
       "โห วันนี้เล่นใหญ่!! เดี๋ยวแคลแอบบอกเพื่อนนะว่าเธอมุ่งมั่นมาก 😏🔥",
       "ดีมากกกก! คะแนนวิ่งแซงเพื่อนแล้วแน่ๆ 💅✨",
       "โอ๊ยยยย สวยและขยันมาก ไม่รักไม่ไหวแล้วป้ะ 💖",
-      "อย่างเท่! แบบนี้เรียกว่าเข้าวงการนักพิสูจน์แบบตัวจริง 💪🔥",
+      "อย่างเท่! แบบนี้เรียกว่าเข้าวงการนักพิสูจน์แบบตั��จริ�� 💪🔥",
       "สุดจัดเอาจริง! แคลใจมั่ง 👑",
       "อัปคลิปมานี่ใจถึงมาก ยกนิ้วให้เลยนะ 😌🔥",
       "อย่าหยุดนะ นี่แหละคนกำลังจะปัง!",
-      "คะแนนเธอพุ่งแรงกว่าไฟลุกของแคลอีกอ่ะ 🔥",
-      "อีกนิดเดียวขึ้นอันดับต่อไปแล้ว สู้ๆๆ",
-      "เกินไปแม่! เล่นซะ leaderboard สะเทือน 😳"
+      "คะแนนเธอพุ่งแรงกว่��ไฟลุกของแคลอีกอ่ะ 🔥",
+      "อีกนิดเดียว���ึ้นอันดับต่อไปแล้ว สู้ๆๆ",
+      "เกินไปแม่! เล่น������ leaderboard สะเทือน 😳"
     ];
 
     // Initialize Supabase client
@@ -266,6 +266,32 @@
       } catch (error) {
         console.error('Error fetching leaderboard:', error);
         showToast('ไม่สามารถโหลดข้อมูล Leaderboard ได้', 'error');
+      }
+    }
+
+    // Fetch mission data from database
+    async function fetchMissionData(userId, missionIdParam) {
+      if (!supabase || !missionIdParam) return null;
+
+      try {
+        const { data, error } = await supabase
+          .from('user_mission_logs')
+          .select('*')
+          .eq('line_user_id', userId)
+          .eq('mission_id', missionIdParam)
+          .eq('completed', false)
+          .order('sent_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          throw error;
+        }
+
+        return data;
+      } catch (error) {
+        console.error('Error fetching mission data:', error);
+        return null;
       }
     }
 
@@ -351,6 +377,29 @@
       }
     }
 
+    // Update proof_url in user_mission_logs
+    async function updateMissionLogProofUrl(userId, missionId, proofUrl) {
+      if (!supabase) return false;
+
+      try {
+        const { error } = await supabase
+          .from('user_mission_logs')
+          .update({ 
+            proof_url: proofUrl,
+            completed: true
+          })
+          .eq('line_user_id', userId)
+          .eq('mission_id', missionId)
+          .eq('completed', false);
+
+        if (error) throw error;
+        return true;
+      } catch (error) {
+        console.error('Error updating mission log proof_url:', error);
+        throw error;
+      }
+    }
+
     // Initialize LIFF and Supabase
     async function initializeApp() {
       showLoadingScreen('กำลังเชื่อมต่อ LINE...');
@@ -368,7 +417,7 @@
         
         if (liffId === 'YOUR_LIFF_ID') {
           hideLoadingScreen();
-          showError('กรุณาตั้งค่า LINE LIFF ID ใน���ารแก้ไข');
+          showError('��รุณาตั้งค่า LINE LIFF ID ในการแก้ไข');
           return;
         }
 
@@ -389,25 +438,70 @@
           pictureUrl: profile.pictureUrl
         };
 
-        // Get URL parameters and populate state
+        // Get URL parameters
         const urlParams = getUrlParams();
-        if (urlParams.challengeId) {
-          userChallengeId = parseInt(urlParams.challengeId);
-        }
-        if (urlParams.day) {
-          dayNumber = parseInt(urlParams.day);
-        }
+        
+        // Load mission data from database if mission_id is provided
         if (urlParams.missionId) {
-          missionId = parseInt(urlParams.missionId);
-        }
-        if (urlParams.missionText) {
-          missionText = decodeURIComponent(urlParams.missionText);
-        }
-        if (urlParams.emoji) {
-          missionEmoji = decodeURIComponent(urlParams.emoji);
-        }
-        if (urlParams.date) {
-          proofDate = urlParams.date;
+          showLoadingScreen('กำลังโหลดข้อมูลภารกิจ...');
+          const missionData = await fetchMissionData(currentUser.userId, urlParams.missionId);
+          
+          if (missionData) {
+            missionId = missionData.mission_id;
+            missionText = missionData.mission_text || '';
+            dayNumber = missionData.day_number || 1;
+            userChallengeId = urlParams.challengeId ? parseInt(urlParams.challengeId) : null;
+            
+            // Extract emoji from mission_text if it exists (first character if it's an emoji)
+            const emojiMatch = missionText.match(/^[\u{1F300}-\u{1F9FF}]/u);
+            if (emojiMatch) {
+              missionEmoji = emojiMatch[0];
+            } else {
+              missionEmoji = '🎯'; // Default emoji
+            }
+            
+            // Use sent_at as proof date
+            if (missionData.sent_at) {
+              proofDate = missionData.sent_at;
+            }
+          } else {
+            // Fallback to URL parameters if mission data not found
+            if (urlParams.missionId) {
+              missionId = parseInt(urlParams.missionId);
+            }
+            if (urlParams.day) {
+              dayNumber = parseInt(urlParams.day);
+            }
+            if (urlParams.challengeId) {
+              userChallengeId = parseInt(urlParams.challengeId);
+            }
+            if (urlParams.missionText) {
+              missionText = decodeURIComponent(urlParams.missionText);
+            }
+            if (urlParams.emoji) {
+              missionEmoji = decodeURIComponent(urlParams.emoji);
+            }
+            if (urlParams.date) {
+              proofDate = urlParams.date;
+            }
+          }
+        } else {
+          // No mission_id, use URL parameters
+          if (urlParams.challengeId) {
+            userChallengeId = parseInt(urlParams.challengeId);
+          }
+          if (urlParams.day) {
+            dayNumber = parseInt(urlParams.day);
+          }
+          if (urlParams.missionText) {
+            missionText = decodeURIComponent(urlParams.missionText);
+          }
+          if (urlParams.emoji) {
+            missionEmoji = decodeURIComponent(urlParams.emoji);
+          }
+          if (urlParams.date) {
+            proofDate = urlParams.date;
+          }
         }
 
         // Load leaderboard data
@@ -541,22 +635,26 @@
 
         if (alreadyProofed) {
           isLoading = false;
-          showToast(`คุณส่งหลักฐานวันที่ ${dayNumber} ไปแล้ว ไม่สามารถส่งซ้ำได้`, 'error');
+          showToast(`คุณส่งหลักฐานวันที่ ${dayNumber} ไปแล้ว ไ����สามารถส่งซ้ำได้`, 'error');
           renderUploadPage();
           return;
         }
 
         // Upload files to storage
         let uploadedCount = 0;
+        let uploadedUrls = [];
         for (const fileObj of selectedFiles) {
           try {
-            await uploadFileToStorage(
+            const url = await uploadFileToStorage(
               fileObj.file,
               currentUser.userId,
               userChallengeId,
               dayNumber
             );
-            uploadedCount++;
+            if (url) {
+              uploadedUrls.push(url);
+              uploadedCount++;
+            }
           } catch (error) {
             console.error('Error uploading file:', error);
           }
@@ -578,6 +676,11 @@
           proofType,
           missionId
         );
+
+        // Update proof_url in user_mission_logs if missionId exists
+        if (missionId && uploadedUrls.length > 0) {
+          await updateMissionLogProofUrl(currentUser.userId, missionId, uploadedUrls[0]);
+        }
 
         const points = calculatePoints(selectedFiles);
 
@@ -724,7 +827,9 @@
       
       const app = document.getElementById('app');
       const points = calculatePoints(selectedFiles);
-      const hasUrlParams = userChallengeId && dayNumber && (missionText || missionId);
+      
+      // Check if we have URL parameters (from "done" button)
+      const hasUrlParams = userChallengeId !== null && missionText;
       
       // Format date for display
       let displayDate = '';
@@ -842,7 +947,7 @@
                 </div>
                 <div class="mt-2 text-sm text-gray-400">
                   ${selectedFiles.filter(f => f.type.startsWith('image/')).length > 0 ? `<div>📸 รูปภาพ: ${Math.min(selectedFiles.filter(f => f.type.startsWith('image/')).length, 3)}/3 → ${selectedFiles.filter(f => f.type.startsWith('image/')).length >= 1 && selectedFiles.filter(f => f.type.startsWith('image/')).length <= 3 ? '5 คะแนน' : '0 คะแนน'}</div>` : ''}
-                  ${selectedFiles.filter(f => f.type.startsWith('video/')).length > 0 ? `<div>🎥 วิดีโอ: ${selectedFiles.filter(f => f.type.startsWith('video/')).length} → ${selectedFiles.filter(f => f.type.startsWith('video/')).length >= 1 ? '10 คะแนน' : '0 คะแนน'}</div>` : ''}
+                  ${selectedFiles.filter(f => f.type.startsWith('video/')).length > 0 ? `<div>🎥 วิดีโอ: ${selectedFiles.filter(f => f.type.startsWith('video/')).length} → ${selectedFiles.filter(f => f.type.startsWith('video/')).length >= 1 ? '10 คะแนน' : '0 คะแน��'}</div>` : ''}
                 </div>
               </div>
 
@@ -916,7 +1021,7 @@
                   ${userRank > 1 ? `
                     <div class="text-right">
                       <p class="text-sm text-gray-400">ขาดอีก ${pointsToNext} คะแนน</p>
-                      <p class="text-xs text-gray-500">ในลำดับถัดไป</p>
+                      <p class="text-xs text-gray-500">ในลำ�����ับถัดไป</p>
                     </div>
                   ` : ''}
                 </div>
@@ -926,7 +1031,7 @@
             ${leaderboardData.length === 0 ? `
               <div class="glass-effect p-8 text-center">
                 <p class="text-gray-400">ยังไม่มีผู้ใช้ในระบบ</p>
-                <p class="text-sm text-gray-500 mt-2">เป็นคนแรกที่อัปโหลดหลักฐาน!</p>
+                <p class="text-sm text-gray-500 mt-2">��ป็นคนแรกที่อัปโหลดหลักฐาน!</p>
               </div>
             ` : `
               <div class="space-y-3">
@@ -948,7 +1053,7 @@
             `}
 
             <button onclick="navigateToUpload()" class="w-full red-button text-white font-semibold py-4 px-6 rounded-lg mt-6">
-              อัปโหลดเพิ่มเติม
+              อัปโหลดเพิ่มเติ���
             </button>
           </div>
         </div>
@@ -1038,5 +1143,5 @@
     // Initialize app
     initializeApp();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a10979a7773d01f',t:'MTc2MzU2NDU4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a10d6c8f09d2725',t:'MTc2MzU2NzE3Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
