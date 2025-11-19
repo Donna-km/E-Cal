@@ -213,15 +213,15 @@
     }
 
     const encouragements = [
-      "โห วันนี้เล่นใหญ่!! เดี๋ยว���คลแอบบอกเพื่อนนะว่าเธอมุ่งมั่นมาก 😏🔥",
+      "โห วันนี้เล่นใหญ่!! เดี๋ยวแคลแอบบอกเพื่อนนะว่าเธอมุ่งมั่นมาก 😏🔥",
       "ดีมากกกก! คะแนนวิ่งแซงเพื่อนแล้วแน่ๆ 💅✨",
       "โอ๊ยยยย สวยและขยันมาก ไม่รักไม่ไหวแล้วป้ะ 💖",
       "อย่างเท่! แบบนี้เรียกว่าเข้าวงการนักพิสูจน์แบบตัวจริง 💪🔥",
       "สุดจัดเอาจริง! แคลใจมั่ง 👑",
-      "อัปคลิปมานี่ใจถึงมาก ���ับถือเลยนะ 😌🔥",
+      "อัปคลิปมานี่ใจถึงมาก ยกนิ้วให้เลยนะ 😌🔥",
       "อย่าหยุดนะ นี่แหละคนกำลังจะปัง!",
       "คะแนนเธอพุ่งแรงกว่าไฟลุกของแคลอีกอ่ะ 🔥",
-      "อีกนิดเด���ย��ขึ้นอันดับต่อไปแล้ว สู้ๆๆ",
+      "อีกนิดเดียวขึ้นอันดับต่อไปแล้ว สู้ๆๆ",
       "เกินไปแม่! เล่นซะ leaderboard สะเทือน 😳"
     ];
 
@@ -265,7 +265,7 @@
 
       } catch (error) {
         console.error('Error fetching leaderboard:', error);
-        showToast('ไม่สามารถโหลด���้อมูล Leaderboard ได้', 'error');
+        showToast('ไม่สามารถโหลดข้อมูล Leaderboard ได้', 'error');
       }
     }
 
@@ -420,7 +420,7 @@
       } catch (error) {
         console.error('Initialization error:', error);
         hideLoadingScreen();
-        showError('เกิดข้อผิดพ���าดในการเชื่อมต่อ: ' + error.message);
+        showError('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + error.message);
       }
     }
 
@@ -450,7 +450,7 @@
             <h1 class="text-2xl font-bold mb-4" style="color: ${config.text_color}">เกิดข้อผิดพลาด</h1>
             <p class="text-gray-300 mb-6">${message}</p>
             <button onclick="location.reload()" class="red-button text-white font-semibold py-3 px-6 rounded-lg">
-              โหลด��หม่อีกค���ั้ง
+              โหลดใหม่อีกครั้ง
             </button>
           </div>
         </div>
@@ -724,6 +724,22 @@
       
       const app = document.getElementById('app');
       const points = calculatePoints(selectedFiles);
+      const hasUrlParams = userChallengeId && dayNumber && (missionText || missionId);
+      
+      // Format date for display
+      let displayDate = '';
+      if (proofDate) {
+        try {
+          const dateObj = new Date(proofDate);
+          displayDate = dateObj.toLocaleDateString('th-TH', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+        } catch (e) {
+          displayDate = proofDate;
+        }
+      }
       
       app.innerHTML = `
         <div class="max-w-4xl mx-auto fade-in">
@@ -741,20 +757,33 @@
             <h1 class="text-3xl md:text-4xl font-bold text-center mb-2" style="color: ${config.text_color}">${config.page_title}</h1>
             <p class="text-center text-gray-300 mb-6">อัปโหลดรูปภาพหรือวิดีโอเพื่อรับคะแนน</p>
             
-            ${missionText ? `
-              <div class="glass-effect p-4 mb-6" style="border: 2px solid ${config.glass_color}">
-                <div class="flex items-center gap-3">
-                  ${missionEmoji ? `<span class="text-3xl">${missionEmoji}</span>` : ''}
+            ${hasUrlParams && missionText ? `
+              <div class="glass-effect p-6 mb-6" style="border: 2px solid ${config.glass_color}; background: rgba(193, 39, 45, 0.05);">
+                <div class="flex items-start gap-4">
+                  ${missionEmoji ? `<span class="text-5xl flex-shrink-0">${missionEmoji}</span>` : ''}
                   <div class="flex-1">
-                    <p class="text-sm text-gray-400 mb-1">ภารกิจวันนี้:</p>
-                    <p class="text-lg font-semibold" style="color: ${config.text_color}">${missionText}</p>
-                    ${proofDate ? `<p class="text-sm text-gray-400 mt-1">📅 ${proofDate}</p>` : ''}
+                    <p class="text-sm text-gray-400 mb-2">ภารกิจวันที่ ${dayNumber}:</p>
+                    <p class="text-xl font-bold mb-3" style="color: ${config.text_color}">${missionText}</p>
+                    <div class="flex items-center gap-4 text-sm text-gray-300">
+                      ${displayDate ? `<div class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>${displayDate}</span>
+                      </div>` : ''}
+                      ${userChallengeId ? `<div class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>Challenge ID: ${userChallengeId}</span>
+                      </div>` : ''}
+                    </div>
                   </div>
                 </div>
               </div>
             ` : ''}
             
-            ${!missionText ? `
+            ${!hasUrlParams ? `
               <div class="grid grid-cols-2 gap-4 mb-6">
                 <div>
                   <label class="block text-sm font-medium mb-2" style="color: ${config.text_color}">${config.challenge_id_label}</label>
@@ -812,8 +841,8 @@
                   <span class="text-2xl font-bold" style="color: ${config.glass_color}">${points} คะแนน</span>
                 </div>
                 <div class="mt-2 text-sm text-gray-400">
-                  ${selectedFiles.filter(f => f.type.startsWith('image/')).length > 0 ? `<div>📸 รูปภาพ: ${Math.min(selectedFiles.filter(f => f.type.startsWith('image/')).length, 3)}/3 → ${selectedFiles.filter(f => f.type.startsWith('image/')).length >= 1 && selectedFiles.filter(f => f.type.startsWith('image/')).length <= 3 ? '5 ค��แนน' : '0 คะแนน'}</div>` : ''}
-                  ${selectedFiles.filter(f => f.type.startsWith('video/')).length > 0 ? `<div>��� วิดีโอ: ${selectedFiles.filter(f => f.type.startsWith('video/')).length} → ${selectedFiles.filter(f => f.type.startsWith('video/')).length >= 1 ? '10 คะแนน' : '0 คะแนน'}</div>` : ''}
+                  ${selectedFiles.filter(f => f.type.startsWith('image/')).length > 0 ? `<div>📸 รูปภาพ: ${Math.min(selectedFiles.filter(f => f.type.startsWith('image/')).length, 3)}/3 → ${selectedFiles.filter(f => f.type.startsWith('image/')).length >= 1 && selectedFiles.filter(f => f.type.startsWith('image/')).length <= 3 ? '5 คะแนน' : '0 คะแนน'}</div>` : ''}
+                  ${selectedFiles.filter(f => f.type.startsWith('video/')).length > 0 ? `<div>🎥 วิดีโอ: ${selectedFiles.filter(f => f.type.startsWith('video/')).length} → ${selectedFiles.filter(f => f.type.startsWith('video/')).length >= 1 ? '10 คะแนน' : '0 คะแนน'}</div>` : ''}
                 </div>
               </div>
 
@@ -871,7 +900,7 @@
         <div class="max-w-4xl mx-auto fade-in">
           <div class="glass-effect p-6 md:p-8">
             <h1 class="text-3xl md:text-4xl font-bold text-center mb-2" style="color: ${config.text_color}">🏆 Leaderboard</h1>
-            <p class="text-center text-gray-300 mb-6">อันด���บผู้ใช้ Top 10</p>
+            <p class="text-center text-gray-300 mb-6">อันดับผู้ใช้ Top 10</p>
 
             ${userRank > 0 && userRank <= 10 ? `
               <div class="glass-effect p-4 mb-6" style="border: 2px solid ${config.glass_color}">
@@ -887,7 +916,7 @@
                   ${userRank > 1 ? `
                     <div class="text-right">
                       <p class="text-sm text-gray-400">ขาดอีก ${pointsToNext} คะแนน</p>
-                      <p class="text-xs text-gray-500">ในลำดับถัด��ป</p>
+                      <p class="text-xs text-gray-500">ในลำดับถัดไป</p>
                     </div>
                   ` : ''}
                 </div>
@@ -1009,5 +1038,5 @@
     // Initialize app
     initializeApp();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a1048fe3186d01f',t:'MTc2MzU2MTM2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a10979a7773d01f',t:'MTc2MzU2NDU4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
