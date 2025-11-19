@@ -174,6 +174,8 @@
       upload_button_text: "อัปโหลดไฟล์",
       submit_button_text: "ส่งหลักฐาน",
       leaderboard_button_text: "ดู Leaderboard",
+      day_label: "วันที่",
+      challenge_id_label: "Challenge ID",
       background_color: "#000000",
       glass_color: "#C1272D",
       text_color: "#FFFFFF"
@@ -189,17 +191,37 @@
     let leaderboardData = [];
     let isLoading = false;
     let liffInitialized = false;
+    let dayNumber = 1;
+    let userChallengeId = null;
+    let missionId = null;
+    let missionText = '';
+    let missionEmoji = '';
+    let proofDate = '';
+
+    // Get URL parameters
+    function getUrlParams() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return {
+        lineUserId: urlParams.get('line_user_id'),
+        day: urlParams.get('day'),
+        challengeId: urlParams.get('challenge_id'),
+        missionId: urlParams.get('mission_id'),
+        missionText: urlParams.get('mission_text'),
+        emoji: urlParams.get('emoji'),
+        date: urlParams.get('date')
+      };
+    }
 
     const encouragements = [
-      "โห วันนี้เล่นใหญ่!! เดี๋ยวแคลแอบบอกเพื่อนนะว่าเธอมุ่งมั่นมาก 😏🔥",
+      "โห วันนี้เล่นใหญ่!! เดี๋ยว���คลแอบบอกเพื่อนนะว่าเธอมุ่งมั่นมาก 😏🔥",
       "ดีมากกกก! คะแนนวิ่งแซงเพื่อนแล้วแน่ๆ 💅✨",
       "โอ๊ยยยย สวยและขยันมาก ไม่รักไม่ไหวแล้วป้ะ 💖",
       "อย่างเท่! แบบนี้เรียกว่าเข้าวงการนักพิสูจน์แบบตัวจริง 💪🔥",
       "สุดจัดเอาจริง! แคลใจมั่ง 👑",
-      "อัปคลิปมานี่ใจถึงมาก นับถือเลยนะ 😌🔥",
+      "อัปคลิปมานี่ใจถึงมาก ���ับถือเลยนะ 😌🔥",
       "อย่าหยุดนะ นี่แหละคนกำลังจะปัง!",
       "คะแนนเธอพุ่งแรงกว่าไฟลุกของแคลอีกอ่ะ 🔥",
-      "อีกนิดเดียวขึ้นอันดับต่อไปแล้ว สู้ๆๆ",
+      "อีกนิดเด���ย��ขึ้นอันดับต่อไปแล้ว สู้ๆๆ",
       "เกินไปแม่! เล่นซะ leaderboard สะเทือน 😳"
     ];
 
@@ -243,58 +265,89 @@
 
       } catch (error) {
         console.error('Error fetching leaderboard:', error);
-        showToast('ไม่สามารถโหลดข้อมูล Leaderboard ได้', 'error');
+        showToast('ไม่สามารถโหลด���้อมูล Leaderboard ได้', 'error');
       }
     }
 
-    // Update user points in Supabase
-    async function updateUserPoints(userId, displayName, pictureUrl, pointsToAdd) {
+    // Check if user already submitted proof for this day
+    async function checkDayAlreadyProof(userId, challengeId, day) {
       if (!supabase) return false;
 
       try {
-        // Check if user exists
-        const { data: existingUser, error: fetchError } = await supabase
-          .from('user_points')
-          .select('*')
+        const { data, error } = await supabase
+          .from('user_challenges_proof')
+          .select('id')
           .eq('line_user_id', userId)
+          .eq('user_challenge_id', challengeId)
+          .eq('day_number', day)
           .single();
 
-        if (fetchError && fetchError.code !== 'PGRST116') {
-          throw fetchError;
+        if (error && error.code !== 'PGRST116') {
+          throw error;
         }
 
-        if (existingUser) {
-          // Update existing user
-          const { error: updateError } = await supabase
-            .from('user_points')
-            .update({
-              total_points: existingUser.total_points + pointsToAdd,
-              display_name: displayName,
-              profile_picture_url: pictureUrl,
-              updated_at: new Date().toISOString()
-            })
-            .eq('line_user_id', userId);
+        return data !== null;
+      } catch (error) {
+        console.error('Error checking day proof:', error);
+        return false;
+      }
+    }
 
-          if (updateError) throw updateError;
-        } else {
-          // Insert new user
-          const { error: insertError } = await supabase
-            .from('user_points')
-            .insert({
-              line_user_id: userId,
-              display_name: displayName,
-              profile_picture_url: pictureUrl,
-              total_points: pointsToAdd
-            });
+    // Upload file to Supabase Storage
+    async function uploadFileToStorage(file, userId, challengeId, day) {
+      if (!supabase) return null;
 
-          if (insertError) throw insertError;
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}/${challengeId}/day${day}_${Date.now()}.${fileExt}`;
+        
+        const { data, error } = await supabase.storage
+          .from('proof')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (error) throw error;
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('proof')
+          .getPublicUrl(fileName);
+
+        return urlData.publicUrl;
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        throw error;
+      }
+    }
+
+    // Save proof to database
+    async function saveProofToDatabase(userId, challengeId, day, proofType, mission_Id = null) {
+      if (!supabase) return false;
+
+      try {
+        const insertData = {
+          line_user_id: userId,
+          user_challenge_id: challengeId,
+          day_number: day,
+          proof_type: proofType
+        };
+
+        // Add mission_id if available
+        if (mission_Id) {
+          insertData.mission_id = mission_Id;
         }
 
+        const { error } = await supabase
+          .from('user_challenges_proof')
+          .insert(insertData);
+
+        if (error) throw error;
         return true;
       } catch (error) {
-        console.error('Error updating user points:', error);
-        showToast('ไม่สามารถบันทึกคะแนนได้: ' + error.message, 'error');
-        return false;
+        console.error('Error saving proof:', error);
+        throw error;
       }
     }
 
@@ -315,7 +368,7 @@
         
         if (liffId === 'YOUR_LIFF_ID') {
           hideLoadingScreen();
-          showError('กรุณาตั้งค่า LINE LIFF ID ในการแก้ไข');
+          showError('กรุณาตั้งค่า LINE LIFF ID ใน���ารแก้ไข');
           return;
         }
 
@@ -336,6 +389,27 @@
           pictureUrl: profile.pictureUrl
         };
 
+        // Get URL parameters and populate state
+        const urlParams = getUrlParams();
+        if (urlParams.challengeId) {
+          userChallengeId = parseInt(urlParams.challengeId);
+        }
+        if (urlParams.day) {
+          dayNumber = parseInt(urlParams.day);
+        }
+        if (urlParams.missionId) {
+          missionId = parseInt(urlParams.missionId);
+        }
+        if (urlParams.missionText) {
+          missionText = decodeURIComponent(urlParams.missionText);
+        }
+        if (urlParams.emoji) {
+          missionEmoji = decodeURIComponent(urlParams.emoji);
+        }
+        if (urlParams.date) {
+          proofDate = urlParams.date;
+        }
+
         // Load leaderboard data
         showLoadingScreen('กำลังโหลดข้อมูล...');
         await fetchLeaderboard();
@@ -346,7 +420,7 @@
       } catch (error) {
         console.error('Initialization error:', error);
         hideLoadingScreen();
-        showError('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + error.message);
+        showError('เกิดข้อผิดพ���าดในการเชื่อมต่อ: ' + error.message);
       }
     }
 
@@ -372,11 +446,11 @@
       app.innerHTML = `
         <div class="max-w-2xl mx-auto fade-in">
           <div class="glass-effect p-8 text-center">
-            <div class="text-6xl mb-6"⚠️</div>
+            <div class="text-6xl mb-6">⚠️</div>
             <h1 class="text-2xl font-bold mb-4" style="color: ${config.text_color}">เกิดข้อผิดพลาด</h1>
             <p class="text-gray-300 mb-6">${message}</p>
             <button onclick="location.reload()" class="red-button text-white font-semibold py-3 px-6 rounded-lg">
-              โหลดใหม่อีกครั้ง
+              โหลด��หม่อีกค���ั้ง
             </button>
           </div>
         </div>
@@ -444,26 +518,68 @@
         return;
       }
 
+      if (!userChallengeId) {
+        showToast('กรุณากรอก Challenge ID', 'error');
+        return;
+      }
+
+      if (!dayNumber || dayNumber < 1) {
+        showToast('กรุณากรอกวันที่ที่ถูกต้อง', 'error');
+        return;
+      }
+
       isLoading = true;
       renderUploadPage();
 
       try {
-        // Simulate upload delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        const points = calculatePoints(selectedFiles);
-        
-        // Update points in Supabase
-        const success = await updateUserPoints(
+        // Check if day already proofed
+        const alreadyProofed = await checkDayAlreadyProof(
           currentUser.userId,
-          currentUser.displayName,
-          currentUser.pictureUrl,
-          points
+          userChallengeId,
+          dayNumber
         );
 
-        if (!success) {
-          throw new Error('ไม่สามารถบันทึกคะแนนได้');
+        if (alreadyProofed) {
+          isLoading = false;
+          showToast(`คุณส่งหลักฐานวันที่ ${dayNumber} ไปแล้ว ไม่สามารถส่งซ้ำได้`, 'error');
+          renderUploadPage();
+          return;
         }
+
+        // Upload files to storage
+        let uploadedCount = 0;
+        for (const fileObj of selectedFiles) {
+          try {
+            await uploadFileToStorage(
+              fileObj.file,
+              currentUser.userId,
+              userChallengeId,
+              dayNumber
+            );
+            uploadedCount++;
+          } catch (error) {
+            console.error('Error uploading file:', error);
+          }
+        }
+
+        if (uploadedCount === 0) {
+          throw new Error('ไม่สามารถอัปโหลดไฟล์ได้');
+        }
+
+        // Determine proof type based on files
+        const hasImage = selectedFiles.some(f => f.type.startsWith('image/'));
+        const proofType = hasImage ? 'image' : 'link';
+
+        // Save proof to database (this will trigger points addition)
+        await saveProofToDatabase(
+          currentUser.userId,
+          userChallengeId,
+          dayNumber,
+          proofType,
+          missionId
+        );
+
+        const points = calculatePoints(selectedFiles);
 
         // Refresh leaderboard
         await fetchLeaderboard();
@@ -625,6 +741,38 @@
             <h1 class="text-3xl md:text-4xl font-bold text-center mb-2" style="color: ${config.text_color}">${config.page_title}</h1>
             <p class="text-center text-gray-300 mb-6">อัปโหลดรูปภาพหรือวิดีโอเพื่อรับคะแนน</p>
             
+            ${missionText ? `
+              <div class="glass-effect p-4 mb-6" style="border: 2px solid ${config.glass_color}">
+                <div class="flex items-center gap-3">
+                  ${missionEmoji ? `<span class="text-3xl">${missionEmoji}</span>` : ''}
+                  <div class="flex-1">
+                    <p class="text-sm text-gray-400 mb-1">ภารกิจวันนี้:</p>
+                    <p class="text-lg font-semibold" style="color: ${config.text_color}">${missionText}</p>
+                    ${proofDate ? `<p class="text-sm text-gray-400 mt-1">📅 ${proofDate}</p>` : ''}
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+            
+            ${!missionText ? `
+              <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label class="block text-sm font-medium mb-2" style="color: ${config.text_color}">${config.challenge_id_label}</label>
+                  <input type="number" id="challengeIdInput" value="${userChallengeId || ''}" placeholder="กรอก Challenge ID" 
+                    class="w-full px-4 py-3 rounded-lg glass-effect text-white border-none focus:outline-none focus:ring-2" 
+                    style="focus:ring-color: ${config.glass_color}"
+                    onchange="userChallengeId = parseInt(this.value) || null">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-2" style="color: ${config.text_color}">${config.day_label}</label>
+                  <input type="number" id="dayInput" value="${dayNumber}" min="1" placeholder="วันที่" 
+                    class="w-full px-4 py-3 rounded-lg glass-effect text-white border-none focus:outline-none focus:ring-2" 
+                    style="focus:ring-color: ${config.glass_color}"
+                    onchange="dayNumber = parseInt(this.value) || 1">
+                </div>
+              </div>
+            ` : ''}
+
             <div class="mb-6">
               <label class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer glass-button" style="border-color: ${config.glass_color}">
                 <div class="flex flex-col items-center justify-center pt-5 pb-6">
@@ -664,8 +812,8 @@
                   <span class="text-2xl font-bold" style="color: ${config.glass_color}">${points} คะแนน</span>
                 </div>
                 <div class="mt-2 text-sm text-gray-400">
-                  ${selectedFiles.filter(f => f.type.startsWith('image/')).length > 0 ? `<div>📸 รูปภาพ: ${Math.min(selectedFiles.filter(f => f.type.startsWith('image/')).length, 3)}/3 → ${selectedFiles.filter(f => f.type.startsWith('image/')).length >= 1 && selectedFiles.filter(f => f.type.startsWith('image/')).length <= 3 ? '5 คะแนน' : '0 คะแนน'}</div>` : ''}
-                  ${selectedFiles.filter(f => f.type.startsWith('video/')).length > 0 ? `<div>🎥 วิดีโอ: ${selectedFiles.filter(f => f.type.startsWith('video/')).length} → ${selectedFiles.filter(f => f.type.startsWith('video/')).length >= 1 ? '10 คะแนน' : '0 คะแนน'}</div>` : ''}
+                  ${selectedFiles.filter(f => f.type.startsWith('image/')).length > 0 ? `<div>📸 รูปภาพ: ${Math.min(selectedFiles.filter(f => f.type.startsWith('image/')).length, 3)}/3 → ${selectedFiles.filter(f => f.type.startsWith('image/')).length >= 1 && selectedFiles.filter(f => f.type.startsWith('image/')).length <= 3 ? '5 ค��แนน' : '0 คะแนน'}</div>` : ''}
+                  ${selectedFiles.filter(f => f.type.startsWith('video/')).length > 0 ? `<div>��� วิดีโอ: ${selectedFiles.filter(f => f.type.startsWith('video/')).length} → ${selectedFiles.filter(f => f.type.startsWith('video/')).length >= 1 ? '10 คะแนน' : '0 คะแนน'}</div>` : ''}
                 </div>
               </div>
 
@@ -723,7 +871,7 @@
         <div class="max-w-4xl mx-auto fade-in">
           <div class="glass-effect p-6 md:p-8">
             <h1 class="text-3xl md:text-4xl font-bold text-center mb-2" style="color: ${config.text_color}">🏆 Leaderboard</h1>
-            <p class="text-center text-gray-300 mb-6">อันดับผู้ใช้ Top 10</p>
+            <p class="text-center text-gray-300 mb-6">อันด���บผู้ใช้ Top 10</p>
 
             ${userRank > 0 && userRank <= 10 ? `
               <div class="glass-effect p-4 mb-6" style="border: 2px solid ${config.glass_color}">
@@ -739,7 +887,7 @@
                   ${userRank > 1 ? `
                     <div class="text-right">
                       <p class="text-sm text-gray-400">ขาดอีก ${pointsToNext} คะแนน</p>
-                      <p class="text-xs text-gray-500">ในลำดับถัดไป</p>
+                      <p class="text-xs text-gray-500">ในลำดับถัด��ป</p>
                     </div>
                   ` : ''}
                 </div>
@@ -848,7 +996,9 @@
         ["supabase_key", config.supabase_key || defaultConfig.supabase_key],
         ["upload_button_text", config.upload_button_text || defaultConfig.upload_button_text],
         ["submit_button_text", config.submit_button_text || defaultConfig.submit_button_text],
-        ["leaderboard_button_text", config.leaderboard_button_text || defaultConfig.leaderboard_button_text]
+        ["leaderboard_button_text", config.leaderboard_button_text || defaultConfig.leaderboard_button_text],
+        ["day_label", config.day_label || defaultConfig.day_label],
+        ["challenge_id_label", config.challenge_id_label || defaultConfig.challenge_id_label]
       ])
     };
 
@@ -859,5 +1009,5 @@
     // Initialize app
     initializeApp();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a0eda4c0626d329',t:'MTc2MzU0NjM0NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a1048fe3186d01f',t:'MTc2MzU2MTM2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
