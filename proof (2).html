@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="th">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Cal Proof Challenge</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        * {
+            font-family: 'Kanit', sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page.active {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        .bounce-animation {
+            animation: bounce 1s ease-in-out;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            animation: confetti-fall 3s linear infinite;
+            z-index: 1000;
+        }
+
+        @keyframes sticker-float {
+            0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+            33% { transform: translateY(-15px) rotate(10deg) scale(1.1); }
+            66% { transform: translateY(10px) rotate(-5deg) scale(0.9); }
+        }
+
+        .floating-sticker {
+            animation: sticker-float 8s ease-in-out infinite;
+        }
+
+        .rank-medal {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); }
+        .rank-2 { background: linear-gradient(135deg, #C0C0C0, #808080); }
+        .rank-3 { background: linear-gradient(135deg, #CD7F32, #8B4513); }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="bg-black min-h-full overflow-x-hidden">
+  <div class="container max-w-lg mx-auto px-5 py-5 relative z-10 min-h-full flex items-center justify-center"><!-- Loading/Login Page -->
+   <div id="loginPage" class="page active w-full">
+    <div class="bg-[#101010] rounded-3xl p-8 shadow-2xl backdrop-blur-lg border-3 border-[#C1272D] w-full text-center transition-all duration-300">
+     <div class="text-center text-white text-base">
+      <div class="text-4xl mb-4">
+       🔐
+      </div> กำลังเข้าสู่ระบบ LINE...<br><small class="text-gray-500 text-sm">กรุณารอสักครู่</small>
+     </div>
+    </div>
+   </div><!-- PAGE 1: Upload Form -->
+   <div id="page1" class="page hidden w-full">
+    <div class="bg-[#101010] rounded-3xl p-10 shadow-2xl backdrop-blur-lg border-[3px] border-[#C1272D] w-full text-center transition-all duration-300">
+     <p class="text-sm text-white mb-6 leading-relaxed opacity-90" id="subtitle">อัปโหลดรูป Mission Completed</p>
+     <form id="uploadForm">
+      <div class="border-2 border-dashed border-[#C1272D] rounded-xl p-6 mb-4 bg-[#C1272D]/10 cursor-pointer transition-all duration-200 hover:border-[#FF3974] hover:bg-[#C1272D]/20 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl relative overflow-hidden" onclick="document.getElementById('fileInput').click()">
+       <div class="text-3xl mb-2">
+        📸
+       </div>
+       <div class="text-sm text-white font-semibold mb-1 upload-text">
+        คลิกเพื่ออัปโหลดรูป/วิดีโอ
+       </div>
+       <div class="text-xs text-white/70">
+        รองรับไฟล์หลายไฟล์ JPG, PNG, MP4
+       </div><input type="file" id="fileInput" multiple accept="image/*,video/*" class="hidden">
+      </div>
+      <div class="mb-4 text-left"><label for="caption" class="block font-medium text-white mb-1.5 text-sm">แคปชัน</label> <textarea id="caption" class="w-full px-3 py-2.5 border border-[#C1272D] rounded-xl text-sm bg-[#1a1a1a] text-white transition-all duration-200 focus:outline-none focus:border-[#FF3974] focus:bg-[#202020] focus:shadow-[0_0_0_3px_rgba(193,39,45,0.2)] resize-y min-h-[60px]" placeholder="พิมพ์แคปชัน เช่น โดนอีแคลด่าอีกแล้ว"></textarea>
+      </div>
+      <div class="mb-4 text-left"><label for="instagram" class="block font-medium text-white mb-1.5 text-sm">Instagram Username</label> <input type="text" id="instagram" class="w-full px-3 py-2.5 border border-[#C1272D] rounded-xl text-sm bg-[#1a1a1a] text-white transition-all duration-200 focus:outline-none focus:border-[#FF3974] focus:bg-[#202020] focus:shadow-[0_0_0_3px_rgba(193,39,45,0.2)]" placeholder="IG ของคุณ เช่น donna.fitstyle">
+      </div>
+      <div class="flex items-center mb-5 text-left"><input type="checkbox" id="sendToEcal" class="w-4 h-4 mr-2 accent-[#C1272D]" checked> <label for="sendToEcal" class="text-sm text-white font-medium">ส่งให้อีแคลดู</label>
+      </div><button type="submit" class="bg-[#C1272D] text-white border-2 border-[#C1272D] px-6 py-3 rounded-2xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-[0_8px_20px_rgba(0,0,0,0.4)] inline-block my-2 uppercase tracking-wider hover:-translate-y-1 hover:scale-105 hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] hover:bg-[#A01F24] hover:border-[#FF3974] active:translate-y-[-2px] active:scale-[1.02]">ส่งให้อีแคลดู</button>
+      <div class="hidden text-white text-sm font-semibold mt-2" id="loading">
+       กำลังส่ง... ✨
+      </div>
+     </form>
+    </div>
+   </div><!-- PAGE 2: Success Page -->
+   <div id="page2" class="page hidden w-full">
+    <div class="bg-[#101010] rounded-3xl p-8 shadow-2xl backdrop-blur-lg border-[3px] border-[#C1272D] w-full text-center transition-all duration-300">
+     <div class="text-4xl mb-4 bounce-animation">
+      ✨💖✨
+     </div>
+     <h1 class="text-2xl font-bold text-white mb-4 drop-shadow-lg" id="success-title">💖 อีแคลภูมิใจในตัวเธอมาก!</h1>
+     <div class="text-lg text-yellow-400 font-bold mb-6">
+      🎉 +5 คะแนน 🎉
+     </div>
+     <div class="my-4"><button onclick="goToLeaderboard()" class="bg-[#C1272D] text-white border-2 border-[#C1272D] px-6 py-3 rounded-2xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-[0_8px_20px_rgba(0,0,0,0.4)] inline-block my-2 uppercase tracking-wider hover:-translate-y-1 hover:scale-105 hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] hover:bg-[#A01F24] hover:border-[#FF3974] active:translate-y-[-2px] active:scale-[1.02]"> ดู Leaderboard 🏆 </button> <button onclick="goBackToPage1()" class="bg-transparent text-white border-2 border-[#C1272D] px-6 py-2.5 rounded-2xl text-sm font-semibold cursor-pointer transition-all duration-200 shadow-[0_6px_15px_rgba(0,0,0,0.3)] my-2 inline-block hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.5)] hover:bg-[#C1272D]/20 hover:border-[#FF3974] active:translate-y-[-1px]"> กลับไปหน้าแรก 🔄 </button>
+     </div>
+    </div><!-- Floating Stickers for Success Page -->
+    <div class="fixed text-2xl opacity-70 pointer-events-none z-[5] top-[15%] left-[5%] floating-sticker" style="animation-delay: 0s;">
+     💖
+    </div>
+    <div class="fixed text-2xl opacity-70 pointer-events-none z-[5] top-[70%] right-[10%] floating-sticker" style="animation-delay: 3s;">
+     ✨
+    </div>
+    <div class="fixed text-2xl opacity-70 pointer-events-none z-[5] top-[40%] left-[85%] floating-sticker" style="animation-delay: 6s;">
+     📸
+    </div>
+   </div><!-- PAGE 3: Leaderboard Page -->
+   <div id="page3" class="page hidden w-full">
+    <div class="bg-[#101010] rounded-3xl p-8 shadow-2xl backdrop-blur-lg border-[3px] border-[#C1272D] w-full transition-all duration-300">
+     <h1 class="text-2xl font-bold text-white mb-6 text-center drop-shadow-lg">🏆 Leaderboard</h1><!-- User Stats -->
+     <div id="userStats" class="bg-[#C1272D]/20 border-2 border-[#C1272D] rounded-xl p-4 mb-6">
+      <div class="text-white text-center">
+       <div class="text-sm opacity-80 mb-1">
+        คะแนนของคุณ
+       </div>
+       <div class="text-3xl font-bold text-yellow-400 mb-2" id="userPoints">
+        0
+       </div>
+       <div class="text-xs" id="userRankInfo">
+        กำลังโหลด...
+       </div>
+      </div>
+     </div><!-- Top 10 Leaderboard -->
+     <div class="mb-6">
+      <h2 class="text-lg font-bold text-white mb-3 text-center">🌟 Top 10 🌟</h2>
+      <div id="leaderboardList" class="space-y-2">
+       <div class="text-white text-center text-sm">
+        กำลังโหลด...
+       </div>
+      </div>
+     </div>
+     <div class="text-center"><button onclick="goBackToPage1()" class="bg-[#C1272D] text-white border-2 border-[#C1272D] px-6 py-3 rounded-2xl text-sm font-bold cursor-pointer transition-all duration-200 shadow-[0_8px_20px_rgba(0,0,0,0.4)] inline-block uppercase tracking-wider hover:-translate-y-1 hover:scale-105 hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] hover:bg-[#A01F24] hover:border-[#FF3974] active:translate-y-[-2px] active:scale-[1.02]"> กลับไปหน้าแรก 🔄 </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+        // Configuration object
+        const defaultConfig = {
+            main_title: "📸 อวดอีแคล 👀",
+            subtitle: "อัปโหลดรูป Proof ของคุณให้ประชาชาติได้ชื่นชม 💪",
+            success_title: "💖 อีแคลภูมิใจในตัวเธอมาก!"
+        };
+
+        // Global variables
+        let userProfile = null;
+        let supabase = null;
+
+        // Initialize Supabase
+        function initSupabase() {
+            const supabaseUrl = 'https://lvtdqeerzxpznnayccmb.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM';
+            supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        }
+
+        // Data handler for SDK
+        const dataHandler = {
+            onDataChanged(data) {
+                console.log('Data updated:', data.length, 'submissions');
+            }
+        };
+
+        // Initialize LIFF
+        async function initializeLIFF() {
+            try {
+                await liff.init({ liffId: "2007859046-5n7a6M7V" });
+                
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+                
+                userProfile = await liff.getProfile();
+                console.log('User profile:', userProfile);
+                
+                document.getElementById('loginPage').classList.remove('active');
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('page1').classList.remove('hidden');
+                document.getElementById('page1').classList.add('active');
+                
+            } catch (error) {
+                console.error('LIFF initialization failed:', error);
+                document.getElementById('loginPage').classList.remove('active');
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('page1').classList.remove('hidden');
+                document.getElementById('page1').classList.add('active');
+            }
+        }
+
+        // Initialize SDKs
+        async function initializeApp() {
+            initSupabase();
+            await initializeLIFF();
+            
+            if (window.dataSdk) {
+                const initResult = await window.dataSdk.init(dataHandler);
+                if (!initResult.isOk) {
+                    console.error('Failed to initialize data SDK');
+                }
+            }
+
+            if (window.elementSdk) {
+                await window.elementSdk.init({
+                    defaultConfig,
+                    onConfigChange: async (config) => {
+                        const mainTitle = document.getElementById('main-title');
+                        const subtitle = document.getElementById('subtitle');
+                        const successTitle = document.getElementById('success-title');
+
+                        if (mainTitle) mainTitle.textContent = config.main_title || defaultConfig.main_title;
+                        if (subtitle) subtitle.textContent = config.subtitle || defaultConfig.subtitle;
+                        if (successTitle) successTitle.textContent = config.success_title || defaultConfig.success_title;
+                    },
+                    mapToCapabilities: (config) => ({
+                        recolorables: [],
+                        borderables: [],
+                        fontEditable: undefined,
+                        fontSizeable: undefined
+                    }),
+                    mapToEditPanelValues: (config) => new Map([
+                        ["main_title", config.main_title || defaultConfig.main_title],
+                        ["subtitle", config.subtitle || defaultConfig.subtitle],
+                        ["success_title", config.success_title || defaultConfig.success_title]
+                    ])
+                });
+            }
+        }
+
+        // Get user challenge data
+        async function getUserChallengeData(lineUserId) {
+            if (!supabase) return null;
+            
+            try {
+                const { data, error } = await supabase
+                    .from('user_challenges')
+                    .select('id, current_day, is_active')
+                    .eq('line_user_id', lineUserId)
+                    .eq('is_active', true)
+                    .single();
+                
+                if (error) {
+                    console.error('Error fetching user challenge:', error);
+                    return null;
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Error in getUserChallengeData:', error);
+                return null;
+            }
+        }
+
+        // Get proof message from challenge_missions table
+        async function getProofMessage(dayNumber) {
+            if (!supabase) return null;
+            
+            try {
+                const { data, error } = await supabase
+                    .from('challenge_missions')
+                    .select('poof_message')
+                    .eq('day_number', dayNumber)
+                    .single();
+                
+                if (error) {
+                    console.error('Error fetching proof message:', error);
+                    return null;
+                }
+                
+                return data?.poof_message || null;
+            } catch (error) {
+                console.error('Error in getProofMessage:', error);
+                return null;
+            }
+        }
+
+        // Add points to user
+        async function addPointsToUser(lineUserId, points, activityType, proofId = null) {
+            if (!supabase) return { success: false };
+            
+            try {
+                // Get or create user points record
+                const { data: existingUser, error: fetchError } = await supabase
+                    .from('user_points')
+                    .select('*')
+                    .eq('line_user_id', lineUserId)
+                    .single();
+                
+                if (fetchError && fetchError.code !== 'PGRST116') {
+                    console.error('Error fetching user points:', fetchError);
+                }
+                
+                if (!existingUser) {
+                    // Create new user points record
+                    const { error: insertError } = await supabase
+                        .from('user_points')
+                        .insert([{
+                            line_user_id: lineUserId,
+                            display_name: userProfile?.displayName || 'Unknown',
+                            profile_picture_url: userProfile?.pictureUrl || null,
+                            total_points: points
+                        }]);
+                    
+                    if (insertError) {
+                        console.error('Error creating user points:', insertError);
+                        return { success: false };
+                    }
+                } else {
+                    // Update existing user points
+                    const { error: updateError } = await supabase
+                        .from('user_points')
+                        .update({ 
+                            total_points: existingUser.total_points + points,
+                            display_name: userProfile?.displayName || existingUser.display_name,
+                            profile_picture_url: userProfile?.pictureUrl || existingUser.profile_picture_url
+                        })
+                        .eq('line_user_id', lineUserId);
+                    
+                    if (updateError) {
+                        console.error('Error updating user points:', updateError);
+                        return { success: false };
+                    }
+                }
+                
+                // Add points history
+                const { error: historyError } = await supabase
+                    .from('points_history')
+                    .insert([{
+                        line_user_id: lineUserId,
+                        points: points,
+                        activity_type: activityType,
+                        proof_id: proofId
+                    }]);
+                
+                if (historyError) {
+                    console.error('Error adding points history:', historyError);
+                }
+                
+                return { success: true };
+            } catch (error) {
+                console.error('Error in addPointsToUser:', error);
+                return { success: false };
+            }
+        }
+
+        // Get leaderboard data
+        async function getLeaderboardData() {
+            if (!supabase) return [];
+            
+            try {
+                const { data, error } = await supabase
+                    .from('user_points')
+                    .select('*')
+                    .order('total_points', { ascending: false })
+                    .limit(10);
+                
+                if (error) {
+                    console.error('Error fetching leaderboard:', error);
+                    return [];
+                }
+                
+                return data || [];
+            } catch (error) {
+                console.error('Error in getLeaderboardData:', error);
+                return [];
+            }
+        }
+
+        // Get user rank and stats
+        async function getUserRankStats(lineUserId) {
+            if (!supabase) return null;
+            
+            try {
+                // Get user's points
+                const { data: userData, error: userError } = await supabase
+                    .from('user_points')
+                    .select('total_points')
+                    .eq('line_user_id', lineUserId)
+                    .single();
+                
+                if (userError || !userData) {
+                    return { rank: 0, points: 0, pointsToNext: 0 };
+                }
+                
+                // Get user's rank
+                const { data: rankData, error: rankError } = await supabase
+                    .from('user_points')
+                    .select('line_user_id, total_points')
+                    .gt('total_points', userData.total_points)
+                    .order('total_points', { ascending: false });
+                
+                const rank = (rankData?.length || 0) + 1;
+                
+                // Get next rank points
+                const { data: nextRankData } = await supabase
+                    .from('user_points')
+                    .select('total_points')
+                    .gt('total_points', userData.total_points)
+                    .order('total_points', { ascending: true })
+                    .limit(1)
+                    .single();
+                
+                const pointsToNext = nextRankData ? nextRankData.total_points - userData.total_points : 0;
+                
+                return {
+                    rank: rank,
+                    points: userData.total_points,
+                    pointsToNext: pointsToNext
+                };
+            } catch (error) {
+                console.error('Error in getUserRankStats:', error);
+                return { rank: 0, points: 0, pointsToNext: 0 };
+            }
+        }
+
+        // Display leaderboard
+        async function displayLeaderboard() {
+            const lineUserId = userProfile?.userId || 'anonymous';
+            
+            // Get leaderboard data
+            const leaderboard = await getLeaderboardData();
+            const leaderboardList = document.getElementById('leaderboardList');
+            
+            if (leaderboard.length === 0) {
+                leaderboardList.innerHTML = '<div class="text-white text-center text-sm">ยังไม่มีข้อมูล</div>';
+            } else {
+                leaderboardList.innerHTML = leaderboard.map((user, index) => {
+                    const isCurrentUser = user.line_user_id === lineUserId;
+                    const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
+                    
+                    return `
+                        <div class="bg-[#1a1a1a] ${isCurrentUser ? 'border-2 border-yellow-400' : 'border border-[#C1272D]'} rounded-xl p-3 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="rank-medal ${rankClass} text-white">${index + 1}</div>
+                                <div class="text-white text-sm font-medium truncate max-w-[150px]">${user.display_name || 'Unknown'}</div>
+                            </div>
+                            <div class="text-yellow-400 font-bold text-sm">${user.total_points} คะแนน</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Get user rank stats
+            const userStats = await getUserRankStats(lineUserId);
+            document.getElementById('userPoints').textContent = userStats.points;
+            
+            if (userStats.rank === 0) {
+                document.getElementById('userRankInfo').innerHTML = 'ยังไม่มีคะแนน - เริ่มส่ง proof เลย!';
+            } else if (userStats.pointsToNext === 0) {
+                document.getElementById('userRankInfo').innerHTML = `🏆 อันดับที่ ${userStats.rank} - คุณอยู่อันดับสูงสุด!`;
+            } else {
+                document.getElementById('userRankInfo').innerHTML = `📍 อันดับที่ ${userStats.rank}<br>อีก ${userStats.pointsToNext} คะแนนถึงอันดับถัดไป`;
+            }
+        }
+
+        // Upload files to Supabase Storage
+        async function uploadFilesToStorage(files, lineUserId, challengeId, dayNumber) {
+            if (!supabase || !files || files.length === 0) return [];
+            
+            const uploadedFiles = [];
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${lineUserId}_challenge${challengeId}_day${dayNumber}_${Date.now()}_${i}.${fileExt}`;
+                
+                try {
+                    const { data, error } = await supabase.storage
+                        .from('proof')
+                        .upload(fileName, file);
+                    
+                    if (error) {
+                        console.error('Upload error:', error);
+                        continue;
+                    }
+                    
+                    const { data: urlData } = supabase.storage
+                        .from('proof')
+                        .getPublicUrl(fileName);
+                    
+                    uploadedFiles.push({
+                        fileName: fileName,
+                        originalName: file.name,
+                        fileSize: file.size,
+                        fileType: file.type,
+                        publicUrl: urlData.publicUrl
+                    });
+                    
+                } catch (error) {
+                    console.error('File upload error:', error);
+                }
+            }
+            
+            return uploadedFiles;
+        }
+
+        // Save to Supabase
+        async function saveToSupabase(data, files) {
+            if (!supabase) return { success: false, error: 'Supabase not initialized' };
+            
+            const lineUserId = userProfile?.userId || 'anonymous';
+            const challengeData = await getUserChallengeData(lineUserId);
+            
+            if (!challengeData) {
+                return { 
+                    success: false, 
+                    error: 'ไม่พบข้อมูล Challenge ของคุณ กรุณาลงทะเบียน Challenge ก่อน' 
+                };
+            }
+            
+            const uploadedFiles = await uploadFilesToStorage(files, lineUserId, challengeData.id, challengeData.current_day);
+            
+            try {
+                const { data: result, error } = await supabase
+                    .from('user_challenges_proof')
+                    .insert([{
+                        line_user_id: lineUserId,
+                        user_challenge_id: challengeData.id,
+                        day_number: challengeData.current_day,
+                        proof_type: uploadedFiles.length > 0 ? 'image' : 'text',
+                        proof_content: JSON.stringify({
+                            caption: data.caption,
+                            instagram_username: data.instagram_username,
+                            send_to_ecal: data.send_to_ecal,
+                            files_count: data.files_count || 0,
+                            uploaded_files: uploadedFiles
+                        }),
+                        proof_date: new Date().toISOString()
+                    }])
+                    .select()
+                    .single();
+                
+                if (error) {
+                    console.error('Supabase error:', error);
+                    return { success: false, error: error.message };
+                }
+
+                await updateChallengeProgress(challengeData.id, challengeData.current_day);
+                
+                // Add 5 points to user
+                await addPointsToUser(lineUserId, 5, 'proof_submission', result?.id);
+                
+                return { success: true, data: result, dayNumber: challengeData.current_day };
+            } catch (error) {
+                console.error('Supabase save error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Update challenge progress
+        async function updateChallengeProgress(challengeId, currentDay) {
+            if (!supabase) return;
+            
+            try {
+                const { error } = await supabase
+                    .from('user_challenges')
+                    .update({
+                        completed_days: currentDay,
+                        current_day: currentDay < 7 ? currentDay + 1 : currentDay,
+                        last_submitted_at: new Date().toISOString(),
+                        is_active: currentDay < 7
+                    })
+                    .eq('id', challengeId);
+                
+                if (error) {
+                    console.error('Error updating challenge progress:', error);
+                }
+            } catch (error) {
+                console.error('Error in updateChallengeProgress:', error);
+            }
+        }
+
+        // Form submission handler
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const caption = document.getElementById('caption').value;
+            const instagram = document.getElementById('instagram').value;
+            const sendToEcal = document.getElementById('sendToEcal').checked;
+            const files = document.getElementById('fileInput').files;
+            const loading = document.getElementById('loading');
+            const submitBtn = document.querySelector('button[type="submit"]');
+            
+            loading.classList.remove('hidden');
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7';
+            
+            const submissionData = {
+                caption: caption || '',
+                instagram_username: instagram || '',
+                send_to_ecal: sendToEcal,
+                files_count: files.length,
+                uploaded_at: new Date().toISOString()
+            };
+            
+            const supabaseResult = await saveToSupabase(submissionData, files);
+            
+            let canvaResult = { isOk: true };
+            if (window.dataSdk) {
+                const canvaData = {
+                    id: Date.now().toString(),
+                    ...submissionData
+                };
+                canvaResult = await window.dataSdk.create(canvaData);
+            }
+            
+            if (supabaseResult.success || canvaResult.isOk) {
+                setTimeout(() => {
+                    showPage2(supabaseResult.dayNumber || 1);
+                }, 1000);
+            } else {
+                const errorMessage = supabaseResult.error || 'เกิดข้อผิดพลาด กรุณาลองใหม่ 😅';
+                loading.textContent = errorMessage;
+                loading.classList.add('text-yellow-400');
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                
+                setTimeout(() => {
+                    loading.classList.add('hidden');
+                    loading.textContent = 'กำลังส่ง... ✨';
+                    loading.classList.remove('text-yellow-400');
+                }, 5000);
+            }
+        });
+
+        // Show page 2 with animations
+        async function showPage2(dayNumber) {
+            document.getElementById('page1').classList.remove('active');
+            document.getElementById('page1').classList.add('hidden');
+            document.getElementById('page2').classList.remove('hidden');
+            document.getElementById('page2').classList.add('active');
+            
+            const proofMessage = await getProofMessage(dayNumber);
+            if (proofMessage) {
+                const successTitle = document.getElementById('success-title');
+                if (successTitle) {
+                    successTitle.textContent = proofMessage;
+                }
+            }
+            
+            const stickers = [
+                'https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/ecal_sticker1.png',
+                'https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/ecal_sticker2.png',
+                'https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/ecal_sticker3.png'
+            ];
+            const randomSticker = stickers[Math.floor(Math.random() * stickers.length)];
+            
+            const successIcon = document.querySelector('.bounce-animation');
+            successIcon.innerHTML = `<img src="${randomSticker}" alt="E-Cal Sticker" class="w-[280px] h-[280px] object-contain block mx-auto" onerror="this.style.display='none'; this.parentElement.innerHTML='✨💖✨';">`;
+            
+            createConfetti();
+        }
+
+        // Go to leaderboard page
+        async function goToLeaderboard() {
+            document.getElementById('page2').classList.remove('active');
+            document.getElementById('page2').classList.add('hidden');
+            document.getElementById('page3').classList.remove('hidden');
+            document.getElementById('page3').classList.add('active');
+            
+            await displayLeaderboard();
+        }
+
+        // Go back to page 1 function
+        function goBackToPage1() {
+            const currentPage = document.querySelector('.page.active');
+            currentPage.classList.remove('active');
+            currentPage.classList.add('hidden');
+            document.getElementById('page1').classList.remove('hidden');
+            document.getElementById('page1').classList.add('active');
+            
+            document.getElementById('uploadForm').reset();
+            const loading = document.getElementById('loading');
+            loading.classList.add('hidden');
+            const submitBtn = document.querySelector('button[type="submit"]');
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            
+            const uploadText = document.querySelector('.upload-text');
+            uploadText.textContent = 'คลิกเพื่ออัปโหลดรูป/วิดีโอ';
+        }
+
+        // Confetti animation
+        function createConfetti() {
+            const colors = ['#C1272D', '#FF3974', '#FFD700', '#FFFFFF', '#A01F24'];
+            
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 2 + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        if (confetti.parentNode) {
+                            confetti.parentNode.removeChild(confetti);
+                        }
+                    }, 4000);
+                }, i * 100);
+            }
+        }
+
+        // File input change handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const uploadBox = e.target.closest('.border-dashed').parentElement.querySelector('.border-dashed');
+            
+            if (files.length > 0) {
+                const uploadText = document.querySelector('.upload-text');
+                uploadText.textContent = `เลือกไฟล์แล้ว ${files.length} ไฟล์ ✅`;
+                uploadBox.classList.remove('border-[#C1272D]');
+                uploadBox.classList.add('border-yellow-400');
+                uploadBox.classList.remove('bg-[#C1272D]/10');
+                uploadBox.classList.add('bg-yellow-400/15');
+                uploadBox.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.4)';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a0cad3e61367b3a',t:'MTc2MzUyMzUyNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+
