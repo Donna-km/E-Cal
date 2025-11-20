@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="th">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proof Page Challenge</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    
+    .glass-button {
+      background: rgba(193, 39, 45, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .glass-button:hover {
+      background: rgba(193, 39, 45, 1);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(193, 39, 45, 0.4);
+    }
+    
+    .glass-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .file-preview {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .file-preview img, .file-preview video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .delete-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(193, 39, 45, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .delete-btn:hover {
+      background: rgba(193, 39, 45, 1);
+      transform: scale(1.1);
+    }
+    
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .leaderboard-item {
+      transition: all 0.3s ease;
+    }
+    
+    .leaderboard-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateX(5px);
+    }
+    
+    .rank-badge {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    
+    .current-user {
+      border: 2px solid #C1272D;
+      box-shadow: 0 0 20px rgba(193, 39, 45, 0.3);
+    }
+    
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease-in;
+    }
+    
+    .popup-content {
+      animation: slideUp 0.3s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from { 
+        opacity: 0;
+        transform: translateY(30px) scale(0.9);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="bg-black text-white min-h-full">
+  <div id="app" class="min-h-full p-4 pb-8"></div>
+  <script>
+    const SUPABASE_URL = "https://lvtdqeerzxpznnayccmb.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM";
+    const BUCKET = "proof";
+    const LIFF_ID = "2007859046-5n7a6M7V";
+    
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    const defaultConfig = {
+      page_title: "Challenge Proof",
+      upload_instruction: "อัปโหลดรูป/วิดีโอพิสูจน์",
+      submit_button_text: "ส่งหลักฐาน",
+      leaderboard_title: "🏆 ตารางคะแนน",
+      primary_color: "#C1272D",
+      background_color: "#000000",
+      text_color: "#FFFFFF",
+      surface_color: "rgba(255, 255, 255, 0.05)",
+      font_family: "Inter",
+      font_size: 16
+    };
+    
+    let config = { ...defaultConfig };
+    let currentPage = 'upload';
+    let selectedFiles = [];
+    let urlParams = {};
+    let liffProfile = null;
+    let isLoading = false;
+    
+    const encouragementMessages = [
+      "โห วันนี้เล่นใหญ่!! เดี๋ยวแคลแอบบอกเพื่อนนะว่าเธอมุ่งมั่นมาก 😏🔥",
+      "ดีมากกกก! คะแนนวิ่งแซงเพื่อนแล้วแม่ 💅✨",
+      "โอ๊ยยย สวยและขยันมาก ไม่รักไม่ไหวแล้วป้ะ 💖",
+      "อย่างเท่! แบบนี้เรียกว่าเข้าวงการนักพิสูจน์แบบตัวจริง 💪🔥",
+      "สุดจัดเอาจริง! แคลให้มง 👑",
+      "อัปคลิปมานี่ใจถึงมาก นับถือเลยนะ 😌🔥",
+      "อย่าหยุดนะ นี่แหละคนกำลังจะปัง!",
+      "คะแนนเธอพุ่งแรงกว่าไฟล็อกของแคลอีกอ่ะ 🔥",
+      "อีกนิดเดียวขึ้นอันดับต่อไปแล้ว สู้ๆๆ",
+      "เกินป๊ปแม่! เล่นซะ leaderboard สะเทือน 😳"
+    ];
+    
+    async function initLiff() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return false;
+        }
+        
+        liffProfile = await liff.getProfile();
+        
+        const urlSearchParams = new URLSearchParams(window.location.search);
+        urlParams = {
+          line_user_id: urlSearchParams.get('line_user_id') || liffProfile.userId,
+          day: urlSearchParams.get('day') || '1',
+          challenge_name: decodeURIComponent(urlSearchParams.get('challenge_name') || 'Challenge'),
+          mission_id: urlSearchParams.get('mission_id') || '1',
+          mission_text: decodeURIComponent(urlSearchParams.get('mission_text') || 'Complete Mission'),
+          emoji: decodeURIComponent(urlSearchParams.get('emoji') || '🎯'),
+          date: urlSearchParams.get('date') || new Date().toISOString().split('T')[0]
+        };
+        
+        return true;
+      } catch (error) {
+        console.error('LIFF Init Error:', error);
+        showError('ไม่สามารถเชื่อมต่อ LINE ได้');
+        return false;
+      }
+    }
+    
+    function showError(message) {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class="max-w-md mx-auto mt-8">
+          <div class="glass-card rounded-2xl p-6 text-center">
+            <div class="text-6xl mb-4">😢</div>
+            <h2 class="text-xl font-bold mb-2">เกิดข้อผิดพลาด</h2>
+            <p class="text-gray-300">${message}</p>
+          </div>
+        </div>
+      `;
+    }
+    
+    function showDuplicatePopup() {
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      
+      const popup = document.createElement('div');
+      popup.className = 'popup-overlay';
+      popup.innerHTML = `
+        <div class="popup-content max-w-md mx-4" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
+          <div class="glass-card rounded-2xl p-8 text-center">
+            <div class="text-7xl mb-4">✅</div>
+            <h2 class="font-bold mb-4" style="font-size: ${baseSize * 1.5}px; color: ${config.text_color || defaultConfig.text_color};">
+              บันทึกไปแล้ว!
+            </h2>
+            <p class="mb-6 leading-relaxed" style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color}; opacity: 0.9;">
+              คุณบันทึกความสำเร็จของ<br><strong>${urlParams.challenge_name} - Day ${urlParams.day}</strong><br>ไปแล้ว
+            </p>
+            <button 
+              class="glass-button w-full py-4 rounded-xl font-bold"
+              style="font-size: ${baseSize * 1.125}px; background: ${config.primary_color || defaultConfig.primary_color}; color: ${config.text_color || defaultConfig.text_color};"
+              onclick="closeDuplicatePopup()"
+            >
+              เข้าใจแล้ว
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(popup);
+    }
+    
+    function closeDuplicatePopup() {
+      const popup = document.querySelector('.popup-overlay');
+      if (popup) {
+        popup.remove();
+      }
+      selectedFiles = [];
+      renderUploadPage();
+    }
+    
+    function handleFileSelect(event) {
+      const files = Array.from(event.target.files);
+      const maxSize = 30 * 1024 * 1024;
+      
+      files.forEach(file => {
+        if (file.size > maxSize) {
+          const customFont = config.font_family || defaultConfig.font_family;
+          const baseSize = config.font_size || defaultConfig.font_size;
+          
+          const popup = document.createElement('div');
+          popup.className = 'popup-overlay';
+          popup.innerHTML = `
+            <div class="popup-content max-w-md mx-4" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
+              <div class="glass-card rounded-2xl p-8 text-center">
+                <div class="text-7xl mb-4">⚠️</div>
+                <h2 class="font-bold mb-4" style="font-size: ${baseSize * 1.5}px; color: ${config.text_color || defaultConfig.text_color};">
+                  ไฟล์ใหญ่เกินไป
+                </h2>
+                <p class="mb-6" style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color};">
+                  ไฟล์ ${file.name} มีขนาด ${(file.size / (1024 * 1024)).toFixed(1)} MB<br>
+                  (สูงสุด 30 MB)
+                </p>
+                <button 
+                  class="glass-button w-full py-4 rounded-xl font-bold"
+                  style="font-size: ${baseSize * 1.125}px; background: ${config.primary_color || defaultConfig.primary_color}; color: ${config.text_color || defaultConfig.text_color};"
+                  onclick="this.closest('.popup-overlay').remove()"
+                >
+                  เข้าใจแล้ว
+                </button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(popup);
+          return;
+        }
+        
+        if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+          selectedFiles.push(file);
+        }
+      });
+      
+      renderUploadPage();
+    }
+    
+    function deleteFile(index) {
+      selectedFiles.splice(index, 1);
+      renderUploadPage();
+    }
+    
+    function calculatePoints() {
+      let imageCount = 0;
+      let videoCount = 0;
+      
+      selectedFiles.forEach(file => {
+        if (file.type.startsWith('image/')) imageCount++;
+        if (file.type.startsWith('video/')) videoCount++;
+      });
+      
+      let points = 0;
+      if (imageCount >= 1 && imageCount <= 3) points += 5;
+      if (videoCount >= 1) points += 10;
+      
+      return points;
+    }
+    
+    async function uploadFile(file, userId) {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      
+      const { data, error } = await supabaseClient.storage
+        .from(BUCKET)
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (error) throw error;
+      
+      const { data: urlData } = supabaseClient.storage
+        .from(BUCKET)
+        .getPublicUrl(fileName);
+      
+      return urlData.publicUrl;
+    }
+    
+    async function handleSubmit() {
+      if (selectedFiles.length === 0) {
+        const customFont = config.font_family || defaultConfig.font_family;
+        const baseSize = config.font_size || defaultConfig.font_size;
+        
+        const popup = document.createElement('div');
+        popup.className = 'popup-overlay';
+        popup.innerHTML = `
+          <div class="popup-content max-w-md mx-4" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
+            <div class="glass-card rounded-2xl p-8 text-center">
+              <div class="text-7xl mb-4">📸</div>
+              <h2 class="font-bold mb-4" style="font-size: ${baseSize * 1.5}px; color: ${config.text_color || defaultConfig.text_color};">
+                ยังไม่ได้เลือกไฟล์
+              </h2>
+              <p class="mb-6" style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color};">
+                กรุณาเลือกรูปภาพหรือวิดีโออย่างน้อย 1 ไฟล์
+              </p>
+              <button 
+                class="glass-button w-full py-4 rounded-xl font-bold"
+                style="font-size: ${baseSize * 1.125}px; background: ${config.primary_color || defaultConfig.primary_color}; color: ${config.text_color || defaultConfig.text_color};"
+                onclick="this.closest('.popup-overlay').remove()"
+              >
+                เข้าใจแล้ว
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(popup);
+        return;
+      }
+      
+      if (isLoading) return;
+      isLoading = true;
+      renderUploadPage();
+      
+      try {
+        const { data: tdeeCheck } = await supabaseClient
+          .from('tdee_form')
+          .select('line_user_id')
+          .eq('line_user_id', urlParams.line_user_id)
+          .maybeSingle();
+        
+        if (!tdeeCheck) {
+          isLoading = false;
+          const customFont = config.font_family || defaultConfig.font_family;
+          const baseSize = config.font_size || defaultConfig.font_size;
+          
+          const popup = document.createElement('div');
+          popup.className = 'popup-overlay';
+          popup.innerHTML = `
+            <div class="popup-content max-w-md mx-4" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
+              <div class="glass-card rounded-2xl p-8 text-center">
+                <div class="text-7xl mb-4">⚠️</div>
+                <h2 class="font-bold mb-4" style="font-size: ${baseSize * 1.5}px; color: ${config.text_color || defaultConfig.text_color};">
+                  ไม่พบข้อมูลผู้ใช้
+                </h2>
+                <p class="mb-6" style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color};">
+                  กรุณากรอกแบบฟอร์ม TDEE ก่อน
+                </p>
+                <button 
+                  class="glass-button w-full py-4 rounded-xl font-bold"
+                  style="font-size: ${baseSize * 1.125}px; background: ${config.primary_color || defaultConfig.primary_color}; color: ${config.text_color || defaultConfig.text_color};"
+                  onclick="this.closest('.popup-overlay').remove()"
+                >
+                  เข้าใจแล้ว
+                </button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(popup);
+          renderUploadPage();
+          return;
+        }
+        
+        const existingProof = await supabaseClient
+          .from('user_challenges_proof')
+          .select('id')
+          .eq('line_user_id', urlParams.line_user_id)
+          .eq('day_number', parseInt(urlParams.day))
+          .eq('challenge_name', urlParams.challenge_name)
+          .maybeSingle();
+        
+        if (existingProof.data) {
+          isLoading = false;
+          showDuplicatePopup();
+          return;
+        }
+        
+        const urls = [];
+        for (const file of selectedFiles) {
+          const url = await uploadFile(file, urlParams.line_user_id);
+          urls.push(url);
+        }
+        
+        const { error: proofError } = await supabaseClient
+          .from('user_challenges_proof')
+          .insert([{
+            line_user_id: urlParams.line_user_id,
+            day_number: parseInt(urlParams.day),
+            proof_type: 'image',
+            challenge_name: urlParams.challenge_name,
+            profile_picture_url: liffProfile.pictureUrl,
+            full_name: liffProfile.displayName,
+            proof_date: new Date().toISOString()
+          }]);
+        
+        if (proofError) throw proofError;
+        
+        isLoading = false;
+        currentPage = 'success';
+        render();
+        fireConfetti();
+      } catch (error) {
+        console.error('Submit Error:', error);
+        isLoading = false;
+        const customFont = config.font_family || defaultConfig.font_family;
+        const baseSize = config.font_size || defaultConfig.font_size;
+        
+        const popup = document.createElement('div');
+        popup.className = 'popup-overlay';
+        popup.innerHTML = `
+          <div class="popup-content max-w-md mx-4" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
+            <div class="glass-card rounded-2xl p-8 text-center">
+              <div class="text-7xl mb-4">😢</div>
+              <h2 class="font-bold mb-4" style="font-size: ${baseSize * 1.5}px; color: ${config.text_color || defaultConfig.text_color};">
+                เกิดข้อผิดพลาด
+              </h2>
+              <p class="mb-6" style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color};">
+                ${error.message || 'กรุณาลองใหม่อีกครั้ง'}
+              </p>
+              <button 
+                class="glass-button w-full py-4 rounded-xl font-bold"
+                style="font-size: ${baseSize * 1.125}px; background: ${config.primary_color || defaultConfig.primary_color}; color: ${config.text_color || defaultConfig.text_color};"
+                onclick="this.closest('.popup-overlay').remove()"
+              >
+                เข้าใจแล้ว
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(popup);
+        renderUploadPage();
+      }
+    }
+    
+    function fireConfetti() {
+      const duration = 3000;
+      const end = Date.now() + duration;
+      
+      const colors = ['#C1272D', '#FFD700', '#FF69B4', '#00FFFF', '#FF4500'];
+      
+      (function frame() {
+        confetti({
+          particleCount: 7,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0, y: 0.6 },
+          colors: colors
+        });
+        confetti({
+          particleCount: 7,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1, y: 0.6 },
+          colors: colors
+        });
+        
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      }());
+    }
+    
+    async function loadLeaderboard() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('user_points')
+          .select('*')
+          .order('total_points', { ascending: false })
+          .limit(10);
+        
+        if (error) throw error;
+        
+        const { data: currentUserData } = await supabaseClient
+          .from('user_points')
+          .select('*')
+          .eq('line_user_id', urlParams.line_user_id)
+          .single();
+        
+        const { data: allUsers } = await supabaseClient
+          .from('user_points')
+          .select('line_user_id, total_points')
+          .order('total_points', { ascending: false });
+        
+        let currentUserRank = 0;
+        let pointsToNext = 0;
+        
+        if (currentUserData && allUsers) {
+          currentUserRank = allUsers.findIndex(u => u.line_user_id === urlParams.line_user_id) + 1;
+          if (currentUserRank > 1 && currentUserRank <= allUsers.length) {
+            pointsToNext = allUsers[currentUserRank - 2].total_points - currentUserData.total_points;
+          }
+        }
+        
+        return { 
+          leaderboard: data || [], 
+          currentUser: currentUserData,
+          currentUserRank,
+          pointsToNext
+        };
+      } catch (error) {
+        console.error('Leaderboard Error:', error);
+        return { leaderboard: [], currentUser: null, currentUserRank: 0, pointsToNext: 0 };
+      }
+    }
+    
+    function renderUploadPage() {
+      const app = document.getElementById('app');
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      
+      app.innerHTML = `
+        <div class="max-w-2xl mx-auto fade-in" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
+          <div class="glass-card rounded-2xl p-6 mb-6">
+            <div class="text-center mb-6">
+              <div class="text-6xl mb-3">${urlParams.emoji}</div>
+              <h1 class="font-bold mb-2" style="font-size: ${baseSize * 1.5}px; color: ${config.text_color || defaultConfig.text_color};">
+                ${config.page_title || defaultConfig.page_title}
+              </h1>
+              <div class="text-sm opacity-80" style="font-size: ${baseSize * 0.85}px; color: ${config.text_color || defaultConfig.text_color};">
+                <p class="mb-1">${urlParams.challenge_name} - Day ${urlParams.day}</p>
+                <p class="font-semibold">${urlParams.mission_text}</p>
+                <p class="text-xs mt-2 opacity-60" style="font-size: ${baseSize * 0.75}px;">📅 ${urlParams.date}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="glass-card rounded-2xl p-6 mb-6">
+            <h2 class="font-bold mb-4" style="font-size: ${baseSize * 1.25}px; color: ${config.text_color || defaultConfig.text_color};">
+              ${config.upload_instruction || defaultConfig.upload_instruction}
+            </h2>
+            
+            <label class="block cursor-pointer">
+              <div class="border-2 border-dashed border-gray-500 rounded-xl p-8 text-center hover:border-gray-400 transition-colors">
+                <div class="text-4xl mb-2">📸</div>
+                <p style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color};">คลิกเพื่อเลือกไฟล์</p>
+                <p class="text-sm mt-1 opacity-70" style="font-size: ${baseSize * 0.85}px; color: ${config.text_color || defaultConfig.text_color};">
+                  รูปภาพหรือวิดีโอ (ไฟล์ละไม่เกิน 30MB)
+                </p>
+              </div>
+              <input 
+                type="file" 
+                accept="image/*,video/*" 
+                multiple 
+                class="hidden" 
+                onchange="handleFileSelect(event)"
+                ${isLoading ? 'disabled' : ''}
+              >
+            </label>
+            
+            ${selectedFiles.length > 0 ? `
+              <div class="mt-6">
+                <p class="font-semibold mb-3" style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color};">
+                  ไฟล์ที่เลือก (${selectedFiles.length})
+                </p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  ${selectedFiles.map((file, index) => `
+                    <div class="file-preview glass-card rounded-xl h-32">
+                      ${file.type.startsWith('image/') ? `
+                        <img src="${URL.createObjectURL(file)}" alt="Preview" class="rounded-xl">
+                      ` : `
+                        <video src="${URL.createObjectURL(file)}" class="rounded-xl"></video>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                          <div class="text-4xl">🎬</div>
+                        </div>
+                      `}
+                      <button 
+                        class="delete-btn" 
+                        onclick="deleteFile(${index})"
+                        ${isLoading ? 'disabled' : ''}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  `).join('')}
+                </div>
+                
+                <div class="mt-4 p-4 glass-card rounded-xl">
+                  <div class="flex justify-between items-center text-sm" style="font-size: ${baseSize * 0.9}px; color: ${config.text_color || defaultConfig.text_color};">
+                    <span>คะแนนที่จะได้รับ:</span>
+                    <span class="font-bold text-2xl" style="color: ${config.primary_color || defaultConfig.primary_color};">
+                      ${calculatePoints()} คะแนน
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+          
+          <button 
+            class="glass-button w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2"
+            style="font-size: ${baseSize * 1.125}px; background: ${config.primary_color || defaultConfig.primary_color};"
+            onclick="handleSubmit()"
+            ${selectedFiles.length === 0 || isLoading ? 'disabled' : ''}
+          >
+            ${isLoading ? `
+              <div class="spinner"></div>
+              <span>กำลังส่ง...</span>
+            ` : `
+              <span>${config.submit_button_text || defaultConfig.submit_button_text}</span>
+            `}
+          </button>
+        </div>
+      `;
+    }
+    
+    function renderSuccessPage() {
+      const app = document.getElementById('app');
+      const randomMessage = encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      
+      app.innerHTML = `
+        <div class="max-w-2xl mx-auto fade-in" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
+          <div class="glass-card rounded-2xl p-8 text-center">
+            <div class="text-8xl mb-4">🎉</div>
+            <h1 class="font-bold mb-4" style="font-size: ${baseSize * 2}px; color: ${config.text_color || defaultConfig.text_color};">
+              ส่งหลักฐานสำเร็จ!
+            </h1>
+            <div class="glass-card rounded-xl p-6 mb-6" style="background: rgba(193, 39, 45, 0.1);">
+              <p class="text-lg leading-relaxed" style="font-size: ${baseSize * 1.125}px; color: ${config.text_color || defaultConfig.text_color};">
+                ${randomMessage}
+              </p>
+            </div>
+            <div class="mb-6">
+              <p class="text-sm mb-2 opacity-80" style="font-size: ${baseSize * 0.9}px; color: ${config.text_color || defaultConfig.text_color};">
+                คะแนนที่ได้รับ
+              </p>
+              <p class="font-bold" style="font-size: ${baseSize * 3}px; color: ${config.primary_color || defaultConfig.primary_color};">
+                +5
+              </p>
+              <p class="text-xs mt-2 opacity-70" style="font-size: ${baseSize * 0.75}px; color: ${config.text_color || defaultConfig.text_color};">
+                (คะแนนถูกจัดการโดย Trigger อัตโนมัติ)
+              </p>
+            </div>
+            <button 
+              class="glass-button w-full py-4 rounded-xl font-bold"
+              style="font-size: ${baseSize * 1.125}px; background: ${config.primary_color || defaultConfig.primary_color}; color: ${config.text_color || defaultConfig.text_color};"
+              onclick="currentPage = 'leaderboard'; render();"
+            >
+              ดู Leaderboard 🏆
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    
+    async function renderLeaderboardPage() {
+      const app = document.getElementById('app');
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      
+      app.innerHTML = `
+        <div class="max-w-2xl mx-auto fade-in" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
+          <div class="text-center mb-6">
+            <h1 class="font-bold" style="font-size: ${baseSize * 1.75}px; color: ${config.text_color || defaultConfig.text_color};">
+              ${config.leaderboard_title || defaultConfig.leaderboard_title}
+            </h1>
+          </div>
+          <div class="glass-card rounded-2xl p-4">
+            <div class="flex items-center justify-center py-8">
+              <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      const { leaderboard, currentUser, currentUserRank, pointsToNext } = await loadLeaderboard();
+      
+      const rankIcons = ['👑', '🥇', '🥈'];
+      
+      app.innerHTML = `
+        <div class="max-w-2xl mx-auto fade-in" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
+          <div class="text-center mb-6">
+            <h1 class="font-bold" style="font-size: ${baseSize * 1.75}px; color: ${config.text_color || defaultConfig.text_color};">
+              ${config.leaderboard_title || defaultConfig.leaderboard_title}
+            </h1>
+          </div>
+          
+          ${currentUser ? `
+            <div class="glass-card rounded-2xl p-4 mb-6 current-user">
+              <div class="flex items-center gap-4">
+                <div class="rank-badge glass-card rounded-full" style="color: ${config.primary_color || defaultConfig.primary_color};">
+                  #${currentUserRank}
+                </div>
+                <img 
+                  src="${currentUser.profile_picture_url || liffProfile.pictureUrl}" 
+                  alt="Profile" 
+                  class="w-12 h-12 rounded-full border-2"
+                  style="border-color: ${config.primary_color || defaultConfig.primary_color};"
+                >
+                <div class="flex-1">
+                  <p class="font-bold" style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color};">
+                    ${currentUser.display_name || liffProfile.displayName} (คุณ)
+                  </p>
+                  <p class="text-sm opacity-80" style="font-size: ${baseSize * 0.85}px; color: ${config.text_color || defaultConfig.text_color};">
+                    ${pointsToNext > 0 ? `ขาดอีก ${pointsToNext} คะแนนจะขึ้นอันดับถัดไป!` : 'คุณอยู่อันดับต้นๆ เลย!'}
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="font-bold" style="font-size: ${baseSize * 1.25}px; color: ${config.primary_color || defaultConfig.primary_color};">
+                    ${currentUser.total_points}
+                  </p>
+                  <p class="text-xs opacity-70" style="font-size: ${baseSize * 0.75}px; color: ${config.text_color || defaultConfig.text_color};">
+                    คะแนน
+                  </p>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+          
+          <div class="glass-card rounded-2xl p-4">
+            <h2 class="font-bold mb-4 px-2" style="font-size: ${baseSize * 1.125}px; color: ${config.text_color || defaultConfig.text_color};">
+              Top 10 ผู้เล่น
+            </h2>
+            <div class="space-y-2">
+              ${leaderboard.map((user, index) => {
+                const isCurrentUser = user.line_user_id === urlParams.line_user_id;
+                return `
+                  <div class="leaderboard-item glass-card rounded-xl p-4 flex items-center gap-4 ${isCurrentUser ? 'current-user' : ''}">
+                    <div class="rank-badge" style="color: ${index < 3 ? config.primary_color || defaultConfig.primary_color : config.text_color || defaultConfig.text_color};">
+                      ${index < 3 ? rankIcons[index] : `#${index + 1}`}
+                    </div>
+                    <img 
+                      src="${user.profile_picture_url}" 
+                      alt="${user.display_name}" 
+                      class="w-12 h-12 rounded-full border-2 border-gray-600"
+                    >
+                    <div class="flex-1">
+                      <p class="font-bold" style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color};">
+                        ${user.display_name} ${isCurrentUser ? '(คุณ)' : ''}
+                      </p>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-bold" style="font-size: ${baseSize * 1.125}px; color: ${config.primary_color || defaultConfig.primary_color};">
+                        ${user.total_points}
+                      </p>
+                      <p class="text-xs opacity-70" style="font-size: ${baseSize * 0.75}px; color: ${config.text_color || defaultConfig.text_color};">
+                        คะแนน
+                      </p>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+          
+          <button 
+            class="glass-button w-full py-4 rounded-xl font-bold mt-6"
+            style="font-size: ${baseSize * 1.125}px; background: ${config.primary_color || defaultConfig.primary_color}; color: ${config.text_color || defaultConfig.text_color};"
+            onclick="currentPage = 'upload'; selectedFiles = []; render();"
+          >
+            กลับหน้าอัปโหลด
+          </button>
+        </div>
+      `;
+    }
+    
+    async function render() {
+      if (currentPage === 'upload') {
+        renderUploadPage();
+      } else if (currentPage === 'success') {
+        renderSuccessPage();
+      } else if (currentPage === 'leaderboard') {
+        await renderLeaderboardPage();
+      }
+    }
+    
+    async function onConfigChange(newConfig) {
+      config = { ...config, ...newConfig };
+      await render();
+    }
+    
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [
+          {
+            get: () => config.background_color || defaultConfig.background_color,
+            set: (value) => {
+              config.background_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            }
+          },
+          {
+            get: () => config.surface_color || defaultConfig.surface_color,
+            set: (value) => {
+              config.surface_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ surface_color: value });
+              }
+            }
+          },
+          {
+            get: () => config.text_color || defaultConfig.text_color,
+            set: (value) => {
+              config.text_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            }
+          },
+          {
+            get: () => config.primary_color || defaultConfig.primary_color,
+            set: (value) => {
+              config.primary_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ primary_color: value });
+              }
+            }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (value) => {
+            config.font_family = value;
+            if (window.elementSdk) {
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (value) => {
+            config.font_size = value;
+            if (window.elementSdk) {
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }
+      };
+    }
+    
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ["page_title", config.page_title || defaultConfig.page_title],
+        ["upload_instruction", config.upload_instruction || defaultConfig.upload_instruction],
+        ["submit_button_text", config.submit_button_text || defaultConfig.submit_button_text],
+        ["leaderboard_title", config.leaderboard_title || defaultConfig.leaderboard_title]
+      ]);
+    }
+    
+    async function init() {
+      const liffReady = await initLiff();
+      if (!liffReady) return;
+      
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange,
+          mapToCapabilities,
+          mapToEditPanelValues
+        });
+        
+        config = { ...defaultConfig, ...window.elementSdk.config };
+      }
+      
+      await render();
+    }
+    
+    init();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a15bb9ee47b7b4c',t:'MTc2MzYxODQ4OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
