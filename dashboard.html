@@ -76,6 +76,13 @@
             transform: translateY(-2px);
         }
     </style>
+  <style>
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.25s ease-in-out;
+}
+</style>
+
   <style>@view-transition { navigation: auto; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
   <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
@@ -117,7 +124,7 @@
     <div class="glass-effect rounded-xl p-4">
      <div class="flex flex-wrap gap-2"><button class="period-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 btn-red text-white shadow-lg" data-period="daily"> <i class="fi fi-rr-calendar-lines-pen"></i> รายวัน </button>
   <a 
-  href="https://liff.line.me/2007859046-WDvlrevQ" 
+  onclick="https://liff.line.me/2007859046-WDvlrevQ" 
   target="_blank" 
   rel="noopener noreferrer"
   class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 
@@ -966,6 +973,16 @@ if (profile.pictureUrl) {
         // Initialize app when page loads
         window.addEventListener('load', initApp);
     </script>
+
+  <script>
+function smoothGo(url) {
+  document.body.classList.add("fade-out");
+  setTimeout(() => {
+    location.href = url;
+  }, 250);
+}
+</script>
+
   <a href="https://liff.line.me/2007859046-BpXDWpXe"
    class="fixed bottom-6 right-6 
           bg-[#C1272D] text-white 
@@ -978,6 +995,7 @@ if (profile.pictureUrl) {
   
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a583a5147632731',t:'MTc2NDMxNTczOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
