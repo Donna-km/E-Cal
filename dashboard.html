@@ -89,8 +89,11 @@
      <h1 class="text-xl font-semibold">Food Dashboard</h1>
     </div>
     <div class="flex items-center space-x-2">
-     <div class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center"><span class="text-sm" id="userInitial">👤</span>
-     </div><span class="text-sm" id="userName">Loading...</span>
+     <div class="w-9 h-9 bg-white bg-opacity-20 rounded-full overflow-hidden flex items-center justify-center border border-white/20">
+    <img id="userProfilePic" class="w-full h-full object-cover hidden" alt="Profile" />
+    <span class="text-sm text-white" id="userInitial"></span>
+</div>
+<span class="text-sm" id="userName">Loading...</span>
     </div>
    </div>
   </header><!-- Loading Screen -->
@@ -268,8 +271,18 @@
                 currentUserId = profile.userId;
                 
                 // Update UI with user info
-                document.getElementById('userName').textContent = profile.displayName;
-                document.getElementById('userInitial').textContent = profile.displayName.charAt(0);
+                document.getElementById("userName").textContent = profile.displayName;
+
+if (profile.pictureUrl) {
+    const img = document.getElementById("userProfilePic");
+    img.src = profile.pictureUrl;
+    img.classList.remove("hidden");
+
+    document.getElementById("userInitial").classList.add("hidden");
+} else {
+    document.getElementById("userInitial").textContent = profile.displayName.charAt(0);
+}
+
 
                 // Load user data
                 await loadUserData();
@@ -965,6 +978,7 @@
   
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a583a5147632731',t:'MTc2NDMxNTczOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
