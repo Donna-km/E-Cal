@@ -125,24 +125,22 @@ a:hover { color: #C1272D !important; }
 <div class="max-w-6xl mx-auto p-4">
   <div class="glass-effect rounded-xl p-4 flex flex-wrap gap-2">
 
-    <!-- รายวัน (ขอบแดง) -->
+    <!-- รายวัน -->
     <a 
       onclick="smoothGo('https://liff.line.me/2007859046-7NZV6xZG')" 
       class="px-4 py-2 rounded-lg text-sm font-medium transition-all 
-             flex items-center gap-2
-             border border-[#C1272D] text-white 
-             bg-black hover:bg-black/70 cursor-pointer">
+             flex items-center gap-2 text-white cursor-pointer"
+      style="background-color:black !important; border:1px solid #C1272D;">
       <i class="fi fi-rr-calendar-lines-pen text-white"></i>
       <span>รายวัน</span>
     </a>
 
-    <!-- Dashboard (ปุ่มแดงจริงๆ ไม่โดน override) -->
+    <!-- Dashboard (แดงแท้) -->
     <a 
       onclick="smoothGo('https://liff.line.me/2007859046-WDvlrevQ')" 
       class="px-4 py-2 rounded-lg text-sm font-medium transition-all 
-             flex items-center gap-2
-             text-white 
-             bg-[#C1272D] hover:bg-[#a01f24] shadow-lg cursor-pointer">
+             flex items-center gap-2 text-white shadow-lg cursor-pointer"
+      style="background-color:#C1272D !important; border:1px solid #C1272D;">
       <i class="fi fi-rr-chart-line-up text-white"></i>
       <span>Dashboard</span>
     </a>
