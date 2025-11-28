@@ -774,7 +774,7 @@
                 warningsBox.classList.remove('hidden');
                 warningsBox.querySelector('.glass-effect').classList.remove('border-green-500/30');
                 warningsBox.querySelector('.glass-effect').classList.add('border-yellow-500/30');
-                document.getElementById('warningIcon').textContent = '⚠️';
+                document.getElementById('warningIcon').textContent = '<i class="fi fi-rr-exclamation"></i>';
                 document.getElementById('warningTitle').textContent = 'คำเตือนประจำวัน';
                 document.getElementById('warningTitle').className = 'font-bold text-yellow-300 mb-2 text-lg';
                 document.getElementById('warningContent').innerHTML = warnings.map(warning => `<div class="mb-1">• ${warning}</div>`).join('');
@@ -944,5 +944,6 @@
   
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a583a5147632731',t:'MTc2NDMxNTczOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
