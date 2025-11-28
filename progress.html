@@ -91,6 +91,14 @@ svg, i {
 a { color: #FFFFFF !important; }
 a:hover { color: #C1272D !important; }
 </style>
+    
+    <style>
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.25s ease-in-out;
+}
+</style>
+
 
 </head>
 <body class="custom-cream min-h-screen">
@@ -119,7 +127,7 @@ a:hover { color: #C1272D !important; }
 
     <!-- รายวัน (ขอบแดง) -->
     <a 
-      href="https://liff.line.me/2007859046-7NZV6xZG" 
+      onclick="https://liff.line.me/2007859046-7NZV6xZG" 
       class="px-4 py-2 rounded-lg text-sm font-medium transition-all 
              flex items-center gap-2
              border border-[#C1272D] text-white 
@@ -130,7 +138,7 @@ a:hover { color: #C1272D !important; }
 
     <!-- Dashboard (ปุ่มแดงจริงๆ ไม่โดน override) -->
     <a 
-      href="https://liff.line.me/2007859046-WDvlrevQ" 
+      onclick="https://liff.line.me/2007859046-WDvlrevQ" 
       class="px-4 py-2 rounded-lg text-sm font-medium transition-all 
              flex items-center gap-2
              text-white 
@@ -815,6 +823,16 @@ function initializeChart() {
         // Start the app
         initializeApp();
     </script>
+
+    <script>
+function smoothGo(url) {
+  document.body.classList.add("fade-out");
+  setTimeout(() => {
+    location.href = url;
+  }, 250);
+}
+</script>
+
     
   <a href="https://liff.line.me/2007859046-BpXDWpXe"
    class="fixed bottom-6 right-6 
