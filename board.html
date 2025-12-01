@@ -630,7 +630,7 @@
       🏆
      </div>
      <h2>ยังไม่มีคะแนน</h2>
-     <p>รีวิว Proof เพื่อดู��ันดับ!</p>
+     <p>รีวิว Proof เพื่อดูอันดับ!</p>
     </div>
    </div>
    <div class="ranking-view" id="savedView">
@@ -661,7 +661,7 @@
        <h3>แซวเพื่อนหน่อย 😈</h3><textarea class="comment-box" id="commentBox" placeholder="พิมพ์คอมเมนต์..."></textarea> <button class="btn btn-primary" id="submitComment" style="width:100%; margin-top:10px;"> ส่งคอมเมนต์ </button>
       </div>
       <div class="comment-section">
-       <h3>���อมเมนต์ล่าสุด</h3>
+       <h3>คอมเมนต์ล่าสุด</h3>
        <div class="comment-list" id="commentList"></div>
       </div>
      </div>
@@ -687,8 +687,8 @@
 
     const roastPrefixes = [
       "อีเพื่อน: ",
-      "���อ้สั���: ",
-      "ไอ้���หี้ย: ",
+      "ไอ้สัส: ",
+      "ไอ้เหี้ย: ",
       "เฮ้ยเว้ย: ",
       "แหม: ",
       "โอ้โห: ",
@@ -995,7 +995,7 @@
       if (!proof) return;
       
       const avgRating = proof.ratingCount > 0 ? (proof.totalRating / proof.ratingCount).toFixed(1) : 'ยังไม่มี';
-      const ratingText = proof.ratingCount > 0 ? `คะแนนเฉลี่ย: ${avgRating} ⭐ (${proof.ratingCount} รีวิว)` : 'ยังไ���่มีรีวิว - เป็นคนแรก!';
+      const ratingText = proof.ratingCount > 0 ? `คะแนนเฉลี่ย: ${avgRating} ⭐ (${proof.ratingCount} รีวิว)` : 'ยังไม่มีรีวิว - เป็นคนแรก!';
       
       document.getElementById('currentRating').textContent = ratingText;
       
@@ -1041,7 +1041,7 @@
         if (error) throw error;
 
         localStorage.setItem(userRatingKey, stars.toString());
-        showToast(`✅ ��ห�� ${stars} ดาว!`);
+        showToast(`✅ ห้า ${stars} ดาว!`);
         
         await loadRatings();
         renderGallery();
@@ -1049,7 +1049,7 @@
         
       } catch (error) {
         console.error('Submit Rating Error:', error);
-        showToast('❌ ไม่สามารถบันทึก��ะแนนได้: ' + error.message);
+        showToast('❌ ไม่สามารถบันทึกคะแนนได้: ' + error.message);
       }
       
       btn.disabled = false;
@@ -1064,7 +1064,7 @@
 
       const commentText = document.getElementById('commentBox').value.trim();
       if (!commentText) {
-        showToast('❌ พิมพ์คอมเมนต์ก่��น!');
+        showToast('❌ พิมพ์คอมเมนต์ก่อน!');
         return;
       }
       
@@ -1169,7 +1169,7 @@
             <div class="ranking-details">
               <div class="ranking-user">${escapeHtml(proof.userName)}</div>
               <div style="color:#999;">${escapeHtml(proof.missionName)}</div>
-              <div class="ranking-score">${stars} ${proof.avgRating.toFixed(2)} (${proof.ratingCount} ร���วิว)</div>
+              <div class="ranking-score">${stars} ${proof.avgRating.toFixed(2)} (${proof.ratingCount} รีวิว)</div>
             </div>
           </div>
         `;
@@ -1185,7 +1185,7 @@
         showToast('💔 ยกเลิก Save แล้ว');
       } else {
         localStorage.setItem(saveKey, 'true');
-        showToast('��️ Save แล้ว!');
+        showToast('️ Save แล้ว!');
       }
       
       renderGallery();
@@ -1288,3 +1288,4 @@
   </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a73538cf540270d',t:'MTc2NDU5OTg4Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
