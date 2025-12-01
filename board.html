@@ -630,7 +630,7 @@
       🏆
      </div>
      <h2>ยังไม่มีคะแนน</h2>
-     <p>รีวิว Proof เพื่อดูอันดับ!</p>
+     <p>รีวิว Proof เพ��่อดู���ันดับ!</p>
     </div>
    </div>
    <div class="ranking-view" id="savedView">
@@ -658,10 +658,10 @@
        <p style="text-align:center; color:#777;" id="currentRating"></p>
       </div>
       <div class="comment-section">
-       <h3>แซวเพื่อนหน่อย 😈</h3><textarea class="comment-box" id="commentBox" placeholder="พิมพ์คอมเมนต์..."></textarea> <button class="btn btn-primary" id="submitComment" style="width:100%; margin-top:10px;"> ส่งคอมเมนต์ </button>
+       <h3>แซวเพื่อน���น่อย 😈</h3><textarea class="comment-box" id="commentBox" placeholder="พิมพ์คอมเมนต์..."></textarea> <button class="btn btn-primary" id="submitComment" style="width:100%; margin-top:10px;"> ส่งคอมเมนต์ </button>
       </div>
       <div class="comment-section">
-       <h3>คอมเมนต์ล่าสุด</h3>
+       <h3>���อมเมนต์ล่าสุด</h3>
        <div class="comment-list" id="commentList"></div>
       </div>
      </div>
@@ -687,8 +687,8 @@
 
     const roastPrefixes = [
       "อีเพื่อน: ",
-      "ไอ้สัส: ",
-      "ไอ้เหี้ย: ",
+      "���อ้สั���: ",
+      "ไอ้���หี้ย: ",
       "เฮ้ยเว้ย: ",
       "แหม: ",
       "โอ้โห: ",
@@ -823,12 +823,61 @@
           return;
         }
 
-        commentList.innerHTML = data.map(comment => `
-          <div class="comment-item">
-            <div class="comment-user">User ${comment.commenter_line_user_id.substr(-4)}</div>
-            <div class="comment-text">${escapeHtml(comment.comment_text)}</div>
-          </div>
-        `).join('');
+        // ดึงข้อมูล LINE profile ของคนคอมเมนต์
+        const commenterIds = [...new Set(data.map(c => c.commenter_line_user_id))];
+        const commenterProfiles = new Map();
+        
+        for (const lineId of commenterIds) {
+          try {
+            const { data: userData, error: userError } = await supabase
+              .from('user_challenges_proof')
+              .select('full_name, profile_picture_url')
+              .eq('line_user_id', lineId)
+              .limit(1)
+              .single();
+            
+            if (!userError && userData) {
+              commenterProfiles.set(lineId, {
+                name: userData.full_name || 'User',
+                picture: userData.profile_picture_url
+              });
+            }
+          } catch (e) {
+            // ถ้าหาไม่เจอใช้ค่า default
+            commenterProfiles.set(lineId, {
+              name: 'User ' + lineId.substr(-4),
+              picture: null
+            });
+          }
+        }
+
+        commentList.innerHTML = data.map(comment => {
+          const profile = commenterProfiles.get(comment.commenter_line_user_id) || {
+            name: 'User ' + comment.commenter_line_user_id.substr(-4),
+            picture: null
+          };
+          
+          const avatarHtml = profile.picture 
+            ? `<img src="${profile.picture}" alt="${escapeHtml(profile.name)}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #FF6B9D; margin-right: 10px;" onerror="this.style.display='none';">`
+            : `<div style="width: 36px; height: 36px; border-radius: 50%; background: #FF6B9D; margin-right: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;">${profile.name.charAt(0)}</div>`;
+          
+          // แสดงปุ่มลบถ้าเป็นคอมเมนต์ของตัวเอง
+          const isOwner = comment.commenter_line_user_id === currentUserId;
+          const deleteBtn = isOwner ? `<button onclick="deleteComment(${comment.id})" style="background: #FF4444; color: white; border: none; padding: 4px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#FF0000'" onmouseout="this.style.background='#FF4444'">ลบ</button>` : '';
+          
+          return `
+            <div class="comment-item" id="comment_${comment.id}" style="display: flex; align-items: flex-start; gap: 0;">
+              ${avatarHtml}
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div class="comment-user">${escapeHtml(profile.name)}</div>
+                  ${deleteBtn}
+                </div>
+                <div class="comment-text">${escapeHtml(comment.comment_text)}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
       } catch (error) {
         console.error('Load Comments Error:', error);
       }
@@ -857,7 +906,7 @@
       emptyState.style.display = 'none';
       
       grid.innerHTML = proofs.map(proof => {
-        const avgRating = proof.ratingCount > 0 ? (proof.totalRating / proof.ratingCount).toFixed(1) : 'ยังไม่มี';
+        const avgRating = proof.ratingCount > 0 ? (proof.totalRating / proof.ratingCount).toFixed(1) : 'ย��งไม่ม���';
         const stars = proof.ratingCount > 0 ? '⭐'.repeat(Math.round(proof.totalRating / proof.ratingCount)) : '☆☆☆☆☆';
         const isSaved = localStorage.getItem('saved_' + proof.id) === 'true';
         const saveIcon = isSaved ? '❤️' : '🤍';
@@ -995,7 +1044,7 @@
       if (!proof) return;
       
       const avgRating = proof.ratingCount > 0 ? (proof.totalRating / proof.ratingCount).toFixed(1) : 'ยังไม่มี';
-      const ratingText = proof.ratingCount > 0 ? `คะแนนเฉลี่ย: ${avgRating} ⭐ (${proof.ratingCount} รีวิว)` : 'ยังไม่มีรีวิว - เป็นคนแรก!';
+      const ratingText = proof.ratingCount > 0 ? `คะแนนเฉลี่ย: ${avgRating} ⭐ (${proof.ratingCount} รีวิว)` : 'ยังไ���่มีรีวิว - เป็นคนแรก!';
       
       document.getElementById('currentRating').textContent = ratingText;
       
@@ -1013,7 +1062,7 @@
 
     async function submitRating(stars) {
       if (!liffInitialized) {
-        showToast('❌ กรุณาเข้าสู่ระบบผ่าน LINE');
+        showToast('❌ กรุณาเข้าสู่��ะบบผ่าน LINE');
         return;
       }
 
@@ -1041,7 +1090,7 @@
         if (error) throw error;
 
         localStorage.setItem(userRatingKey, stars.toString());
-        showToast(`✅ ห้า ${stars} ดาว!`);
+        showToast(`✅ ��ห�� ${stars} ดาว!`);
         
         await loadRatings();
         renderGallery();
@@ -1049,22 +1098,71 @@
         
       } catch (error) {
         console.error('Submit Rating Error:', error);
-        showToast('❌ ไม่สามารถบันทึกคะแนนได้: ' + error.message);
+        showToast('❌ ไม่สามารถบันทึก��ะแนนได้: ' + error.message);
       }
       
       btn.disabled = false;
       btn.textContent = 'ส่งคอมเมนต์';
     }
 
-    document.getElementById('submitComment').onclick = async function() {
+    async function deleteComment(commentId) {
       if (!liffInitialized) {
         showToast('❌ กรุณาเข้าสู่ระบบผ่าน LINE');
         return;
       }
 
+      // แสดง confirmation inline
+      const commentElement = document.getElementById('comment_' + commentId);
+      if (!commentElement) return;
+      
+      const confirmBtn = commentElement.querySelector('button');
+      if (!confirmBtn) return;
+      
+      const originalText = confirmBtn.textContent;
+      confirmBtn.textContent = 'ยืนยันลบ?';
+      confirmBtn.style.background = '#FF0000';
+      
+      // ถ้ากดอีกครั้งภายใน 3 วินาที = ลบจริง
+      const confirmDelete = async () => {
+        try {
+          const { error } = await supabase
+            .from('proof_comments')
+            .delete()
+            .eq('id', commentId)
+            .eq('commenter_line_user_id', currentUserId);
+
+          if (error) throw error;
+
+          showToast('✅ ลบคอมเมนต์แล้ว!');
+          loadComments(currentProofId);
+          
+        } catch (error) {
+          console.error('Delete Comment Error:', error);
+          showToast('❌ ไม่สามารถลบคอมเมนต์ได้: ' + error.message);
+        }
+      };
+      
+      confirmBtn.onclick = confirmDelete;
+      
+      // ถ้าไม่กดภายใน 3 วินาที ให้กลับมาเป็นปุ่มลบปกติ
+      setTimeout(() => {
+        if (confirmBtn && confirmBtn.textContent === 'ยืนยันลบ?') {
+          confirmBtn.textContent = originalText;
+          confirmBtn.style.background = '#FF4444';
+          confirmBtn.onclick = () => deleteComment(commentId);
+        }
+      }, 3000);
+    }
+
+    document.getElementById('submitComment').onclick = async function() {
+      if (!liffInitialized) {
+        showToast('❌ กรุณาเข้าสู่ร��บบผ่าน LINE');
+        return;
+      }
+
       const commentText = document.getElementById('commentBox').value.trim();
       if (!commentText) {
-        showToast('❌ พิมพ์คอมเมนต์ก่อน!');
+        showToast('❌ พิมพ์คอมเมนต์ก่��น!');
         return;
       }
       
@@ -1091,7 +1189,7 @@
         
       } catch (error) {
         console.error('Submit Comment Error:', error);
-        showToast('❌ ไม่สามารถส่งคอมเมนต์ได้: ' + error.message);
+        showToast('❌ ไม่สามารถส่งค��มเมนต์ได้: ' + error.message);
       }
       
       btn.disabled = false;
@@ -1169,7 +1267,7 @@
             <div class="ranking-details">
               <div class="ranking-user">${escapeHtml(proof.userName)}</div>
               <div style="color:#999;">${escapeHtml(proof.missionName)}</div>
-              <div class="ranking-score">${stars} ${proof.avgRating.toFixed(2)} (${proof.ratingCount} รีวิว)</div>
+              <div class="ranking-score">${stars} ${proof.avgRating.toFixed(2)} (${proof.ratingCount} ร���วิว)</div>
             </div>
           </div>
         `;
@@ -1185,7 +1283,7 @@
         showToast('💔 ยกเลิก Save แล้ว');
       } else {
         localStorage.setItem(saveKey, 'true');
-        showToast('️ Save แล้ว!');
+        showToast('��️ Save แล้ว!');
       }
       
       renderGallery();
@@ -1276,7 +1374,7 @@
 
       } catch (error) {
         console.error('Init Error:', error);
-        document.getElementById('loadingOverlay').querySelector('p').textContent = '❌ เกิดข้อผิดพลาด: ' + error.message;
+        document.getElementById('loadingOverlay').querySelector('p').textContent = '❌ เกิด��้อผิดพลาด: ' + error.message;
         setTimeout(() => {
           document.getElementById('loadingOverlay').style.display = 'none';
           document.querySelector('.app-container').style.display = 'block';
@@ -1286,6 +1384,5 @@
 
     init();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a73538cf540270d',t:'MTc2NDU5OTg4Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a736fa0d03226e6',t:'MTc2NDYwMTAzNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
-
