@@ -93,63 +93,51 @@
 
     .gallery-grid {
       column-count: 4;
-      column-gap: 20px;
-      padding: 30px 20px;
+      column-gap: 8px;
+      padding: 10px 8px;
       width: 100%;
     }
 
     @media (max-width: 1200px) {
       .gallery-grid {
         column-count: 3;
+        column-gap: 8px;
       }
     }
 
     @media (max-width: 768px) {
       .gallery-grid {
         column-count: 2;
-        column-gap: 15px;
-        padding: 20px 15px;
-      }
-
-      .proof-info {
-        padding: 10px 12px;
-      }
-
-      .proof-user {
-        font-size: 12px;
-      }
-
-      .proof-rating {
-        font-size: 10px;
+        column-gap: 6px;
+        padding: 6px;
       }
 
       .save-btn {
-        font-size: 18px;
-        width: 36px;
-        height: 36px;
+        font-size: 16px;
+        width: 32px;
+        height: 32px;
       }
     }
 
     .proof-card {
-      background: #1A1A1A;
-      border-radius: 16px;
+      background: #000000;
+      border-radius: 8px;
       overflow: hidden;
       cursor: pointer;
-      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s ease;
       break-inside: avoid;
-      margin-bottom: 20px;
+      margin-bottom: 6px;
       display: inline-block;
       width: 100%;
       position: relative;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     }
 
     .proof-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+      transform: scale(1.02);
+      z-index: 10;
     }
 
-    .proof-card:hover .proof-overlay {
+    .proof-card:hover .save-btn {
       opacity: 1;
     }
 
@@ -190,108 +178,41 @@
       letter-spacing: 0.3px;
     }
 
-    .proof-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.35) 100%);
-      opacity: 0;
-      transition: opacity 0.3s;
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-    }
+
 
     .save-btn {
       position: absolute;
-      top: 14px;
-      left: 14px;
-      background: rgba(255, 255, 255, 0.97);
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.7);
       border: none;
-      color: #FF6B9D;
-      font-size: 22px;
+      color: #FFFFFF;
+      font-size: 20px;
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      padding: 8px;
+      transition: all 0.25s ease;
+      padding: 6px;
       border-radius: 50%;
-      width: 42px;
-      height: 42px;
+      width: 36px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 10;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+      opacity: 0;
+      backdrop-filter: blur(10px);
     }
 
     .save-btn:hover {
-      transform: scale(1.2);
-      background: #FFFFFF;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+      transform: scale(1.15);
+      background: rgba(0, 0, 0, 0.85);
     }
 
     .save-btn.saved {
-      color: #FF6B9D;
-      background: #FFFFFF;
+      opacity: 1;
+      background: rgba(255, 107, 157, 0.9);
     }
 
-    .proof-info {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 14px 16px;
-      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0) 100%);
-      backdrop-filter: blur(12px);
-    }
 
-    .proof-user-header {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      margin-bottom: 7px;
-    }
-
-    .proof-avatar {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2.5px solid #FFFFFF;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-    }
-
-    .proof-user {
-      font-size: 13px;
-      font-weight: 600;
-      color: #FFFFFF;
-      letter-spacing: -0.3px;
-      line-height: 1.2;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-    }
-
-    .proof-mission {
-      display: none;
-    }
-
-    .proof-rating {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      color: #CCCCCC;
-      font-weight: 500;
-      letter-spacing: 0.2px;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-    }
-
-    .stars {
-      color: #FFB800;
-      font-size: 13px;
-      line-height: 1;
-    }
 
     .modal {
       display: none;
@@ -737,7 +658,7 @@
        <h3>แซวเพื่อนหน่อย 😈</h3><textarea class="comment-box" id="commentBox" placeholder="พิมพ์คอมเมนต์..."></textarea> <button class="btn btn-primary" id="submitComment" style="width:100%; margin-top:10px;"> ส่งคอมเมนต์ </button>
       </div>
       <div class="comment-section">
-       <h3>คอมเมนต์ล่าสุด</h3>
+       <h3>���อมเมนต์ล่าสุด</h3>
        <div class="comment-list" id="commentList"></div>
       </div>
      </div>
@@ -763,8 +684,8 @@
 
     const roastPrefixes = [
       "อีเพื่อน: ",
-      "ไอ้สัส: ",
-      "ไอ้เหี้ย: ",
+      "���อ้สั���: ",
+      "ไอ้���หี้ย: ",
       "เฮ้ยเว้ย: ",
       "แหม: ",
       "โอ้โห: ",
@@ -960,20 +881,9 @@
             <div class="proof-image-container">
               ${mediaHtml}
               ${mediaIndicator}
-              <div class="proof-overlay"></div>
               <button class="save-btn ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave('${proof.id}')" id="save_${proof.id}">
                 ${saveIcon}
               </button>
-            </div>
-            <div class="proof-info">
-              <div class="proof-user-header">
-                ${avatarHtml}
-                <div class="proof-user">${escapeHtml(proof.userName)}</div>
-              </div>
-              <div class="proof-rating">
-                <span class="stars">${stars}</span>
-                <span>${avgRating}${proof.ratingCount > 0 ? ' (' + proof.ratingCount + ')' : ''}</span>
-              </div>
             </div>
           </div>
         `;
@@ -1136,7 +1046,7 @@
         
       } catch (error) {
         console.error('Submit Rating Error:', error);
-        showToast('❌ ไม่สามารถบันทึกคะแนนได้: ' + error.message);
+        showToast('❌ ไม่สามารถบันทึก��ะแนนได้: ' + error.message);
       }
       
       btn.disabled = false;
@@ -1324,20 +1234,9 @@
             <div class="proof-image-container">
               ${mediaHtml}
               ${mediaIndicator}
-              <div class="proof-overlay"></div>
               <button class="save-btn saved" onclick="event.stopPropagation(); toggleSave('${proof.id}')" id="save_${proof.id}">
                 ❤️
               </button>
-            </div>
-            <div class="proof-info">
-              <div class="proof-user-header">
-                ${avatarHtml}
-                <div class="proof-user">${escapeHtml(proof.userName)}</div>
-              </div>
-              <div class="proof-rating">
-                <span class="stars">${stars}</span>
-                <span>${avgRating}${proof.ratingCount > 0 ? ' (' + proof.ratingCount + ')' : ''}</span>
-              </div>
             </div>
           </div>
         `;
@@ -1384,5 +1283,5 @@
 
     init();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a732fcfa489d02c',t:'MTc2NDU5ODQyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a7347431239d027',t:'MTc2NDU5OTM4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
