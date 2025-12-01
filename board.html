@@ -230,10 +230,24 @@
       padding: 15px;
     }
 
+    .proof-user-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .proof-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #C1272D;
+    }
+
     .proof-user {
       font-size: 16px;
       font-weight: bold;
-      margin-bottom: 5px;
       color: #FFFFFF;
     }
 
@@ -377,6 +391,21 @@
 
     .modal-close:hover {
       color: #FF3B42;
+    }
+
+    .modal-user-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .modal-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #C1272D;
     }
 
     .rating-section {
@@ -624,7 +653,7 @@
       <div class="carousel-dots" id="carouselDots"></div>
      </div>
      <div class="modal-body"><span class="modal-close" id="modalClose">×</span>
-      <h2 id="modalUser"></h2>
+      <div class="modal-user-header" id="modalUserHeader"></div>
       <p id="modalMission"></p>
       <div class="rating-section">
        <h3>ให้คะแนน Proof นี้</h3>
@@ -750,54 +779,60 @@
 
     async function loadProofs() {
       try {
-        const { data, error } = await supabase
+        // ดึงข้อมูล proof ที่ verified แล้ว
+        const { data: proofData, error: proofError } = await supabase
+          .from('user_challenges_proof')
+          .select('*')
+          .eq('is_verified', true)
+          .order('proof_date', { ascending: false });
+
+        if (proofError) throw proofError;
+
+        // ดึง media ทั้งหมด เรียงตาม order
+        const { data: mediaData, error: mediaError } = await supabase
           .from('proof_media')
-          .select(`
-            *,
-            user_challenges_proof!inner(
-              proof_id,
-              line_user_id,
-              challenge_id,
-              proof_date,
-              description
-            )
-          `)
-          .order('created_at', { ascending: false });
+          .select('*')
+          .order('media_order', { ascending: true });
 
-        if (error) throw error;
+        if (mediaError) throw mediaError;
 
-        const proofMap = new Map();
-        
-        data.forEach(item => {
-          const proofId = item.user_challenges_proof.proof_id;
-          
-          if (!proofMap.has(proofId)) {
-            proofMap.set(proofId, {
-              id: proofId.toString(),
-              userId: item.user_challenges_proof.line_user_id,
-              userName: 'User ' + item.user_challenges_proof.line_user_id.substr(-4),
-              missionName: `Challenge ${item.user_challenges_proof.challenge_id}`,
-              uploadedAt: item.user_challenges_proof.proof_date,
-              mediaFiles: [],
-              totalRating: 0,
-              ratingCount: 0
+        // จัดกลุ่ม media ตาม proof_id
+        const mediaMap = new Map();
+        if (mediaData) {
+          mediaData.forEach(media => {
+            const proofId = media.proof_id.toString();
+            if (!mediaMap.has(proofId)) {
+              mediaMap.set(proofId, []);
+            }
+            mediaMap.get(proofId).push({
+              url: media.media_url,
+              type: media.media_type || 'image'
             });
-          }
-          
-          proofMap.get(proofId).mediaFiles.push({
-            url: item.media_url,
-            type: item.media_type
           });
-        });
+        }
 
-        proofs = Array.from(proofMap.values());
+        // สร้าง proofs array
+        proofs = (proofData || []).map(proof => ({
+          id: proof.id.toString(),
+          userId: proof.line_user_id,
+          userName: proof.full_name || ('User ' + proof.line_user_id.substr(-4)),
+          missionName: `${proof.challenge_name || 'Challenge'} - วันที่ ${proof.day_number}`,
+          uploadedAt: proof.proof_date,
+          profilePicture: proof.profile_picture_url,
+          mediaFiles: mediaMap.get(proof.id.toString()) || [],
+          totalRating: 0,
+          ratingCount: 0
+        }));
+
+        // กรอง proof ที่มี media เท่านั้น
+        proofs = proofs.filter(p => p.mediaFiles.length > 0);
         
         await loadRatings();
         
         return true;
       } catch (error) {
         console.error('Load Proofs Error:', error);
-        showToast('❌ ไม่สามารถโหลด Proof ได้');
+        showToast('❌ ไม่สามารถโหลด Proof ได้: ' + error.message);
         return false;
       }
     }
@@ -812,7 +847,7 @@
 
         const ratingMap = new Map();
         
-        data.forEach(rating => {
+        (data || []).forEach(rating => {
           const key = rating.proof_id.toString();
           if (!ratingMap.has(key)) {
             ratingMap.set(key, { total: 0, count: 0 });
@@ -840,7 +875,7 @@
           .select('*')
           .eq('proof_id', parseInt(proofId))
           .order('created_at', { ascending: false })
-          .limit(5);
+          .limit(10);
 
         if (error) throw error;
 
@@ -854,12 +889,18 @@
         commentList.innerHTML = data.map(comment => `
           <div class="comment-item">
             <div class="comment-user">User ${comment.commenter_line_user_id.substr(-4)}</div>
-            <div class="comment-text">${comment.comment_text}</div>
+            <div class="comment-text">${escapeHtml(comment.comment_text)}</div>
           </div>
         `).join('');
       } catch (error) {
         console.error('Load Comments Error:', error);
       }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
 
     function parseMediaFiles(mediaFilesArray) {
@@ -892,10 +933,14 @@
         if (firstMedia.type === 'video') {
           mediaHtml = `<video class="proof-video" src="${firstMedia.url}" muted loop autoplay playsinline></video>`;
         } else {
-          mediaHtml = `<img class="proof-image" src="${firstMedia.url || ''}" alt="${proof.userName}" onerror="this.src=''; this.alt='Image failed to load'; this.style.display='none';">`;
+          mediaHtml = `<img class="proof-image" src="${firstMedia.url || ''}" alt="${escapeHtml(proof.userName)}" onerror="this.src=''; this.alt='Image failed to load'; this.style.display='none';">`;
         }
         
         const mediaIndicator = mediaCount > 1 ? `<div class="media-indicator">📷 ${mediaCount}</div>` : '';
+        
+        const avatarHtml = proof.profilePicture 
+          ? `<img class="proof-avatar" src="${proof.profilePicture}" alt="${escapeHtml(proof.userName)}" onerror="this.style.display='none';">`
+          : '';
         
         return `
           <div class="proof-card" onclick="openModal('${proof.id}')">
@@ -908,8 +953,11 @@
               </button>
             </div>
             <div class="proof-info">
-              <div class="proof-user">${proof.userName}</div>
-              <div class="proof-mission">🎯 ${proof.missionName}</div>
+              <div class="proof-user-header">
+                ${avatarHtml}
+                <div class="proof-user">${escapeHtml(proof.userName)}</div>
+              </div>
+              <div class="proof-mission">🎯 ${escapeHtml(proof.missionName)}</div>
               <div class="proof-rating">
                 <span class="stars">${stars}</span>
                 <span>${avgRating}${proof.ratingCount > 0 ? ' (' + proof.ratingCount + ')' : ''}</span>
@@ -928,7 +976,16 @@
       currentMediaFiles = parseMediaFiles(proof.mediaFiles);
       currentSlideIndex = 0;
       
-      document.getElementById('modalUser').textContent = proof.userName;
+      const avatarHtml = proof.profilePicture 
+        ? `<img class="modal-avatar" src="${proof.profilePicture}" alt="${escapeHtml(proof.userName)}" onerror="this.style.display='none';">`
+        : '';
+      
+      document.getElementById('modalUserHeader').innerHTML = `
+        ${avatarHtml}
+        <div>
+          <h2 style="margin:0;">${escapeHtml(proof.userName)}</h2>
+        </div>
+      `;
       document.getElementById('modalMission').textContent = '🎯 ' + proof.missionName;
       
       renderCarousel();
@@ -1067,7 +1124,7 @@
         
       } catch (error) {
         console.error('Submit Rating Error:', error);
-        showToast('❌ ไม่สามารถบันทึกคะแนนได้');
+        showToast('❌ ไม่สามารถบันทึกคะแนนได้: ' + error.message);
       }
       
       btn.disabled = false;
@@ -1109,7 +1166,7 @@
         
       } catch (error) {
         console.error('Submit Comment Error:', error);
-        showToast('❌ ไม่สามารถส่งคอมเมนต์ได้');
+        showToast('❌ ไม่สามารถส่งคอมเมนต์ได้: ' + error.message);
       }
       
       btn.disabled = false;
@@ -1183,10 +1240,10 @@
         return `
           <div class="ranking-item" onclick="openModal('${proof.id}')" style="cursor: pointer;">
             <div class="ranking-number ${rankClass}">${rank}</div>
-            <img class="ranking-thumb" src="${thumbUrl}" alt="${proof.userName}" onerror="this.style.display='none';">
+            <img class="ranking-thumb" src="${thumbUrl}" alt="${escapeHtml(proof.userName)}" onerror="this.style.display='none';">
             <div class="ranking-details">
-              <div class="ranking-user">${proof.userName}</div>
-              <div style="color:#999;">${proof.missionName}</div>
+              <div class="ranking-user">${escapeHtml(proof.userName)}</div>
+              <div style="color:#999;">${escapeHtml(proof.missionName)}</div>
               <div class="ranking-score">${stars} ${proof.avgRating.toFixed(2)} (${proof.ratingCount} รีวิว)</div>
             </div>
           </div>
@@ -1241,10 +1298,14 @@
         if (firstMedia.type === 'video') {
           mediaHtml = `<video class="proof-video" src="${firstMedia.url}" muted loop autoplay playsinline></video>`;
         } else {
-          mediaHtml = `<img class="proof-image" src="${firstMedia.url || ''}" alt="${proof.userName}" onerror="this.src=''; this.alt='Image failed to load'; this.style.display='none';">`;
+          mediaHtml = `<img class="proof-image" src="${firstMedia.url || ''}" alt="${escapeHtml(proof.userName)}" onerror="this.src=''; this.alt='Image failed to load'; this.style.display='none';">`;
         }
         
         const mediaIndicator = mediaCount > 1 ? `<div class="media-indicator">📷 ${mediaCount}</div>` : '';
+        
+        const avatarHtml = proof.profilePicture 
+          ? `<img class="proof-avatar" src="${proof.profilePicture}" alt="${escapeHtml(proof.userName)}" onerror="this.style.display='none';">`
+          : '';
         
         return `
           <div class="proof-card" onclick="openModal('${proof.id}')">
@@ -1257,8 +1318,11 @@
               </button>
             </div>
             <div class="proof-info">
-              <div class="proof-user">${proof.userName}</div>
-              <div class="proof-mission">🎯 ${proof.missionName}</div>
+              <div class="proof-user-header">
+                ${avatarHtml}
+                <div class="proof-user">${escapeHtml(proof.userName)}</div>
+              </div>
+              <div class="proof-mission">🎯 ${escapeHtml(proof.missionName)}</div>
               <div class="proof-rating">
                 <span class="stars">${stars}</span>
                 <span>${avgRating}${proof.ratingCount > 0 ? ' (' + proof.ratingCount + ')' : ''}</span>
@@ -1368,15 +1432,15 @@
 
       } catch (error) {
         console.error('Init Error:', error);
-        document.getElementById('loadingOverlay').querySelector('p').textContent = '❌ เกิดข้อผิดพลาด';
+        document.getElementById('loadingOverlay').querySelector('p').textContent = '❌ เกิดข้อผิดพลาด: ' + error.message;
         setTimeout(() => {
           document.getElementById('loadingOverlay').style.display = 'none';
           document.querySelector('.app-container').style.display = 'block';
-        }, 2000);
+        }, 3000);
       }
     }
 
     init();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a72884a701ed339',t:'MTc2NDU5MTU2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a72b74112f8d02c',t:'MTc2NDU5MzQ4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
