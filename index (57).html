@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My App Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  
+
+
+
+
+  <style>
+    body { background-color: #000000; color: #FFFFFF; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    .gradient-bg { background-color: #000000 !important; }
+    .glass-effect { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255, 255, 255, 0.15); }
+    button, .btn, [type="button"], [type="submit"], a {
+      background-color: #C1272D !important;
+      color: #FFFFFF !important;
+      border: none !important;
+    }
+    a.glass-effect, .glass-effect a { color: #FFFFFF !important; }
+    h1, h2, h3, h4, h5, h6, p, span, div, svg, i { color: #FFFFFF !important; }
+    input, select, textarea {
+      background-color: #000000 !important;
+      border: 1px solid #C1272D !important;
+      color: #FFFFFF !important;
+    }
+  </style>
+
+</head>
+<body class="gradient-bg min-h-screen text-white font-sans">
+  <main class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <header class="text-center mb-12 fade-in">
+      <div id="loading" class="text-white text-lg">กำลังโหลด...</div>
+      <div id="profile-section" class="hidden">
+        <div class="mb-4">
+          <img id="profile-picture" src="" alt="Profile" class="w-28 h-28 rounded-full mx-auto mb-4 border-4 border-white/30 shadow-lg" />
+        </div>
+        <h1 id="profile-name" class="text-3xl font-bold mb-2 drop-shadow"> </h1>
+        <div id="plan-badge" class="inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4"></div>
+        <div id="upgrade-button" class="hidden mb-4">
+          <button id="btnUpgradePremium" class="inline-block bg-[#FFECD0] text-[#FF3974] hover:bg-[#FFE4B8] font-semibold px-6 py-2 rounded-full transition-colors duration-300 shadow-md">
+            🚀 อัพเกรดเป็น Premium
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Button Grid -->
+    <div class="grid gap-3 max-w-xs mx-auto fade-in">
+      <!-- Profile User Button -->
+      <a href="https://liff.line.me/2007859046-AM0LQo0g" target="_blank" rel="noopener noreferrer" class="glass-effect rounded-2xl p-4 flex items-center justify-center gap-2 card-hover">
+    <i class="fi fi-rr-circle-user text-white text-3xl"></i>
+  <h3 class="text-lg font-semibold text-white">Profile User</h3>
+</a>
+
+      <!-- Smart Scan Button -->
+      <a href="https://liff.line.me/2007859046-doqQg8qv" target="_blank" rel="noopener noreferrer" class="glass-effect rounded-2xl p-4 flex items-center justify-center gap-2 card-hover">
+        <i class="fi fi-rr-camera-viewfinder text-white text-3xl"></i>
+  <h3 class="text-lg font-semibold text-white">Smart Scan</h3>
+</a>
+
+      <!-- Daily Intake Button -->
+      <a href="https://liff.line.me/2007859046-7NZV6xZG" target="_blank" rel="noopener noreferrer" class="glass-effect rounded-2xl p-4 flex items-center justify-center gap-2 card-hover">
+        <i class="fi fi-rr-calendar-clock text-white text-3xl"></i>
+  <h3 class="text-lg font-semibold text-white">Daily Intake</h3>
+</a>
+
+      <!-- Dashboard Button -->
+      <a href="https://liff.line.me/2007859046-WDvlrevQ" target="_blank" rel="noopener noreferrer" class="glass-effect rounded-2xl p-4 flex items-center justify-center gap-2 card-hover">
+        <i class="fi fi-rr-chart-line-up text-white text-3xl"></i>
+  <h3 class="text-lg font-semibold text-white">Dashboard</h3>
+</a>
+
+      <!-- Weight Journey Button -->
+      <a href="https://liff.line.me/2007859046-pXkDKWkv" target="_blank" rel="noopener noreferrer" class="glass-effect rounded-2xl p-4 flex items-center justify-center gap-2 card-hover">
+        <i class="fi fi-rr-map-marker text-white text-3xl"></i>
+  <h3 class="text-lg font-semibold text-white">Weight Journey</h3>
+</a>
+
+      <!-- Contact Us Button -->
+      <a href="https://liff.line.me/2007859046-0L6j9X6m" target="_blank" rel="noopener noreferrer" class="glass-effect rounded-2xl p-4 flex items-center justify-center gap-2 card-hover">
+        <i class="fi fi-rr-envelope text-white text-3xl"></i>
+  <h3 class="text-lg font-semibold text-white">Contact Us</h3>
+</a>
+
+
+    <!-- Footer -->
+    <footer class="text-center mt-12 text-white/70 text-sm fade-in">
+      <p>© 2026 E-Calbot make your fat cry.</p>
+    </footer>
+  </main>
+
+  <script>
+    const supabaseUrl = 'https://lvtdqeerzxpznnayccmb.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    async function initApp() {
+      try {
+        await liff.init({ liffId: '2007859046-BpXDWpXe' });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+        const profile = await liff.getProfile();
+        const { data: userPlan, error } = await supabase.from('user_plans').select('plan_type').eq('line_user_id', profile.userId).single();
+        let planType = 'free';
+        if (!error && userPlan) planType = userPlan.plan_type;
+
+        document.getElementById('profile-picture').src = profile.pictureUrl || '';
+        document.getElementById('profile-name').textContent = profile.displayName;
+
+        const planBadge = document.getElementById('plan-badge');
+        const upgradeButton = document.getElementById('upgrade-button');
+
+        if (planType === 'premium') {
+          upgradeButton.classList.add('hidden');
+          planBadge.innerHTML = `
+            <div class="flex flex-col items-center justify-center mb-4">
+              <div class="text-3xl mb-1 drop-shadow-[0_0_15px_rgba(255,215,0,0.6)]">👑</div>
+              <span class="bg-gradient-to-r from-yellow-300 to-yellow-500 text-yellow-900 font-bold px-6 py-2 rounded-full text-base shadow-md border border-yellow-400">Premium</span>
+            </div>`;
+        } else {
+          planBadge.textContent = '📌 Free Plan';
+          planBadge.className = 'inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 bg-white/20 text-white';
+          upgradeButton.classList.remove('hidden');
+        }
+
+        const allButtons = document.querySelectorAll('a[href]');
+        allButtons.forEach((btn) => {
+          const text = btn.textContent.trim().toLowerCase();
+          if (planType === 'free') {
+            if (!text.includes('profile') && !text.includes('daily intake') && !text.includes('contact')) {
+              btn.style.opacity = '0.6';
+              btn.style.pointerEvents = 'none';
+              btn.style.filter = 'grayscale(100%)';
+              const label = btn.querySelector('h3');
+              if (label && !label.querySelector('.crown-icon')) {
+                const crown = document.createElement('span');
+                crown.className = 'crown-icon';
+                crown.innerHTML = '&#128081;';
+                crown.style.color = '#FFD700';
+                crown.style.marginLeft = '6px';
+                crown.style.filter = 'drop-shadow(0 0 4px rgba(255,215,0,0.6))';
+                crown.style.fontSize = '18px';
+                label.appendChild(crown);
+              }
+            }
+          }
+        });
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('profile-section').classList.remove('hidden');
+      } catch (error) {
+        console.error('Error initializing app:', error);
+        document.getElementById('loading').textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
+      }
+    }
+
+    window.addEventListener('load', initApp);
+
+    async function startPremiumCheckout() {
+      try {
+        const profile = await liff.getProfile();
+        const res = await fetch('https://primary-production-49d9.up.railway.app/webhook/create-premium-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ line_user_id: profile.userId })
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.url) window.location.href = data.url;
+        else alert('❌ ไม่พบ URL สำหรับชำระเงิน');
+      } catch (err) {
+        alert('เกิดข้อผิดพลาดในการเริ่มต้นการชำระเงิน ❌');
+        console.error(err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('btnUpgradePremium');
+      if (btn) btn.addEventListener('click', startPremiumCheckout);
+    });
+  </script>
+</body>
+</html>
