@@ -167,29 +167,15 @@
     }
 
     window.addEventListener('load', initApp);
+    
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('btnUpgradePremium');
+  if (btn) btn.addEventListener('click', () => {
+    window.location.href = "https://liff.line.me/2007859046-jqRLglRW";
+  });
+});
 
-    async function startPremiumCheckout() {
-      try {
-        const profile = await liff.getProfile();
-        const res = await fetch('https://primary-production-49d9.up.railway.app/webhook/create-premium-session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ line_user_id: profile.userId })
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (data.url) window.location.href = data.url;
-        else alert('❌ ไม่พบ URL สำหรับชำระเงิน');
-      } catch (err) {
-        alert('เกิดข้อผิดพลาดในการเริ่มต้นการชำระเงิน ❌');
-        console.error(err);
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const btn = document.getElementById('btnUpgradePremium');
-      if (btn) btn.addEventListener('click', startPremiumCheckout);
-    });
+   
   </script>
 </body>
 </html>
