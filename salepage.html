@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-Cal Premium Upgrade</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+<style>
+  body { background: #000; font-family: 'Inter', sans-serif; }
+  .glass {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+  }
+  .plan-selected {
+    border: 2px solid #C1272D !important;
+    background: rgba(193,39,45,0.15);
+  }
+  .plan-unselected {
+    border: 2px solid rgba(255,255,255,0.15);
+  }
+  .select-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    border: 2px solid #aaa;
+  }
+  .select-dot.active {
+    background: #C1272D;
+    border-color: #C1272D;
+  }
+  .premium-btn {
+    background: #C1272D;
+  }
+  .premium-btn:hover {
+    background: #a02126;
+  }
+</style>
+</head>
+
+<body class="text-white">
+
+<!-- Header Image -->
+<div class="w-full flex justify-center mt-6 mb-4">
+  <img src="https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/ecal_sticker_2.png"
+       class="w-40 h-40 object-contain">
+</div>
+
+<h1 class="text-center text-3xl font-extrabold mb-2">
+  Let's hop towards your goal
+</h1>
+
+<!-- Pricing Options -->
+<div class="px-6 mt-6 space-y-4">
+
+  <!-- YEARLY BOX -->
+  <div id="yearlyBox"
+       class="glass rounded-2xl p-4 flex justify-between items-center plan-selected cursor-pointer"
+       onclick="selectPlan('yearly')">
+
+    <div>
+      <span class="bg-white/10 text-white px-3 py-1 text-sm rounded-full">Save 44%</span>
+
+      <div class="text-lg mt-3 text-gray-300">Yearly Starter</div>
+      <div class="text-2xl font-bold text-white">฿83.25/mo</div>
+      <div class="text-sm text-gray-400">(฿999.00/year)</div>
+    </div>
+
+    <div class="select-dot active" id="dot-yearly"></div>
+  </div>
+
+  <!-- MONTHLY BOX -->
+  <div id="monthlyBox"
+       class="glass rounded-2xl p-4 flex justify-between items-center plan-unselected cursor-pointer"
+       onclick="selectPlan('monthly')">
+
+    <div>
+      <div class="text-lg mt-1 text-gray-300">Monthly Starter</div>
+      <div class="text-2xl font-bold text-white">฿149.00/mo</div>
+    </div>
+
+    <div class="select-dot" id="dot-monthly"></div>
+  </div>
+
+</div>
+
+<!-- Benefits -->
+<div class="px-6 mt-8 space-y-4">
+  <div class="flex items-center space-x-3">
+    <span class="text-xl">🍽️</span>
+    <span class="text-gray-300">Scan meals without limits</span>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <span class="text-xl">🍏</span>
+    <span class="text-gray-300">Get personalized food suggestions</span>
+  </div>
+</div>
+
+<!-- CTA BUTTON -->
+<div class="mt-10 px-6">
+  <button id="startBtn"
+          class="premium-btn w-full py-4 rounded-full shadow text-xl font-bold">
+    Start My 3-Day Free Trial
+  </button>
+
+  <p class="text-center mt-3 text-sm text-gray-400">
+    3 Days free, then ฿999.00 per year
+  </p>
+</div>
+
+<script>
+let selectedPlan = "yearly"; // default plan
+
+function selectPlan(plan) {
+  selectedPlan = plan;
+
+  // Toggle box UI
+  document.getElementById("yearlyBox").classList.toggle("plan-selected", plan === "yearly");
+  document.getElementById("yearlyBox").classList.toggle("plan-unselected", plan !== "yearly");
+
+  document.getElementById("monthlyBox").classList.toggle("plan-selected", plan === "monthly");
+  document.getElementById("monthlyBox").classList.toggle("plan-unselected", plan !== "monthly");
+
+  // Toggle dots
+  document.getElementById("dot-yearly").classList.toggle("active", plan === "yearly");
+  document.getElementById("dot-monthly").classList.toggle("active", plan === "monthly");
+
+  // Update text under button
+  if (plan === "yearly") {
+    document.querySelector("p").textContent = "3 Days free, then ฿999.00 per year";
+  } else {
+    document.querySelector("p").textContent = "3 Days free, then ฿149.00 per month";
+  }
+}
+
+async function startCheckout(plan) {
+  await liff.init({ liffId: "YOUR_LIFF_ID" });
+
+  if (!liff.isLoggedIn()) {
+    liff.login();
+    return;
+  }
+
+  const profile = await liff.getProfile();
+
+  const res = await fetch("https://primary-production-49d9.up.railway.app/webhook/create-premium-session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      line_user_id: profile.userId,
+      plan_name: plan === "yearly" ? "premium_yearly" : "premium_monthly"
+    }),
+  });
+
+  const data = await res.json();
+  if (data.url) window.location.href = data.url;
+}
+
+document.getElementById("startBtn").addEventListener("click", () => {
+  startCheckout(selectedPlan);
+});
+</script>
+
+</body>
+</html>
