@@ -1,47 +1,74 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>E-Cal Premium Upgrade</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Cal Premium Upgrade</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
-<style>
-  body { background: #000; font-family: 'Inter', sans-serif; }
-  .glass {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.15);
-    backdrop-filter: blur(10px);
-  }
-  .plan-selected {
-    border: 2px solid #C1272D !important;
-    background: rgba(193,39,45,0.15);
-  }
-  .plan-unselected {
-    border: 2px solid rgba(255,255,255,0.15);
-  }
-  .select-dot {
-    width: 22px;
-    height: 22px;
-    border-radius: 9999px;
-    border: 2px solid #aaa;
-  }
-  .select-dot.active {
-    background: #C1272D;
-    border-color: #C1272D;
-  }
-  .premium-btn {
-    background: #C1272D;
-  }
-  .premium-btn:hover {
-    background: #a02126;
-  }
-</style>
+  <style>
+    body { background: #000; font-family: 'Inter', sans-serif; }
+    .glass {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+    }
+    .plan-selected {
+      border: 2px solid #C1272D !important;
+      background: rgba(193,39,45,0.15);
+    }
+    .plan-unselected {
+      border: 2px solid rgba(255,255,255,0.15);
+    }
+    .select-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 9999px;
+      border: 2px solid #aaa;
+    }
+    .select-dot.active {
+      background: #C1272D;
+      border-color: #C1272D;
+    }
+    .premium-btn {
+      background: #C1272D;
+    }
+    .premium-btn:hover {
+      background: #a02126;
+    }
+  </style>
 </head>
 
 <body class="text-white">
+
+<!-- LIFF INIT -->
+<script>
+  let lineUserId = null;
+  let liffReady = false;
+
+  async function initLiff() {
+    try {
+      await liff.init({ liffId: "2007859046-jqRLglRW" });
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
+      const profile = await liff.getProfile();
+      lineUserId = profile.userId;
+      liffReady = true;
+      console.log("LINE USER ID:", lineUserId);
+
+    } catch (err) {
+      console.error("LIFF init error:", err);
+    }
+  }
+
+  initLiff();
+</script>
 
 <!-- Sticker -->
 <div class="w-full flex justify-center mt-8 mb-4">
@@ -62,10 +89,10 @@
   </p>
 </div>
 
-<!-- Plans -->
+<!-- Plan Selection -->
 <div class="px-6 mt-8 space-y-4">
 
-  <!-- YEARLY -->
+  <!-- YEARLY PLAN -->
   <div id="yearlyBox"
        class="glass rounded-2xl p-4 flex justify-between items-center plan-selected cursor-pointer relative"
        onclick="selectPlan('yearly')">
@@ -85,7 +112,7 @@
     <div class="select-dot active" id="dot-yearly"></div>
   </div>
 
-  <!-- MONTHLY -->
+  <!-- MONTHLY PLAN -->
   <div id="monthlyBox"
        class="glass rounded-2xl p-4 flex justify-between items-center plan-unselected cursor-pointer"
        onclick="selectPlan('monthly')">
@@ -102,105 +129,100 @@
 
 <!-- Benefits -->
 <div class="px-6 mt-8 space-y-3 text-sm">
-  <div class="flex items-center space-x-3"><span class="text-lg">🍽️</span><span class="text-gray-300">Smart Scan – วิเคราะห์เมนูและแคลอรี่แม่นยำ</span></div>
-  <div class="flex items-center space-x-3"><span class="text-lg">🍏</span><span class="text-gray-300">Personalized Food Suggestions</span></div>
-  <div class="flex items-center space-x-3"><span class="text-lg">🤖</span><span class="text-gray-300">Chatbot Support Unlimited – ถาม–ตอบแบบไม่อั้น</span></div>
-  <div class="flex items-center space-x-3"><span class="text-lg">📊</span><span class="text-gray-300">Premium Insights – ข้อมูลวิเคราะห์เชิงลึก</span></div>
+  <div class="flex items-center space-x-3">
+    <span class="text-lg">🍽️</span>
+    <span class="text-gray-300">Smart Scan – วิเคราะห์เมนูและแคลอรี่แม่นยำ</span>
+  </div>
+  <div class="flex items-center space-x-3">
+    <span class="text-lg">🍏</span>
+    <span class="text-gray-300">Personalized Food Suggestions</span>
+  </div>
+  <div class="flex items-center space-x-3">
+    <span class="text-lg">🤖</span>
+    <span class="text-gray-300">Chatbot Support Unlimited – ถาม–ตอบแบบไม่อั้น</span>
+  </div>
+  <div class="flex items-center space-x-3">
+    <span class="text-lg">📊</span>
+    <span class="text-gray-300">Premium Insights – ข้อมูลวิเคราะห์เชิงลึก</span>
+  </div>
 </div>
 
-<!-- CTA -->
+<!-- CTA BUTTON -->
 <div class="mt-10 px-6 mb-10">
   <button id="startBtn"
           class="premium-btn w-full py-4 rounded-full shadow text-xl font-bold">
     Upgrade to Premium
   </button>
+
   <p id="priceNote" class="text-center mt-3 text-xs text-gray-400">
     ฿999.00 per year
   </p>
 </div>
 
 <script>
-let selectedPlan = "yearly";
-let lineUserId = null;
+  let selectedPlan = "yearly"; // default
 
-// Switch plan UI
-function selectPlan(plan) {
-  selectedPlan = plan;
+  function selectPlan(plan) {
+    selectedPlan = plan;
 
-  document.getElementById("yearlyBox").classList.toggle("plan-selected", plan === "yearly");
-  document.getElementById("yearlyBox").classList.toggle("plan-unselected", plan !== "yearly");
+    document.getElementById("yearlyBox").classList.toggle("plan-selected", plan === "yearly");
+    document.getElementById("yearlyBox").classList.toggle("plan-unselected", plan !== "yearly");
 
-  document.getElementById("monthlyBox").classList.toggle("plan-selected", plan === "monthly");
-  document.getElementById("monthlyBox").classList.toggle("plan-unselected", plan !== "monthly");
+    document.getElementById("monthlyBox").classList.toggle("plan-selected", plan === "monthly");
+    document.getElementById("monthlyBox").classList.toggle("plan-unselected", plan !== "monthly");
 
-  document.getElementById("dot-yearly").classList.toggle("active", plan === "yearly");
-  document.getElementById("dot-monthly").classList.toggle("active", plan === "monthly");
+    document.getElementById("dot-yearly").classList.toggle("active", plan === "yearly");
+    document.getElementById("dot-monthly").classList.toggle("active", plan === "monthly");
 
-  document.getElementById("priceNote").textContent =
-    plan === "yearly" ? "฿999.00 per year" : "฿149.00 per month";
-}
-
-// Initialize LIFF
-async function initLiff() {
-  try {
-    await liff.init({ liffId: "2007859046-jqRLglRW" });
-
-    if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
-    }
-
-    const profile = await liff.getProfile();
-    lineUserId = profile.userId;
-
-  } catch (err) {
-    console.error("LIFF error:", err);
-  }
-}
-
-initLiff();
-
-// Start payment
-async function startCheckout() {
-  if (!lineUserId) {
-    alert("ไม่พบ LINE User ID กรุณารีเฟรชหน้า");
-    return;
+    document.getElementById("priceNote").textContent =
+      plan === "yearly" ? "฿999.00 per year" : "฿149.00 per month";
   }
 
-  const plan_name = selectedPlan === "yearly"
-    ? "premium_yearly"
-    : "premium_monthly";
-
-  try {
-    const res = await liff.fetch(
-      "https://primary-production-49d9.up.railway.app/webhook/create-premium-session",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          line_user_id: lineUserId,
-          plan_name: plan_name
-        })
+  async function startCheckout() {
+    try {
+      if (!liffReady || !lineUserId) {
+        alert("ไม่พบ LINE User ID กรุณารีเฟรชหน้าอีกครั้ง");
+        return;
       }
-    );
 
-    const data = await res.json();
+      const plan_name =
+        selectedPlan === "monthly" ? "premium_monthly" : "premium_yearly";
 
-    if (data.url) {
-      window.location.href = data.url;
-    } else {
-      alert("เกิดข้อผิดพลาด ไม่พบ URL สำหรับชำระเงิน");
+      const res = await fetch(
+        "https://primary-production-49d9.up.railway.app/webhook/create-premium-session",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            line_user_id: lineUserId,
+            plan_name: plan_name
+          })
+        }
+      );
+
+      if (!res.ok) {
+        console.error("HTTP error:", res.status);
+        alert("เริ่มการชำระเงินไม่สำเร็จ");
+        return;
+      }
+
+      const data = await res.json();
+      console.log("Session response:", data);
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("ไม่พบ URL สำหรับชำระเงิน");
+      }
+
+    } catch (err) {
+      console.error("Checkout error:", err);
+      alert("เกิดข้อผิดพลาดในการเริ่มต้นการชำระเงิน");
     }
-
-  } catch (err) {
-    alert("เกิดข้อผิดพลาดในการสร้างการชำระเงิน");
-    console.error("Checkout error:", err);
   }
-}
 
-document.getElementById("startBtn").addEventListener("click", startCheckout);
+  document.getElementById("startBtn").addEventListener("click", startCheckout);
 </script>
 
 </body>
 </html>
-
