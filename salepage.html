@@ -173,7 +173,7 @@ async function startCheckout() {
 
   try {
     const res = await liff.fetch(
-      "https://primary-production-49d9.up.railway.app/webhook-test/create-premium-session",
+      "https://primary-production-49d9.up.railway.app/webhook/create-premium-session",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -203,3 +203,4 @@ document.getElementById("startBtn").addEventListener("click", startCheckout);
 
 </body>
 </html>
+
