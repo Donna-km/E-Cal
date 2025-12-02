@@ -6,6 +6,7 @@
 <title>E-Cal Premium Upgrade</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
   body { background: #000; font-family: 'Inter', sans-serif; }
@@ -42,7 +43,6 @@
 
 <body class="text-white">
 
-<!-- Sticker ใหญ่ -->
 <div class="w-full flex justify-center mt-8 mb-4">
   <img
     src="https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/ecal_sticker_2.png"
@@ -51,7 +51,6 @@
   >
 </div>
 
-<!-- Headline -->
 <div class="px-6 text-center">
   <h1 class="text-2xl font-extrabold mb-2">
     Crush Your Goals — E-Cal’s Got Your Back.
@@ -61,10 +60,8 @@
   </p>
 </div>
 
-<!-- Plan Selection -->
 <div class="px-6 mt-8 space-y-4">
 
-  <!-- YEARLY PLAN -->
   <div id="yearlyBox"
        class="glass rounded-2xl p-4 flex justify-between items-center plan-selected cursor-pointer relative"
        onclick="selectPlan('yearly')">
@@ -84,7 +81,6 @@
     <div class="select-dot active" id="dot-yearly"></div>
   </div>
 
-  <!-- MONTHLY PLAN -->
   <div id="monthlyBox"
        class="glass rounded-2xl p-4 flex justify-between items-center plan-unselected cursor-pointer"
        onclick="selectPlan('monthly')">
@@ -99,31 +95,13 @@
 
 </div>
 
-<!-- Benefits -->
 <div class="px-6 mt-8 space-y-3 text-sm">
-
-  <div class="flex items-center space-x-3">
-    <span class="text-lg">🍽️</span>
-    <span class="text-gray-300">Smart Scan – วิเคราะห์เมนูและแคลอรี่แม่นยำ</span>
-  </div>
-
-  <div class="flex items-center space-x-3">
-    <span class="text-lg">🍏</span>
-    <span class="text-gray-300">Personalized Food Suggestions</span>
-  </div>
-
-  <div class="flex items-center space-x-3">
-    <span class="text-lg">🤖</span>
-    <span class="text-gray-300">Chatbot Support Unlimited – ถาม–ตอบแบบไม่อั้น</span>
-  </div>
-
-  <div class="flex items-center space-x-3">
-    <span class="text-lg">📊</span>
-    <span class="text-gray-300">Premium Insights – ข้อมูลวิเคราะห์เชิงลึก</span>
-  </div>
+  <div class="flex items-center space-x-3"><span class="text-lg">🍽️</span><span class="text-gray-300">Smart Scan – วิเคราะห์เมนูและแคลอรี่แม่นยำ</span></div>
+  <div class="flex items-center space-x-3"><span class="text-lg">🍏</span><span class="text-gray-300">Personalized Food Suggestions</span></div>
+  <div class="flex items-center space-x-3"><span class="text-lg">🤖</span><span class="text-gray-300">Chatbot Support Unlimited – ถาม–ตอบแบบไม่อั้น</span></div>
+  <div class="flex items-center space-x-3"><span class="text-lg">📊</span><span class="text-gray-300">Premium Insights – ข้อมูลวิเคราะห์เชิงลึก</span></div>
 </div>
 
-<!-- CTA BUTTON -->
 <div class="mt-10 px-6 mb-10">
   <button id="startBtn"
           class="premium-btn w-full py-4 rounded-full shadow text-xl font-bold">
@@ -136,7 +114,8 @@
 </div>
 
 <script>
-let selectedPlan = "yearly"; // default
+let selectedPlan = "yearly";
+let lineUserId = null;
 
 function selectPlan(plan) {
   selectedPlan = plan;
@@ -154,19 +133,52 @@ function selectPlan(plan) {
     plan === "yearly" ? "฿999.00 per year" : "฿149.00 per month";
 }
 
-// ⭐ Redirect ตรงไป Stripe Payment Link
-function startCheckout(plan) {
-  if (plan === "monthly") {
-    window.location.href = "https://buy.stripe.com/test_aFafZaa058lecxk1GmeEo04";
-  } else {
-    window.location.href = "https://buy.stripe.com/test_fZu8wI0pv44Y40O4SyeEo03";
+async function initLiff() {
+  try {
+    await liff.init({ liffId: "2007859046-jqRLglRW" });
+
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
+
+    const profile = await liff.getProfile();
+    lineUserId = profile.userId;
+
+  } catch (err) {
+    console.error("LIFF error:", err);
   }
 }
 
-// click → pay
-document.getElementById("startBtn").addEventListener("click", () => {
-  startCheckout(selectedPlan);
-});
+initLiff();
+
+async function startCheckout() {
+  if (!lineUserId) {
+    alert("ไม่พบ LINE User ID กรุณารีเฟรชหน้า");
+    return;
+  }
+
+  const plan_name =
+    selectedPlan === "yearly" ? "premium_yearly" : "premium_monthly";
+
+  const res = await fetch(
+    "https://primary-production-49d9.up.railway.app/webhook-test/create-premium-session",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        line_user_id: lineUserId,
+        plan_name: plan_name
+      })
+    }
+  );
+
+  const data = await res.json();
+  if (data.url) window.location.href = data.url;
+  else alert("เกิดข้อผิดพลาดในการเริ่มชำระเงิน");
+}
+
+document.getElementById("startBtn").addEventListener("click", startCheckout);
 </script>
 
 </body>
