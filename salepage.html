@@ -6,7 +6,6 @@
 <title>E-Cal Premium Upgrade</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
   body { background: #000; font-family: 'Inter', sans-serif; }
@@ -43,28 +42,41 @@
 
 <body class="text-white">
 
-<!-- Header Image -->
-<div class="w-full flex justify-center mt-6 mb-4">
-  <img src="https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/ecal_sticker_2.png"
-       class="w-40 h-40 object-contain">
+<!-- Sticker ใหญ่ -->
+<div class="w-full flex justify-center mt-8 mb-4">
+  <img
+    src="https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/ecal_sticker_2.png"
+    class="w-56 h-56 object-contain"
+    alt="E-Cal Sticker"
+  >
 </div>
 
-<h1 class="text-center text-3xl font-extrabold mb-2">
-  Let's hop towards your goal
-</h1>
+<!-- Headline -->
+<div class="px-6 text-center">
+  <h1 class="text-2xl font-extrabold mb-2">
+    Crush Your Goals — E-Cal’s Got Your Back.
+  </h1>
+  <p class="text-sm text-gray-300">
+    พิชิตทุกเป้าหมายของคุณ E-Cal อยู่เคียงข้างเสมอ
+  </p>
+</div>
 
-<!-- Pricing Options -->
-<div class="px-6 mt-6 space-y-4">
+<!-- Plan Selection -->
+<div class="px-6 mt-8 space-y-4">
 
-  <!-- YEARLY BOX -->
+  <!-- YEARLY PLAN -->
   <div id="yearlyBox"
-       class="glass rounded-2xl p-4 flex justify-between items-center plan-selected cursor-pointer"
+       class="glass rounded-2xl p-4 flex justify-between items-center plan-selected cursor-pointer relative"
        onclick="selectPlan('yearly')">
 
-    <div>
-      <span class="bg-white/10 text-white px-3 py-1 text-sm rounded-full">Save 44%</span>
+    <div class="absolute -top-3 -left-2">
+      <span class="bg-red-600 text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wide">
+        Save 44%
+      </span>
+    </div>
 
-      <div class="text-lg mt-3 text-gray-300">Yearly Starter</div>
+    <div class="mt-2">
+      <div class="text-sm text-gray-300">Yearly Starter</div>
       <div class="text-2xl font-bold text-white">฿83.25/mo</div>
       <div class="text-sm text-gray-400">(฿999.00/year)</div>
     </div>
@@ -72,13 +84,13 @@
     <div class="select-dot active" id="dot-yearly"></div>
   </div>
 
-  <!-- MONTHLY BOX -->
+  <!-- MONTHLY PLAN -->
   <div id="monthlyBox"
        class="glass rounded-2xl p-4 flex justify-between items-center plan-unselected cursor-pointer"
        onclick="selectPlan('monthly')">
 
     <div>
-      <div class="text-lg mt-1 text-gray-300">Monthly Starter</div>
+      <div class="text-sm text-gray-300">Monthly Starter</div>
       <div class="text-2xl font-bold text-white">฿149.00/mo</div>
     </div>
 
@@ -88,78 +100,70 @@
 </div>
 
 <!-- Benefits -->
-<div class="px-6 mt-8 space-y-4">
+<div class="px-6 mt-8 space-y-3 text-sm">
+
   <div class="flex items-center space-x-3">
-    <span class="text-xl">🍽️</span>
-    <span class="text-gray-300">Scan meals without limits</span>
+    <span class="text-lg">🍽️</span>
+    <span class="text-gray-300">Smart Scan – วิเคราะห์เมนูและแคลอรี่แม่นยำ</span>
   </div>
 
   <div class="flex items-center space-x-3">
-    <span class="text-xl">🍏</span>
-    <span class="text-gray-300">Get personalized food suggestions</span>
+    <span class="text-lg">🍏</span>
+    <span class="text-gray-300">Personalized Food Suggestions</span>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <span class="text-lg">🤖</span>
+    <span class="text-gray-300">Chatbot Support Unlimited – ถาม–ตอบแบบไม่อั้น</span>
+  </div>
+
+  <div class="flex items-center space-x-3">
+    <span class="text-lg">📊</span>
+    <span class="text-gray-300">Premium Insights – ข้อมูลวิเคราะห์เชิงลึก</span>
   </div>
 </div>
 
 <!-- CTA BUTTON -->
-<div class="mt-10 px-6">
+<div class="mt-10 px-6 mb-10">
   <button id="startBtn"
           class="premium-btn w-full py-4 rounded-full shadow text-xl font-bold">
-    Start My 3-Day Free Trial
+    Upgrade to Premium
   </button>
 
-  <p class="text-center mt-3 text-sm text-gray-400">
-    3 Days free, then ฿999.00 per year
+  <p id="priceNote" class="text-center mt-3 text-xs text-gray-400">
+    ฿999.00 per year
   </p>
 </div>
 
 <script>
-let selectedPlan = "yearly"; // default plan
+let selectedPlan = "yearly"; // default
 
 function selectPlan(plan) {
   selectedPlan = plan;
 
-  // Toggle box UI
   document.getElementById("yearlyBox").classList.toggle("plan-selected", plan === "yearly");
   document.getElementById("yearlyBox").classList.toggle("plan-unselected", plan !== "yearly");
 
   document.getElementById("monthlyBox").classList.toggle("plan-selected", plan === "monthly");
-  document.getElementById("monthlyBox").classList.toggle("plan-unselected", plan !== "monthly");
+  document.getElementById("monthlyBox").classList.toggle("plan-unselected", plan !== "yearly");
 
-  // Toggle dots
   document.getElementById("dot-yearly").classList.toggle("active", plan === "yearly");
   document.getElementById("dot-monthly").classList.toggle("active", plan === "monthly");
 
-  // Update text under button
-  if (plan === "yearly") {
-    document.querySelector("p").textContent = "3 Days free, then ฿999.00 per year";
+  document.getElementById("priceNote").textContent =
+    plan === "yearly" ? "฿999.00 per year" : "฿149.00 per month";
+}
+
+// ⭐ Redirect ตรงไป Stripe Payment Link
+function startCheckout(plan) {
+  if (plan === "monthly") {
+    window.location.href = "https://buy.stripe.com/test_aFafZaa058lecxk1GmeEo04";
   } else {
-    document.querySelector("p").textContent = "3 Days free, then ฿149.00 per month";
+    window.location.href = "https://buy.stripe.com/test_fZu8wI0pv44Y40O4SyeEo03";
   }
 }
 
-async function startCheckout(plan) {
-  await liff.init({ liffId: "YOUR_LIFF_ID" });
-
-  if (!liff.isLoggedIn()) {
-    liff.login();
-    return;
-  }
-
-  const profile = await liff.getProfile();
-
-  const res = await fetch("https://primary-production-49d9.up.railway.app/webhook/create-premium-session", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      line_user_id: profile.userId,
-      plan_name: plan === "yearly" ? "premium_yearly" : "premium_monthly"
-    }),
-  });
-
-  const data = await res.json();
-  if (data.url) window.location.href = data.url;
-}
-
+// click → pay
 document.getElementById("startBtn").addEventListener("click", () => {
   startCheckout(selectedPlan);
 });
