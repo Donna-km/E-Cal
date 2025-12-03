@@ -247,6 +247,41 @@
       max-height: 500px;
       background: #000000;
       overflow: hidden;
+      cursor: pointer;
+    }
+
+    .fullscreen-viewer {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.98);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fullscreen-viewer.active {
+      display: flex;
+    }
+
+    .fullscreen-viewer img,
+    .fullscreen-viewer video {
+      max-width: 95%;
+      max-height: 95%;
+      object-fit: contain;
+    }
+
+    .fullscreen-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 40px;
+      color: white;
+      cursor: pointer;
+      z-index: 10001;
     }
 
     .carousel-track {
@@ -446,6 +481,53 @@
       line-height: 1.5;
     }
 
+    .emoji-picker {
+      display: none;
+      background: #2A2A2A;
+      border: 1px solid #444;
+      border-radius: 12px;
+      padding: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .emoji-picker.active {
+      display: flex;
+    }
+
+    .emoji-item {
+      font-size: 24px;
+      cursor: pointer;
+      padding: 5px;
+      transition: transform 0.2s;
+    }
+
+    .emoji-item:hover {
+      transform: scale(1.3);
+    }
+
+    .comment-reply {
+      margin-left: 46px;
+      margin-top: 8px;
+      padding-left: 12px;
+      border-left: 2px solid #555;
+    }
+
+    .reply-btn {
+      background: none;
+      border: none;
+      color: #FF6B9D;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 4px 8px;
+      font-weight: 600;
+    }
+
+    .reply-btn:hover {
+      text-decoration: underline;
+    }
+
     .ranking-view {
       display: none;
       padding: 20px;
@@ -609,8 +691,8 @@
   </div>
   <div class="app-container" style="display: none;">
    <div class="header">
-   
-    <div class="header-buttons"><button class="btn btn-secondary" id="rankingBtn"> Top 10</button> <button class="btn btn-secondary" id="savedBtn"> Saved</button> <button class="btn btn-secondary" id="galleryBtn" style="display:none;">📷 Gallery</button>
+    <h1>E-Cal Proof Gallery</h1>
+    <div class="header-buttons"><button class="btn btn-secondary" id="rankingBtn">🏆 Top 10</button> <button class="btn btn-secondary" id="savedBtn">❤️ Saved</button> <button class="btn btn-secondary" id="galleryBtn" style="display:none;">📷 Gallery</button>
     </div>
    </div>
    <div id="galleryView">
@@ -643,6 +725,9 @@
      <p>กดหัวใจเพื่อ Save Proof ที่ชอบ!</p>
     </div>
    </div>
+   <div class="fullscreen-viewer" id="fullscreenViewer"><span class="fullscreen-close" id="fullscreenClose">×</span>
+    <div id="fullscreenContent"></div>
+   </div>
    <div class="modal" id="proofModal">
     <div class="modal-content">
      <div class="carousel-container" id="carouselContainer">
@@ -661,7 +746,11 @@
        <h3>แซวเพื่อน���น่อย 😈</h3><textarea class="comment-box" id="commentBox" placeholder="พิมพ์คอมเมนต์..."></textarea> <button class="btn btn-primary" id="submitComment" style="width:100%; margin-top:10px;"> ส่งคอมเมนต์ </button>
       </div>
       <div class="comment-section">
-       <h3>���อมเมนต์ล่าสุด</h3>
+       <h3>แซวเพื่อนหน่อย 😈</h3><textarea class="comment-box" id="commentBox" placeholder="พิมพ์คอมเมนต์..."></textarea> <button class="btn btn-secondary" id="emojiBtn" style="width:100%; margin-top:10px;"> 😀 เลือกอีโมจิ </button>
+       <div class="emoji-picker" id="emojiPicker"></div><button class="btn btn-primary" id="submitComment" style="width:100%; margin-top:10px;"> ส่งคอมเมนต์ </button>
+      </div>
+      <div class="comment-section">
+       <h3>คอมเมนต์ล่าสุด</h3>
        <div class="comment-list" id="commentList"></div>
       </div>
      </div>
@@ -685,16 +774,7 @@
     let currentMediaFiles = [];
     let liffInitialized = false;
 
-    const roastPrefixes = [
-      "อีเพื่อน: ",
-      "���อ้สั���: ",
-      "ไอ้���หี้ย: ",
-      "เฮ้ยเว้ย: ",
-      "แหม: ",
-      "โอ้โห: ",
-      "อ้าว: ",
-      "5555: "
-    ];
+    const emojis = ['😀', '😂', '🤣', '😍', '🥰', '😎', '🤔', '😮', '😱', '🔥', '💪', '👏', '🎉', '✨', '❤️', '💯', '👍', '👌', '🙏', '💕'];
 
     async function initializeLIFF() {
       try {
@@ -812,7 +892,7 @@
           .select('*')
           .eq('proof_id', parseInt(proofId))
           .order('created_at', { ascending: false })
-          .limit(10);
+          .limit(50);
 
         if (error) throw error;
 
@@ -843,7 +923,6 @@
               });
             }
           } catch (e) {
-            // ถ้าหาไม่เจอใช้ค่า default
             commenterProfiles.set(lineId, {
               name: 'User ' + lineId.substr(-4),
               picture: null
@@ -851,7 +930,20 @@
           }
         }
 
-        commentList.innerHTML = data.map(comment => {
+        // จัดกลุ่มคอมเมนต์และรีพลาย
+        const mainComments = data.filter(c => !c.parent_comment_id);
+        const replies = data.filter(c => c.parent_comment_id);
+        const replyMap = new Map();
+        
+        replies.forEach(reply => {
+          const parentId = reply.parent_comment_id;
+          if (!replyMap.has(parentId)) {
+            replyMap.set(parentId, []);
+          }
+          replyMap.get(parentId).push(reply);
+        });
+
+        commentList.innerHTML = mainComments.map(comment => {
           const profile = commenterProfiles.get(comment.commenter_line_user_id) || {
             name: 'User ' + comment.commenter_line_user_id.substr(-4),
             picture: null
@@ -861,9 +953,37 @@
             ? `<img src="${profile.picture}" alt="${escapeHtml(profile.name)}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #FF6B9D; margin-right: 10px;" onerror="this.style.display='none';">`
             : `<div style="width: 36px; height: 36px; border-radius: 50%; background: #FF6B9D; margin-right: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;">${profile.name.charAt(0)}</div>`;
           
-          // แสดงปุ่มลบถ้าเป็นคอมเมนต์ของตัวเอง
           const isOwner = comment.commenter_line_user_id === currentUserId;
           const deleteBtn = isOwner ? `<button onclick="deleteComment(${comment.id})" style="background: #FF4444; color: white; border: none; padding: 4px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#FF0000'" onmouseout="this.style.background='#FF4444'">ลบ</button>` : '';
+          
+          // รีพลาย
+          const commentReplies = replyMap.get(comment.id) || [];
+          const repliesHtml = commentReplies.map(reply => {
+            const replyProfile = commenterProfiles.get(reply.commenter_line_user_id) || {
+              name: 'User ' + reply.commenter_line_user_id.substr(-4),
+              picture: null
+            };
+            
+            const replyAvatarHtml = replyProfile.picture 
+              ? `<img src="${replyProfile.picture}" alt="${escapeHtml(replyProfile.name)}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #FF6B9D; margin-right: 8px;" onerror="this.style.display='none';">`
+              : `<div style="width: 32px; height: 32px; border-radius: 50%; background: #FF6B9D; margin-right: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 14px;">${replyProfile.name.charAt(0)}</div>`;
+            
+            const isReplyOwner = reply.commenter_line_user_id === currentUserId;
+            const replyDeleteBtn = isReplyOwner ? `<button onclick="deleteComment(${reply.id})" style="background: #FF4444; color: white; border: none; padding: 2px 8px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 600;" onmouseover="this.style.background='#FF0000'" onmouseout="this.style.background='#FF4444'">ลบ</button>` : '';
+            
+            return `
+              <div class="comment-reply" id="comment_${reply.id}" style="display: flex; align-items: flex-start; gap: 0; margin-top: 8px;">
+                ${replyAvatarHtml}
+                <div style="flex: 1;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="comment-user" style="font-size: 13px;">${escapeHtml(replyProfile.name)}</div>
+                    ${replyDeleteBtn}
+                  </div>
+                  <div class="comment-text" style="font-size: 14px;">${escapeHtml(reply.comment_text)}</div>
+                </div>
+              </div>
+            `;
+          }).join('');
           
           return `
             <div class="comment-item" id="comment_${comment.id}" style="display: flex; align-items: flex-start; gap: 0;">
@@ -874,6 +994,15 @@
                   ${deleteBtn}
                 </div>
                 <div class="comment-text">${escapeHtml(comment.comment_text)}</div>
+                <button class="reply-btn" onclick="showReplyBox(${comment.id})">💬 ตอบกลับ</button>
+                <div id="reply_box_${comment.id}" style="display: none; margin-top: 8px;">
+                  <textarea id="reply_text_${comment.id}" style="width: 100%; padding: 8px; background: #1A1A1A; border: 1px solid #444; border-radius: 8px; color: #FFF; font-size: 13px; font-family: 'Kanit', 'Arial', sans-serif; min-height: 60px;" placeholder="พิมพ์ตอบกลับ..."></textarea>
+                  <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <button onclick="submitReply(${comment.id})" style="background: #FF6B9D; color: white; border: none; padding: 6px 16px; border-radius: 12px; font-size: 13px; cursor: pointer; font-weight: 600;">ส่ง</button>
+                    <button onclick="hideReplyBox(${comment.id})" style="background: #555; color: white; border: none; padding: 6px 16px; border-radius: 12px; font-size: 13px; cursor: pointer; font-weight: 600;">ยกเลิก</button>
+                  </div>
+                </div>
+                ${repliesHtml}
               </div>
             </div>
           `;
@@ -966,6 +1095,14 @@
       updateModalRating();
       loadComments(proofId);
       
+      // เติมอีโมจิ
+      const emojiPicker = document.getElementById('emojiPicker');
+      if (emojiPicker) {
+        emojiPicker.innerHTML = emojis.map(emoji => 
+          `<span class="emoji-item" onclick="insertEmoji('${emoji}')">${emoji}</span>`
+        ).join('');
+      }
+      
       document.getElementById('proofModal').classList.add('active');
     }
 
@@ -1038,6 +1175,90 @@
       currentSlideIndex = (currentSlideIndex + 1) % currentMediaFiles.length;
       updateCarousel();
     };
+
+    // Fullscreen functionality
+    document.getElementById('carouselContainer').onclick = function(e) {
+      if (e.target.tagName === 'BUTTON' || e.target.classList.contains('carousel-dot')) return;
+      
+      const currentMedia = currentMediaFiles[currentSlideIndex];
+      if (!currentMedia) return;
+      
+      const fullscreenViewer = document.getElementById('fullscreenViewer');
+      const fullscreenContent = document.getElementById('fullscreenContent');
+      
+      if (currentMedia.type === 'video') {
+        fullscreenContent.innerHTML = `<video src="${currentMedia.url}" controls autoplay style="max-width: 95%; max-height: 95%;"></video>`;
+      } else {
+        fullscreenContent.innerHTML = `<img src="${currentMedia.url}" style="max-width: 95%; max-height: 95%; object-fit: contain;">`;
+      }
+      
+      fullscreenViewer.classList.add('active');
+    };
+
+    document.getElementById('fullscreenClose').onclick = function() {
+      document.getElementById('fullscreenViewer').classList.remove('active');
+      document.getElementById('fullscreenContent').innerHTML = '';
+    };
+
+    document.getElementById('fullscreenViewer').onclick = function(e) {
+      if (e.target.id === 'fullscreenViewer') {
+        this.classList.remove('active');
+        document.getElementById('fullscreenContent').innerHTML = '';
+      }
+    };
+
+    function showReplyBox(commentId) {
+      document.getElementById('reply_box_' + commentId).style.display = 'block';
+    }
+
+    function hideReplyBox(commentId) {
+      document.getElementById('reply_box_' + commentId).style.display = 'none';
+      document.getElementById('reply_text_' + commentId).value = '';
+    }
+
+    async function submitReply(parentCommentId) {
+      if (!liffInitialized) {
+        showToast('❌ กรุณาเข้าสู่ระบบผ่าน LINE');
+        return;
+      }
+
+      const replyText = document.getElementById('reply_text_' + parentCommentId).value.trim();
+      if (!replyText) {
+        showToast('❌ พิมพ์ข้อความก่อน!');
+        return;
+      }
+
+      try {
+        const { error } = await supabase
+          .from('proof_comments')
+          .insert({
+            proof_id: parseInt(currentProofId),
+            commenter_line_user_id: currentUserId,
+            comment_text: replyText,
+            parent_comment_id: parentCommentId
+          });
+
+        if (error) throw error;
+
+        hideReplyBox(parentCommentId);
+        loadComments(currentProofId);
+        showToast('✅ ตอบกลับแล้ว!');
+        
+      } catch (error) {
+        console.error('Submit Reply Error:', error);
+        showToast('❌ ไม่สามารถส่งตอบกลับได้: ' + error.message);
+      }
+    }
+
+    function insertEmoji(emoji) {
+      const commentBox = document.getElementById('commentBox');
+      const cursorPos = commentBox.selectionStart;
+      const textBefore = commentBox.value.substring(0, cursorPos);
+      const textAfter = commentBox.value.substring(cursorPos);
+      commentBox.value = textBefore + emoji + textAfter;
+      commentBox.focus();
+      commentBox.selectionStart = commentBox.selectionEnd = cursorPos + emoji.length;
+    }
 
     function updateModalRating() {
       const proof = proofs.find(p => p.id === currentProofId);
@@ -1185,7 +1406,7 @@
 
         loadComments(currentProofId);
         document.getElementById('commentBox').value = '';
-        showToast('✅ ส่งคอมเมนต์แล้ว!');
+        showToast('�� ส่ง���อมเมนต์แล้ว!');
         
       } catch (error) {
         console.error('Submit Comment Error:', error);
@@ -1203,6 +1424,17 @@
       const videos = document.querySelectorAll('.carousel-video');
       videos.forEach(video => video.pause());
     };
+
+    // Toggle emoji picker - will be set after DOM loads
+    setTimeout(() => {
+      const emojiBtn = document.getElementById('emojiBtn');
+      if (emojiBtn) {
+        emojiBtn.onclick = function() {
+          const picker = document.getElementById('emojiPicker');
+          picker.classList.toggle('active');
+        };
+      }
+    }, 100);
 
     document.getElementById('rankingBtn').onclick = function() {
       currentView = 'ranking';
@@ -1384,7 +1616,5 @@
 
     init();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a736fa0d03226e6',t:'MTc2NDYwMTAzNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a7ffae8f53d7b40',t:'MTc2NDczMjU3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
-
-
