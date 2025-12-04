@@ -527,15 +527,15 @@
     }
 
     .ranking-user {
-      font-size: 20px;
+      font-size: 16px;
       font-weight: 600;
       color: #FFFFFF;
     }
 
     .ranking-score {
-      font-size: 16px;
+      font-size: 13px;
       color: #FFB800;
-      margin-top: 5px;
+      margin-top: 3px;
       font-weight: 500;
     }
 
@@ -829,11 +829,22 @@
           mediaHtml = `<img class="proof-image" src="${firstMedia.url || ''}" alt="${escapeHtml(proof.userName)}">`;
         }
         
+        let profileHtml = '';
+        if (proof.profilePicture) {
+          profileHtml = `<img src="${proof.profilePicture}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid white; margin-right: 6px;">`;
+        } else {
+          profileHtml = `<div style="width: 28px; height: 28px; border-radius: 50%; background: #FF6B9D; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 12px; border: 2px solid white; margin-right: 6px;">${proof.userName.charAt(0)}</div>`;
+        }
+        
         return `
           <div class="proof-card" onclick="openModal('${proof.id}')">
             <div class="proof-image-container">
               ${mediaHtml}
               ${videoIcon}
+              <div style="position: absolute; bottom: 8px; left: 8px; display: flex; align-items: center; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); padding: 4px 10px; border-radius: 20px; z-index: 3;">
+                ${profileHtml}
+                <span style="color: white; font-size: 12px; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${escapeHtml(proof.userName)}</span>
+              </div>
             </div>
           </div>
         `;
@@ -1111,7 +1122,7 @@
     document.getElementById('submitComment').onclick = async function() {
       const commentText = document.getElementById('commentBox').value.trim();
       if (!commentText) {
-        showToast('❌ พิมพ์คอมเมนต์ก่อน!');
+        showToast('❌ พิมพ์คอมเมนต์ก่อ���!');
         return;
       }
 
@@ -1218,14 +1229,24 @@
           thumbHtml = `<img class="ranking-thumb" src="${thumbUrl}" alt="${escapeHtml(proof.userName)}">`;
         }
         
+        let profileHtml = '';
+        if (proof.profilePicture) {
+          profileHtml = `<img src="${proof.profilePicture}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #FF6B9D; margin-right: 8px;">`;
+        } else {
+          profileHtml = `<div style="width: 36px; height: 36px; border-radius: 50%; background: #FF6B9D; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 14px; border: 2px solid #FF6B9D; margin-right: 8px;">${proof.userName.charAt(0)}</div>`;
+        }
+        
         return `
           <div class="ranking-item" onclick="openModal('${proof.id}')" style="cursor: pointer;">
             <div class="ranking-number ${rankClass}">${rank}</div>
             ${thumbHtml}
             <div class="ranking-details">
-              <div class="ranking-user">${escapeHtml(proof.userName)}</div>
-              <div style="color:#999;">${escapeHtml(proof.missionName)}</div>
-              <div class="ranking-score">${stars} ${proof.avgRating.toFixed(2)} (${proof.ratingCount} รีวิว)</div>
+              <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                ${profileHtml}
+                <div class="ranking-user">${escapeHtml(proof.userName)}</div>
+              </div>
+              <div style="color:#999; font-size: 13px;">${escapeHtml(proof.missionName)}</div>
+              <div class="ranking-score">${stars} ${proof.avgRating.toFixed(1)} (${proof.ratingCount} รีวิว)</div>
             </div>
           </div>
         `;
@@ -1306,11 +1327,22 @@
           mediaHtml = `<img class="proof-image" src="${firstMedia.url || ''}" alt="${escapeHtml(proof.userName)}">`;
         }
         
+        let profileHtml = '';
+        if (proof.profilePicture) {
+          profileHtml = `<img src="${proof.profilePicture}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid white; margin-right: 6px;">`;
+        } else {
+          profileHtml = `<div style="width: 28px; height: 28px; border-radius: 50%; background: #FF6B9D; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 12px; border: 2px solid white; margin-right: 6px;">${proof.userName.charAt(0)}</div>`;
+        }
+        
         return `
           <div class="proof-card" onclick="openModal('${proof.id}')">
             <div class="proof-image-container">
               ${mediaHtml}
               ${videoIcon}
+              <div style="position: absolute; bottom: 8px; left: 8px; display: flex; align-items: center; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); padding: 4px 10px; border-radius: 20px; z-index: 3;">
+                ${profileHtml}
+                <span style="color: white; font-size: 12px; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${escapeHtml(proof.userName)}</span>
+              </div>
             </div>
           </div>
         `;
@@ -1336,5 +1368,5 @@
     // Start the app
     initApp();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a8c96c2f1c8d02b',t:'MTc2NDg2NDc4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a8ca8ae6760d32d',t:'MTc2NDg2NTUxOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
