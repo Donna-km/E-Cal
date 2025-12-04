@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>E-Cal Proof Gallery</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body {
       box-sizing: border-box;
@@ -28,24 +28,45 @@
       background: #0A0A0A;
     }
 
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0A0A0A;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #333;
+      border-top-color: #FF6B9D;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     .header {
       background: rgba(10, 10, 10, 0.98);
       backdrop-filter: blur(20px);
-      padding: 20px;
+      padding: 15px 20px;
       text-align: center;
-      position: sticky;
-      top: 0;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
       z-index: 100;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .header h1 {
-      margin: 0 0 15px 0;
-      font-size: 28px;
-      color: #FFFFFF;
-      font-weight: 700;
-      letter-spacing: -0.5px;
+      box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.5);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .header-buttons {
@@ -53,17 +74,21 @@
       gap: 10px;
       justify-content: center;
       flex-wrap: wrap;
+      max-width: 600px;
+      margin: 0 auto;
     }
 
     .btn {
-      padding: 10px 24px;
+      padding: 12px 28px;
       border: none;
       border-radius: 24px;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s;
       font-family: 'Kanit', 'Arial', sans-serif;
+      flex: 1;
+      min-width: 100px;
     }
 
     .btn-primary {
@@ -94,7 +119,7 @@
     .gallery-grid {
       column-count: 4;
       column-gap: 8px;
-      padding: 10px 8px;
+      padding: 10px 8px 80px 8px;
       width: 100%;
     }
 
@@ -110,12 +135,6 @@
         column-count: 2;
         column-gap: 6px;
         padding: 6px;
-      }
-
-      .save-btn {
-        font-size: 16px;
-        width: 32px;
-        height: 32px;
       }
     }
 
@@ -135,10 +154,6 @@
     .proof-card:hover {
       transform: scale(1.02);
       z-index: 10;
-    }
-
-    .proof-card:hover .save-btn {
-      opacity: 1;
     }
 
     .proof-image-container {
@@ -161,54 +176,6 @@
       height: 100%;
       display: block;
       object-fit: cover;
-    }
-
-    .media-indicator {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      background: rgba(255, 255, 255, 0.95);
-      color: #555555;
-      padding: 7px 14px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      z-index: 5;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
-      letter-spacing: 0.3px;
-    }
-
-    .save-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(0, 0, 0, 0.5);
-      border: none;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 20px;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      padding: 6px;
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-      opacity: 1;
-      backdrop-filter: blur(10px);
-    }
-
-    .save-btn:hover {
-      transform: scale(1.15);
-      background: rgba(0, 0, 0, 0.7);
-      color: #FFFFFF;
-    }
-
-    .save-btn.saved {
-      background: rgba(255, 107, 157, 0.9);
-      color: #FFFFFF;
     }
 
     .modal {
@@ -240,7 +207,6 @@
     .carousel-container {
       position: relative;
       width: 100%;
-      max-height: 500px;
       background: #000000;
       overflow: hidden;
       cursor: pointer;
@@ -288,20 +254,22 @@
     .carousel-slide {
       min-width: 100%;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       background: #000000;
     }
 
     .carousel-image {
       width: 100%;
-      max-height: 500px;
+      height: auto;
       object-fit: contain;
+      display: block;
     }
 
     .carousel-video {
       width: 100%;
-      max-height: 500px;
+      height: auto;
+      display: block;
     }
 
     .carousel-btn {
@@ -426,20 +394,6 @@
       transform: scale(1.15);
     }
 
-    @media (max-width: 768px) {
-      .rating-section {
-        padding: 10px;
-      }
-
-      .rating-section h3 {
-        font-size: 13px;
-      }
-
-      .rating-star {
-        font-size: 24px;
-      }
-    }
-
     .comment-section {
       margin: 20px 0;
     }
@@ -498,55 +452,31 @@
     }
 
     .emoji-picker {
-      display: none;
+      display: flex;
       background: #2A2A2A;
       border: 1px solid #444;
-      border-radius: 12px;
+      border-radius: 8px;
       padding: 10px;
-      margin-top: 10px;
       flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .emoji-picker.active {
-      display: flex;
+      gap: 5px;
     }
 
     .emoji-item {
-      font-size: 24px;
+      font-size: 22px;
       cursor: pointer;
-      padding: 5px;
+      padding: 4px;
       transition: transform 0.2s;
+      border-radius: 4px;
     }
 
     .emoji-item:hover {
-      transform: scale(1.3);
-    }
-
-    .comment-reply {
-      margin-left: 46px;
-      margin-top: 8px;
-      padding-left: 12px;
-      border-left: 2px solid #555;
-    }
-
-    .reply-btn {
-      background: none;
-      border: none;
-      color: #FF6B9D;
-      font-size: 12px;
-      cursor: pointer;
-      padding: 4px 8px;
-      font-weight: 600;
-    }
-
-    .reply-btn:hover {
-      text-decoration: underline;
+      transform: scale(1.2);
+      background: #3A3A3A;
     }
 
     .ranking-view {
       display: none;
-      padding: 20px;
+      padding: 20px 20px 80px 20px;
     }
 
     .ranking-view.active {
@@ -620,58 +550,9 @@
       margin-bottom: 20px;
     }
 
-    .loading-spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255, 107, 157, 0.3);
-      border-radius: 50%;
-      border-top-color: #FF6B9D;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #0A0A0A;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      z-index: 9999;
-      gap: 20px;
-    }
-
-    .loading-overlay .spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid rgba(255, 107, 157, 0.2);
-      border-radius: 50%;
-      border-top-color: #FF6B9D;
-      animation: spin 1s linear infinite;
-    }
-
-    .loading-overlay p {
-      color: #FFFFFF;
-      font-size: 18px;
-      font-weight: 500;
-    }
-
     .toast {
       position: fixed;
-      bottom: 20px;
+      bottom: 100px;
       left: 50%;
       transform: translateX(-50%);
       background: #2D2D2D;
@@ -701,41 +582,26 @@
   <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
  </head>
  <body>
-  <div id="loadingOverlay" class="loading-overlay">
-   <div class="spinner"></div>
-   <p>กำลังโหลด...</p>
+  <div class="loading-screen" id="loadingScreen">
+   <div class="loading-spinner"></div>
+   <p style="margin-top: 20px; color: #999;">กำลังโหลด...</p>
   </div>
-  <div class="app-container" style="display: none;">
+  <div class="app-container" id="mainApp" style="display: none;">
    <div class="header">
-    <h1>E-Cal Proof Gallery</h1>
-    <div class="header-buttons"><button class="btn btn-secondary" id="rankingBtn">🏆 Top 10</button> <button class="btn btn-secondary" id="savedBtn">❤️ Saved</button> <button class="btn btn-secondary" id="galleryBtn" style="display:none;">📷 Gallery</button>
+    <div class="header-buttons"><button class="btn btn-secondary" id="galleryBtn">Gallery</button> <button class="btn btn-secondary" id="rankingBtn">Top 10</button> <button class="btn btn-secondary" id="savedBtn">Saved</button>
     </div>
    </div>
    <div id="galleryView">
     <div class="gallery-grid" id="galleryGrid"></div>
-    <div class="empty-state" id="emptyState" style="display:none;">
-     <div class="empty-state-icon">
-      📸
-     </div>
-     <h2>ยังไม่มี Proof</h2>
-     <p>อัพโหลด Proof แรกของคุณเลย!</p>
-    </div>
    </div>
    <div class="ranking-view" id="rankingView">
     <div id="rankingList"></div>
-    <div class="empty-state" id="rankingEmpty" style="display:none;">
-     <div class="empty-state-icon">
-      🏆
-     </div>
-     <h2>ยังไม่มีคะแนน</h2>
-     <p>รีวิว Proof เพื่อดูอันดับ!</p>
-    </div>
    </div>
    <div class="ranking-view" id="savedView">
     <div class="gallery-grid" id="savedGrid"></div>
     <div class="empty-state" id="savedEmpty" style="display:none;">
      <div class="empty-state-icon">
-      💔
+      💝
      </div>
      <h2>ยังไม่มี Proof ที่ Save</h2>
      <p>กดหัวใจเพื่อ Save Proof ที่ชอบ!</p>
@@ -753,14 +619,20 @@
      <div class="modal-body"><span class="modal-close" id="modalClose">×</span>
       <div class="modal-user-header" id="modalUserHeader"></div>
       <p id="modalMission"></p>
+      <div style="display: flex; align-items: center; gap: 10px;">
+       <div style="flex: 1;"></div>
+       <div style="font-size: 32px; cursor: pointer; transition: all 0.3s;" id="modalSaveBtn" onclick="toggleSaveFromModal()"></div>
+      </div>
       <div class="rating-section">
        <h3>ให้คะแนน Proof นี้</h3>
        <div class="rating-stars" id="ratingStars"></div>
        <p style="text-align:center; color:#777; font-size: 12px; margin: 5px 0;" id="currentRating"></p>
       </div>
       <div class="comment-section">
-       <h3>แซวเพื่อนหน่อย 😈</h3><textarea class="comment-box" id="commentBox" placeholder="พิมพ์คอมเมนต์..."></textarea> <button class="btn btn-secondary" id="emojiBtn" style="width:100%; margin-top:10px;"> 😀 เลือกอีโมจิ </button>
-       <div class="emoji-picker" id="emojiPicker"></div><button class="btn btn-primary" id="submitComment" style="width:100%; margin-top:10px;"> ส่งคอมเมนต์ </button>
+       <h3>แซวเพื่อนหน่อย 😈</h3>
+       <div style="position: relative;"><textarea class="comment-box" id="commentBox" placeholder="พิมพ์คอมเมนต์..."></textarea>
+        <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; padding: 10px; background: #2A2A2A; border-radius: 8px;" id="emojiPicker"></div>
+       </div><button class="btn btn-primary" id="submitComment" style="width:100%; margin-top:10px;"> ส่งคอมเมนต์ </button>
       </div>
       <div class="comment-section">
        <h3>คอมเมนต์ล่าสุด</h3>
@@ -771,304 +643,197 @@
    </div>
   </div>
   <script>
-    // Supabase Configuration
+    const LIFF_ID = '2007859046-z3WDAbWV';
     const SUPABASE_URL = 'https://lvtdqeerzxpznnayccmb.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM';
-    const LIFF_ID = '2007859046-z3WDAbWV';
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+    let supabase;
     let currentView = 'gallery';
     let proofs = [];
     let currentProofId = null;
     let currentUserId = null;
-    let currentUserName = 'Guest';
+    let currentUserName = '';
+    let currentUserProfile = '';
     let currentSlideIndex = 0;
     let currentMediaFiles = [];
-    let liffInitialized = false;
 
-    const emojis = ['😀', '😂', '🤣', '😍', '🥰', '😎', '🤔', '😮', '😱', '🔥', '💪', '👏', '🎉', '✨', '❤️', '💯', '👍', '👌', '🙏', '💕'];
+    const emojis = ['😀', '😂', '🤣', '😍', '🥰', '😎', '🤔', '😮', '😱', '🔥', '💪', '👏', '🎉', '✨', '❤️', '💯', '👍', '🙏', '💕'];
 
-    async function initializeLIFF() {
+    // Initialize
+    async function initApp() {
       try {
+        // Initialize Supabase
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Initialize LIFF
         await liff.init({ liffId: LIFF_ID });
-        
+
         if (!liff.isLoggedIn()) {
           liff.login();
-          return false;
+          return;
         }
 
+        // Get user profile
         const profile = await liff.getProfile();
         currentUserId = profile.userId;
-        currentUserName = profile.displayName || 'User';
-        liffInitialized = true;
-        
-        return true;
+        currentUserName = profile.displayName;
+        currentUserProfile = profile.pictureUrl || '';
+
+        // Load proofs
+        await loadProofs();
+
+        // Hide loading, show app
+        document.getElementById('loadingScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+
+        renderGallery();
       } catch (error) {
-        console.error('LIFF Init Error:', error);
-        currentUserId = 'guest_' + Math.random().toString(36).substr(2, 9);
-        currentUserName = 'Guest';
-        return true;
+        console.error('Init error:', error);
+        showToast('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ');
       }
     }
 
     async function loadProofs() {
       try {
-        const { data: proofData, error: proofError } = await supabase
+        // Load proofs with media, comments, ratings, and saves
+        const { data: proofsData, error: proofsError } = await supabase
           .from('user_challenges_proof')
-          .select('*')
-          .eq('is_verified', true)
+          .select(`
+            *,
+            proof_media (
+              id,
+              media_url,
+              media_type,
+              media_order
+            ),
+            proof_comments (
+              id,
+              comment_text,
+              commenter_line_user_id,
+              created_at
+            ),
+            proof_ratings (
+              id,
+              rating,
+              rater_line_user_id
+            ),
+            proof_saves (
+              id,
+              saver_line_user_id
+            )
+          `)
           .order('proof_date', { ascending: false });
 
-        if (proofError) throw proofError;
+        if (proofsError) throw proofsError;
 
-        const { data: mediaData, error: mediaError } = await supabase
-          .from('proof_media')
-          .select('*')
-          .order('media_order', { ascending: true });
+        // Get unique user IDs for fetching names
+        const userIds = [...new Set(proofsData.map(p => p.line_user_id))];
+        const { data: usersData } = await supabase
+          .from('tdee_form')
+          .select('line_user_id, full_name, profile_picture_url')
+          .in('line_user_id', userIds);
 
-        if (mediaError) throw mediaError;
-
-        const mediaMap = new Map();
-        if (mediaData) {
-          mediaData.forEach(media => {
-            const proofId = media.proof_id.toString();
-            if (!mediaMap.has(proofId)) {
-              mediaMap.set(proofId, []);
-            }
-            mediaMap.get(proofId).push({
-              url: media.media_url,
-              type: media.media_type || 'image'
-            });
+        const usersMap = {};
+        if (usersData) {
+          usersData.forEach(u => {
+            usersMap[u.line_user_id] = {
+              name: u.full_name || 'ผู้ใช้',
+              picture: u.profile_picture_url
+            };
           });
         }
 
-        proofs = (proofData || []).map(proof => ({
-          id: proof.id.toString(),
-          userId: proof.line_user_id,
-          userName: proof.full_name || ('User ' + proof.line_user_id.substr(-4)),
-          missionName: `${proof.challenge_name || 'Challenge'} - วันที่ ${proof.day_number}`,
-          uploadedAt: proof.proof_date,
-          profilePicture: proof.profile_picture_url,
-          mediaFiles: mediaMap.get(proof.id.toString()) || [],
-          totalRating: 0,
-          ratingCount: 0
-        }));
-
-        proofs = proofs.filter(p => p.mediaFiles.length > 0);
-        
-        await loadRatings();
-        
-        return true;
-      } catch (error) {
-        console.error('Load Proofs Error:', error);
-        showToast('❌ ไม่สามารถโหลด Proof ได้: ' + error.message);
-        return false;
-      }
-    }
-
-    async function loadRatings() {
-      try {
-        const { data, error } = await supabase
-          .from('proof_ratings')
-          .select('proof_id, rating');
-
-        if (error) throw error;
-
-        const ratingMap = new Map();
-        
-        (data || []).forEach(rating => {
-          const key = rating.proof_id.toString();
-          if (!ratingMap.has(key)) {
-            ratingMap.set(key, { total: 0, count: 0 });
-          }
-          ratingMap.get(key).total += rating.rating;
-          ratingMap.get(key).count += 1;
-        });
-
-        proofs.forEach(proof => {
-          const ratingData = ratingMap.get(proof.id);
-          if (ratingData) {
-            proof.totalRating = ratingData.total;
-            proof.ratingCount = ratingData.count;
-          }
-        });
-      } catch (error) {
-        console.error('Load Ratings Error:', error);
-      }
-    }
-
-    async function loadComments(proofId) {
-      try {
-        const { data, error } = await supabase
-          .from('proof_comments')
-          .select('*')
-          .eq('proof_id', parseInt(proofId))
-          .order('created_at', { ascending: false })
-          .limit(50);
-
-        if (error) throw error;
-
-        const commentList = document.getElementById('commentList');
-        
-        if (!data || data.length === 0) {
-          commentList.innerHTML = '<p style="color:#999; text-align:center;">ยังไม่มีคอมเมนต์</p>';
-          return;
-        }
-
-        const commenterIds = [...new Set(data.map(c => c.commenter_line_user_id))];
-        const commenterProfiles = new Map();
-        
-        for (const lineId of commenterIds) {
-          try {
-            const { data: userData, error: userError } = await supabase
-              .from('user_challenges_proof')
-              .select('full_name, profile_picture_url')
-              .eq('line_user_id', lineId)
-              .limit(1)
-              .single();
-            
-            if (!userError && userData) {
-              commenterProfiles.set(lineId, {
-                name: userData.full_name || 'User',
-                picture: userData.profile_picture_url
-              });
-            }
-          } catch (e) {
-            commenterProfiles.set(lineId, {
-              name: 'User ' + lineId.substr(-4),
-              picture: null
-            });
-          }
-        }
-
-        const mainComments = data.filter(c => !c.parent_comment_id);
-        const replies = data.filter(c => c.parent_comment_id);
-        const replyMap = new Map();
-        
-        replies.forEach(reply => {
-          const parentId = reply.parent_comment_id;
-          if (!replyMap.has(parentId)) {
-            replyMap.set(parentId, []);
-          }
-          replyMap.get(parentId).push(reply);
-        });
-
-        commentList.innerHTML = mainComments.map(comment => {
-          const profile = commenterProfiles.get(comment.commenter_line_user_id) || {
-            name: 'User ' + comment.commenter_line_user_id.substr(-4),
-            picture: null
+        // Process proofs
+        proofs = proofsData.map(proof => {
+          const userInfo = usersMap[proof.line_user_id] || { name: 'ผู้ใช้', picture: null };
+          
+          // Calculate rating stats
+          const ratings = proof.proof_ratings || [];
+          const totalRating = ratings.reduce((sum, r) => sum + r.rating, 0);
+          const ratingCount = ratings.length;
+          const avgRating = ratingCount > 0 ? totalRating / ratingCount : 0;
+          const userRating = ratings.find(r => r.rater_line_user_id === currentUserId);
+          
+          // Check if user saved this proof
+          const saves = proof.proof_saves || [];
+          const isSaved = saves.some(s => s.saver_line_user_id === currentUserId);
+          
+          return {
+            id: proof.id.toString(),
+            userId: proof.line_user_id,
+            userName: userInfo.name,
+            missionName: proof.challenge_name || 'Challenge',
+            uploadedAt: proof.proof_date,
+            profilePicture: userInfo.picture,
+            mediaFiles: (proof.proof_media || [])
+              .sort((a, b) => a.media_order - b.media_order)
+              .map(m => ({
+                url: m.media_url,
+                type: m.media_type
+              })),
+            comments: (proof.proof_comments || []).map(c => ({
+              id: c.id,
+              userId: c.commenter_line_user_id,
+              text: c.comment_text,
+              createdAt: c.created_at
+            })),
+            totalRating: totalRating,
+            ratingCount: ratingCount,
+            avgRating: avgRating,
+            userRating: userRating ? userRating.rating : null,
+            isSaved: isSaved,
+            saveCount: saves.length
           };
-          
-          const avatarHtml = profile.picture 
-            ? `<img src="${profile.picture}" alt="${escapeHtml(profile.name)}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #FF6B9D; margin-right: 10px;" onerror="this.style.display='none';">`
-            : `<div style="width: 36px; height: 36px; border-radius: 50%; background: #FF6B9D; margin-right: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;">${profile.name.charAt(0)}</div>`;
-          
-          const isOwner = comment.commenter_line_user_id === currentUserId;
-          const deleteBtn = isOwner ? `<button onclick="deleteComment(${comment.id})" style="background: #FF4444; color: white; border: none; padding: 4px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#FF0000'" onmouseout="this.style.background='#FF4444'">ลบ</button>` : '';
-          
-          const commentReplies = replyMap.get(comment.id) || [];
-          const repliesHtml = commentReplies.map(reply => {
-            const replyProfile = commenterProfiles.get(reply.commenter_line_user_id) || {
-              name: 'User ' + reply.commenter_line_user_id.substr(-4),
-              picture: null
-            };
-            
-            const replyAvatarHtml = replyProfile.picture 
-              ? `<img src="${replyProfile.picture}" alt="${escapeHtml(replyProfile.name)}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #FF6B9D; margin-right: 8px;" onerror="this.style.display='none';">`
-              : `<div style="width: 32px; height: 32px; border-radius: 50%; background: #FF6B9D; margin-right: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 14px;">${replyProfile.name.charAt(0)}</div>`;
-            
-            const isReplyOwner = reply.commenter_line_user_id === currentUserId;
-            const replyDeleteBtn = isReplyOwner ? `<button onclick="deleteComment(${reply.id})" style="background: #FF4444; color: white; border: none; padding: 2px 8px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 600;" onmouseover="this.style.background='#FF0000'" onmouseout="this.style.background='#FF4444'">ลบ</button>` : '';
-            
-            return `
-              <div class="comment-reply" id="comment_${reply.id}" style="display: flex; align-items: flex-start; gap: 0; margin-top: 8px;">
-                ${replyAvatarHtml}
-                <div style="flex: 1;">
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div class="comment-user" style="font-size: 13px;">${escapeHtml(replyProfile.name)}</div>
-                    ${replyDeleteBtn}
-                  </div>
-                  <div class="comment-text" style="font-size: 14px;">${escapeHtml(reply.comment_text)}</div>
-                </div>
-              </div>
-            `;
-          }).join('');
-          
-          return `
-            <div class="comment-item" id="comment_${comment.id}" style="display: flex; align-items: flex-start; gap: 0;">
-              ${avatarHtml}
-              <div style="flex: 1;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <div class="comment-user">${escapeHtml(profile.name)}</div>
-                  ${deleteBtn}
-                </div>
-                <div class="comment-text">${escapeHtml(comment.comment_text)}</div>
-                <button class="reply-btn" onclick="showReplyBox(${comment.id})">💬 ตอบกลับ</button>
-                <div id="reply_box_${comment.id}" style="display: none; margin-top: 8px;">
-                  <textarea id="reply_text_${comment.id}" style="width: 100%; padding: 8px; background: #1A1A1A; border: 1px solid #444; border-radius: 8px; color: #FFF; font-size: 13px; font-family: 'Kanit', 'Arial', sans-serif; min-height: 60px;" placeholder="พิมพ์ตอบกลับ..."></textarea>
-                  <div style="display: flex; gap: 8px; margin-top: 8px;">
-                    <button onclick="submitReply(${comment.id})" style="background: #FF6B9D; color: white; border: none; padding: 6px 16px; border-radius: 12px; font-size: 13px; cursor: pointer; font-weight: 600;">ส่ง</button>
-                    <button onclick="hideReplyBox(${comment.id})" style="background: #555; color: white; border: none; padding: 6px 16px; border-radius: 12px; font-size: 13px; cursor: pointer; font-weight: 600;">ยกเลิก</button>
-                  </div>
-                </div>
-                ${repliesHtml}
-              </div>
-            </div>
-          `;
-        }).join('');
+        });
+
+        // Load user names for comments
+        for (let proof of proofs) {
+          for (let comment of proof.comments) {
+            if (!usersMap[comment.userId]) {
+              const { data } = await supabase
+                .from('tdee_form')
+                .select('full_name')
+                .eq('line_user_id', comment.userId)
+                .single();
+              
+              comment.userName = data?.full_name || 'ผู้ใช้';
+            } else {
+              comment.userName = usersMap[comment.userId].name;
+            }
+          }
+        }
+
       } catch (error) {
-        console.error('Load Comments Error:', error);
+        console.error('Load proofs error:', error);
+        proofs = [];
       }
-    }
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
-    function parseMediaFiles(mediaFilesArray) {
-      return Array.isArray(mediaFilesArray) ? mediaFilesArray : [];
     }
 
     function renderGallery() {
       const grid = document.getElementById('galleryGrid');
-      const emptyState = document.getElementById('emptyState');
       
       if (proofs.length === 0) {
-        grid.innerHTML = '';
-        emptyState.style.display = 'block';
+        grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📸</div><h2>ย��งไ��่มี Proof</h2></div>';
         return;
       }
-      
-      emptyState.style.display = 'none';
-      
+
       grid.innerHTML = proofs.map(proof => {
-        const isSaved = localStorage.getItem('saved_' + proof.id) === 'true';
-        const saveIcon = isSaved ? '❤️' : '🤍';
-        
-        const mediaFiles = parseMediaFiles(proof.mediaFiles);
-        const firstMedia = mediaFiles[0] || {};
-        const mediaCount = mediaFiles.length;
+        const firstMedia = proof.mediaFiles[0] || {};
         
         let mediaHtml = '';
+        let videoIcon = '';
         if (firstMedia.type === 'video') {
-          mediaHtml = `<video class="proof-video" src="${firstMedia.url}" muted loop autoplay playsinline onclick="event.stopPropagation(); openFullscreen('${firstMedia.url}', 'video')"></video>`;
+          mediaHtml = `<video class="proof-image" muted preload="metadata" playsinline><source src="${firstMedia.url || ''}#t=0.5" type="video/mp4"></video>`;
+          videoIcon = `<div style="position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.7); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 3;">▶️</div>`;
         } else {
-          mediaHtml = `<img class="proof-image" src="${firstMedia.url || ''}" alt="${escapeHtml(proof.userName)}" onclick="event.stopPropagation(); openFullscreen('${firstMedia.url}', 'image')" onerror="this.src=''; this.alt='Image failed to load'; this.style.display='none';">`;
+          mediaHtml = `<img class="proof-image" src="${firstMedia.url || ''}" alt="${escapeHtml(proof.userName)}">`;
         }
-        
-        const mediaIndicator = mediaCount > 1 ? `<div class="media-indicator">📷 ${mediaCount}</div>` : '';
         
         return `
           <div class="proof-card" onclick="openModal('${proof.id}')">
             <div class="proof-image-container">
               ${mediaHtml}
-              ${mediaIndicator}
-              <button class="save-btn ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave('${proof.id}')" id="save_${proof.id}">
-                ${saveIcon}
-              </button>
+              ${videoIcon}
             </div>
           </div>
         `;
@@ -1080,7 +845,7 @@
       const fullscreenContent = document.getElementById('fullscreenContent');
       
       if (mediaType === 'video') {
-        fullscreenContent.innerHTML = `<video src="${mediaUrl}" controls autoplay style="max-width: 95%; max-height: 95%;"></video>`;
+        fullscreenContent.innerHTML = `<video src="${mediaUrl}" controls style="max-width: 95%; max-height: 95%; object-fit: contain;"></video>`;
       } else {
         fullscreenContent.innerHTML = `<img src="${mediaUrl}" style="max-width: 95%; max-height: 95%; object-fit: contain;">`;
       }
@@ -1093,12 +858,15 @@
       const proof = proofs.find(p => p.id === proofId);
       if (!proof) return;
       
-      currentMediaFiles = parseMediaFiles(proof.mediaFiles);
+      currentMediaFiles = proof.mediaFiles;
       currentSlideIndex = 0;
       
-      const avatarHtml = proof.profilePicture 
-        ? `<img class="modal-avatar" src="${proof.profilePicture}" alt="${escapeHtml(proof.userName)}" onerror="this.style.display='none';">`
-        : '';
+      let avatarHtml;
+      if (proof.profilePicture) {
+        avatarHtml = `<img class="modal-avatar" src="${proof.profilePicture}" alt="${escapeHtml(proof.userName)}">`;
+      } else {
+        avatarHtml = `<div style="width: 50px; height: 50px; border-radius: 50%; background: #FF6B9D; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 20px; border: 3px solid #FF6B9D;">${proof.userName.charAt(0)}</div>`;
+      }
       
       document.getElementById('modalUserHeader').innerHTML = `
         ${avatarHtml}
@@ -1107,6 +875,10 @@
         </div>
       `;
       document.getElementById('modalMission').textContent = '🎯 ' + proof.missionName;
+      
+      // Update save button
+      const saveBtn = document.getElementById('modalSaveBtn');
+      saveBtn.textContent = proof.isSaved ? '🔖' : '🏷️';
       
       renderCarousel();
       updateModalRating();
@@ -1128,28 +900,19 @@
       const prevBtn = document.getElementById('carouselPrev');
       const nextBtn = document.getElementById('carouselNext');
       
-      if (currentMediaFiles.length === 0) {
-        track.innerHTML = '<div class="carousel-slide"><p style="color:#999;">ไม่มีไฟล์</p></div>';
-        dots.innerHTML = '';
-        prevBtn.style.display = 'none';
-        nextBtn.style.display = 'none';
-        return;
-      }
-      
-      track.innerHTML = currentMediaFiles.map(media => {
+      track.innerHTML = currentMediaFiles.map((media, index) => {
+        let mediaElement = '';
         if (media.type === 'video') {
-          return `
-            <div class="carousel-slide">
-              <video class="carousel-video" src="${media.url}" controls autoplay muted loop playsinline></video>
-            </div>
-          `;
+          mediaElement = `<video class="carousel-video" src="${media.url}" controls autoplay muted loop></video>`;
         } else {
-          return `
-            <div class="carousel-slide">
-              <img class="carousel-image" src="${media.url}" alt="Proof" onerror="this.src=''; this.alt='Image failed to load';">
-            </div>
-          `;
+          mediaElement = `<img class="carousel-image" src="${media.url}" alt="Proof">`;
         }
+        
+        return `
+          <div class="carousel-slide">
+            ${mediaElement}
+          </div>
+        `;
       }).join('');
       
       dots.innerHTML = currentMediaFiles.map((_, index) => 
@@ -1213,49 +976,6 @@
       }
     };
 
-    function showReplyBox(commentId) {
-      document.getElementById('reply_box_' + commentId).style.display = 'block';
-    }
-
-    function hideReplyBox(commentId) {
-      document.getElementById('reply_box_' + commentId).style.display = 'none';
-      document.getElementById('reply_text_' + commentId).value = '';
-    }
-
-    async function submitReply(parentCommentId) {
-      if (!liffInitialized) {
-        showToast('❌ กรุณาเข้าสู่ระบบผ่าน LINE');
-        return;
-      }
-
-      const replyText = document.getElementById('reply_text_' + parentCommentId).value.trim();
-      if (!replyText) {
-        showToast('❌ พิมพ์ข้อความก่อน!');
-        return;
-      }
-
-      try {
-        const { error } = await supabase
-          .from('proof_comments')
-          .insert({
-            proof_id: parseInt(currentProofId),
-            commenter_line_user_id: currentUserId,
-            comment_text: replyText,
-            parent_comment_id: parentCommentId
-          });
-
-        if (error) throw error;
-
-        hideReplyBox(parentCommentId);
-        loadComments(currentProofId);
-        showToast('✅ ตอบกลับแล้ว!');
-        
-      } catch (error) {
-        console.error('Submit Reply Error:', error);
-        showToast('❌ ไม่สามารถส่งตอบกลับได้: ' + error.message);
-      }
-    }
-
     function insertEmoji(emoji) {
       const commentBox = document.getElementById('commentBox');
       const cursorPos = commentBox.selectionStart;
@@ -1270,7 +990,7 @@
       const proof = proofs.find(p => p.id === currentProofId);
       if (!proof) return;
       
-      const avgRating = proof.ratingCount > 0 ? (proof.totalRating / proof.ratingCount).toFixed(1) : 'ยังไม่มี';
+      const avgRating = proof.ratingCount > 0 ? proof.avgRating.toFixed(1) : 'ยังไม่มี';
       const ratingText = proof.ratingCount > 0 ? `คะแนนเฉลี่ย: ${avgRating} ⭐ (${proof.ratingCount} รีวิว)` : 'ยังไม่มีรีวิว - เป็นคนแรก!';
       
       document.getElementById('currentRating').textContent = ratingText;
@@ -1282,29 +1002,26 @@
         const star = document.createElement('span');
         star.className = 'rating-star';
         star.textContent = '⭐';
+        
+        // Highlight if user already rated
+        if (proof.userRating && i <= proof.userRating) {
+          star.classList.add('active');
+        }
+        
         star.onclick = () => submitRating(i);
         starsContainer.appendChild(star);
       }
     }
 
     async function submitRating(stars) {
-      if (!liffInitialized) {
-        showToast('❌ กรุณาเข้าสู่ระบบผ่าน LINE');
-        return;
-      }
+      const proof = proofs.find(p => p.id === currentProofId);
+      if (!proof) return;
 
-      const userRatingKey = `rating_${currentUserId}_${currentProofId}`;
-      const hasRated = localStorage.getItem(userRatingKey);
-      
-      if (hasRated) {
+      if (proof.userRating) {
         showToast('❌ คุณให้คะแนนแล้ว!');
         return;
       }
-      
-      const btn = document.getElementById('submitComment');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="loading-spinner"></span>';
-      
+
       try {
         const { error } = await supabase
           .from('proof_ratings')
@@ -1316,133 +1033,127 @@
 
         if (error) throw error;
 
-        localStorage.setItem(userRatingKey, stars.toString());
+        // Update local data
+        proof.userRating = stars;
+        proof.totalRating += stars;
+        proof.ratingCount += 1;
+        proof.avgRating = proof.totalRating / proof.ratingCount;
+
         showToast(`✅ ให้ ${stars} ดาว!`);
-        
-        await loadRatings();
-        renderGallery();
         updateModalRating();
-        
       } catch (error) {
-        console.error('Submit Rating Error:', error);
-        showToast('❌ ไม่สามารถบันทึกคะแนนได้: ' + error.message);
+        console.error('Submit rating error:', error);
+        showToast('❌ ไม่สามารถให้คะแนนได้');
       }
-      
-      btn.disabled = false;
-      btn.textContent = 'ส่งคอมเมนต์';
     }
 
-    async function deleteComment(commentId) {
-      if (!liffInitialized) {
-        showToast('❌ กรุณาเข้าสู่ระบบผ่าน LINE');
+    function loadComments(proofId) {
+      const proof = proofs.find(p => p.id === proofId);
+      const commentList = document.getElementById('commentList');
+      
+      if (!proof || !proof.comments || proof.comments.length === 0) {
+        commentList.innerHTML = '<p style="color:#999; text-align:center;">ยังไม่มีคอมเมนต์</p>';
         return;
       }
 
-      const commentElement = document.getElementById('comment_' + commentId);
-      if (!commentElement) return;
-      
-      const confirmBtn = commentElement.querySelector('button');
-      if (!confirmBtn) return;
-      
-      const originalText = confirmBtn.textContent;
-      confirmBtn.textContent = 'ยืนยันลบ?';
-      confirmBtn.style.background = '#FF0000';
-      
-      const confirmDelete = async () => {
-        try {
-          const { error } = await supabase
-            .from('proof_comments')
-            .delete()
-            .eq('id', commentId)
-            .eq('commenter_line_user_id', currentUserId);
-
-          if (error) throw error;
-
-          showToast('✅ ลบคอมเมนต์แล้ว!');
-          loadComments(currentProofId);
-          
-        } catch (error) {
-          console.error('Delete Comment Error:', error);
-          showToast('❌ ไม่สามารถลบคอมเมนต์ได้: ' + error.message);
+      commentList.innerHTML = proof.comments.map(comment => {
+        const avatarHtml = `<div style="width: 36px; height: 36px; border-radius: 50%; background: #FF6B9D; margin-right: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; flex-shrink: 0;">${comment.userName.charAt(0)}</div>`;
+        
+        const isOwnComment = comment.userId === currentUserId;
+        
+        let deleteBtn = '';
+        if (isOwnComment) {
+          deleteBtn = `<button style="color: #FF6B9D; cursor: pointer; font-size: 20px; margin-left: 10px; flex-shrink: 0; padding: 8px; background: transparent; border: none; display: flex; align-items: center; justify-content: center;" onclick="deleteCommentHandler(${comment.id})" title="ลบคอมเมนต์">🗑️</button>`;
         }
-      };
-      
-      confirmBtn.onclick = confirmDelete;
-      
-      setTimeout(() => {
-        if (confirmBtn && confirmBtn.textContent === 'ยืนยันลบ?') {
-          confirmBtn.textContent = originalText;
-          confirmBtn.style.background = '#FF4444';
-          confirmBtn.onclick = () => deleteComment(commentId);
+        
+        return `
+          <div class="comment-item" style="display: flex; align-items: flex-start; gap: 10px;">
+            ${avatarHtml}
+            <div style="flex: 1; min-width: 0;">
+              <div class="comment-user">${escapeHtml(comment.userName)}</div>
+              <div class="comment-text">${escapeHtml(comment.text)}</div>
+            </div>
+            ${deleteBtn}
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.deleteCommentHandler = async function(commentId) {
+      try {
+        const { error } = await supabase
+          .from('proof_comments')
+          .delete()
+          .eq('id', commentId);
+
+        if (error) throw error;
+
+        // Update local data
+        const proof = proofs.find(p => p.id === currentProofId);
+        if (proof) {
+          proof.comments = proof.comments.filter(c => c.id !== commentId);
         }
-      }, 3000);
+
+        loadComments(currentProofId);
+        showToast('🗑️ ลบคอมเมนต์แล้ว!');
+      } catch (error) {
+        console.error('Delete comment error:', error);
+        showToast('❌ ไม่สามารถลบคอมเมนต์ได้');
+      }
+    };
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
 
     document.getElementById('submitComment').onclick = async function() {
-      if (!liffInitialized) {
-        showToast('❌ กรุณาเข้าสู่ระบบผ่าน LINE');
-        return;
-      }
-
       const commentText = document.getElementById('commentBox').value.trim();
       if (!commentText) {
         showToast('❌ พิมพ์คอมเมนต์ก่อน!');
         return;
       }
-      
-      const btn = this;
-      btn.disabled = true;
-      btn.innerHTML = '<span class="loading-spinner"></span>';
-      
+
       try {
-        const { error } = await supabase
+        // Insert comment
+        const { data, error } = await supabase
           .from('proof_comments')
           .insert({
             proof_id: parseInt(currentProofId),
             commenter_line_user_id: currentUserId,
             comment_text: commentText
-          });
+          })
+          .select()
+          .single();
 
         if (error) throw error;
+
+        // Update local data
+        const proof = proofs.find(p => p.id === currentProofId);
+        if (proof) {
+          if (!proof.comments) proof.comments = [];
+          proof.comments.unshift({
+            id: data.id,
+            userId: currentUserId,
+            userName: currentUserName,
+            text: commentText,
+            createdAt: data.created_at
+          });
+        }
 
         loadComments(currentProofId);
         document.getElementById('commentBox').value = '';
         showToast('✅ ส่งคอมเมนต์แล้ว!');
-        
       } catch (error) {
-        console.error('Submit Comment Error:', error);
-        showToast('❌ ไม่สามารถส่งคอมเมนต์ได้: ' + error.message);
+        console.error('Submit comment error:', error);
+        showToast('❌ ไม่สามารถส่งคอมเมนต์ได้');
       }
-      
-      btn.disabled = false;
-      btn.textContent = 'ส่งคอมเมนต์';
     };
 
     document.getElementById('modalClose').onclick = function() {
       document.getElementById('proofModal').classList.remove('active');
       currentProofId = null;
-      
-      const videos = document.querySelectorAll('.carousel-video');
-      videos.forEach(video => video.pause());
-    };
-
-    setTimeout(() => {
-      const emojiBtn = document.getElementById('emojiBtn');
-      if (emojiBtn) {
-        emojiBtn.onclick = function() {
-          const picker = document.getElementById('emojiPicker');
-          picker.classList.toggle('active');
-        };
-      }
-    }, 100);
-
-    document.getElementById('rankingBtn').onclick = function() {
-      currentView = 'ranking';
-      document.getElementById('galleryView').style.display = 'none';
-      document.getElementById('rankingView').classList.add('active');
-      document.getElementById('savedView').classList.remove('active');
-      document.getElementById('galleryBtn').style.display = 'inline-block';
-      renderRanking();
     };
 
     document.getElementById('galleryBtn').onclick = function() {
@@ -1450,7 +1161,14 @@
       document.getElementById('galleryView').style.display = 'block';
       document.getElementById('rankingView').classList.remove('active');
       document.getElementById('savedView').classList.remove('active');
-      document.getElementById('galleryBtn').style.display = 'none';
+    };
+
+    document.getElementById('rankingBtn').onclick = function() {
+      currentView = 'ranking';
+      document.getElementById('galleryView').style.display = 'none';
+      document.getElementById('rankingView').classList.add('active');
+      document.getElementById('savedView').classList.remove('active');
+      renderRanking();
     };
 
     document.getElementById('savedBtn').onclick = function() {
@@ -1458,44 +1176,52 @@
       document.getElementById('galleryView').style.display = 'none';
       document.getElementById('rankingView').classList.remove('active');
       document.getElementById('savedView').classList.add('active');
-      document.getElementById('galleryBtn').style.display = 'inline-block';
       renderSavedProofs();
     };
 
     function renderRanking() {
       const rankingList = document.getElementById('rankingList');
-      const rankingEmpty = document.getElementById('rankingEmpty');
       
+      // Rank by average rating, then by rating count
       const rankedProofs = proofs
         .filter(p => p.ratingCount > 0)
-        .map(p => ({
-          ...p,
-          avgRating: p.totalRating / p.ratingCount
-        }))
-        .sort((a, b) => b.avgRating - a.avgRating)
+        .sort((a, b) => {
+          if (b.avgRating === a.avgRating) {
+            return b.ratingCount - a.ratingCount;
+          }
+          return b.avgRating - a.avgRating;
+        })
         .slice(0, 10);
       
       if (rankedProofs.length === 0) {
-        rankingList.innerHTML = '';
-        rankingEmpty.style.display = 'block';
+        rankingList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏆</div><h2>ยังไม่มีอันดับ</h2><p>ให้คะแนน Proof เพื่อดูอันดับ!</p></div>';
         return;
       }
-      
-      rankingEmpty.style.display = 'none';
-      
+
       rankingList.innerHTML = rankedProofs.map((proof, index) => {
         const rank = index + 1;
         const rankClass = rank <= 3 ? 'top3' : '';
         const stars = '⭐'.repeat(Math.round(proof.avgRating));
         
-        const mediaFiles = parseMediaFiles(proof.mediaFiles);
-        const firstMedia = mediaFiles[0] || {};
+        const firstMedia = proof.mediaFiles[0] || {};
         const thumbUrl = firstMedia.url || '';
+        
+        let thumbHtml = '';
+        if (firstMedia.type === 'video') {
+          thumbHtml = `
+            <div style="position: relative; width: 80px; height: 100px;">
+              <video class="ranking-thumb" style="width: 100%; height: 100%; object-fit: cover;" muted preload="metadata" playsinline><source src="${thumbUrl}#t=0.5" type="video/mp4"></video>
+              <div style="position: absolute; top: 4px; right: 4px; background: rgba(0, 0, 0, 0.7); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px;">▶️</div>
+            </div>
+          `;
+        } else {
+          thumbHtml = `<img class="ranking-thumb" src="${thumbUrl}" alt="${escapeHtml(proof.userName)}">`;
+        }
         
         return `
           <div class="ranking-item" onclick="openModal('${proof.id}')" style="cursor: pointer;">
             <div class="ranking-number ${rankClass}">${rank}</div>
-            <img class="ranking-thumb" src="${thumbUrl}" alt="${escapeHtml(proof.userName)}" onerror="this.style.display='none';">
+            ${thumbHtml}
             <div class="ranking-details">
               <div class="ranking-user">${escapeHtml(proof.userName)}</div>
               <div style="color:#999;">${escapeHtml(proof.missionName)}</div>
@@ -1506,21 +1232,51 @@
       }).join('');
     }
 
-    function toggleSave(proofId) {
-      const saveKey = 'saved_' + proofId;
-      const isSaved = localStorage.getItem(saveKey) === 'true';
+    async function toggleSaveFromModal() {
+      if (!currentProofId) return;
       
-      if (isSaved) {
-        localStorage.removeItem(saveKey);
-        showToast('💔 ยกเลิก Save แล้ว');
-      } else {
-        localStorage.setItem(saveKey, 'true');
-        showToast('❤️ Save แล้ว!');
-      }
-      
-      renderGallery();
-      if (currentView === 'saved') {
-        renderSavedProofs();
+      const proof = proofs.find(p => p.id === currentProofId);
+      if (!proof) return;
+
+      try {
+        if (proof.isSaved) {
+          // Remove save
+          const { error } = await supabase
+            .from('proof_saves')
+            .delete()
+            .eq('proof_id', parseInt(currentProofId))
+            .eq('saver_line_user_id', currentUserId);
+
+          if (error) throw error;
+
+          proof.isSaved = false;
+          proof.saveCount -= 1;
+          showToast('💔 ยกเลิก Save แล้ว');
+        } else {
+          // Add save
+          const { error } = await supabase
+            .from('proof_saves')
+            .insert({
+              proof_id: parseInt(currentProofId),
+              saver_line_user_id: currentUserId
+            });
+
+          if (error) throw error;
+
+          proof.isSaved = true;
+          proof.saveCount += 1;
+          showToast('❤️ Save แล้ว!');
+        }
+
+        const saveBtn = document.getElementById('modalSaveBtn');
+        saveBtn.textContent = proof.isSaved ? '🔖' : '🏷️';
+
+        if (currentView === 'saved') {
+          renderSavedProofs();
+        }
+      } catch (error) {
+        console.error('Toggle save error:', error);
+        showToast('❌ ไม่สามารถบันทึกได้');
       }
     }
 
@@ -1528,10 +1284,7 @@
       const savedGrid = document.getElementById('savedGrid');
       const savedEmpty = document.getElementById('savedEmpty');
       
-      const savedProofs = proofs.filter(proof => {
-        const saveKey = 'saved_' + proof.id;
-        return localStorage.getItem(saveKey) === 'true';
-      });
+      const savedProofs = proofs.filter(proof => proof.isSaved);
       
       if (savedProofs.length === 0) {
         savedGrid.innerHTML = '';
@@ -1542,27 +1295,22 @@
       savedEmpty.style.display = 'none';
       
       savedGrid.innerHTML = savedProofs.map(proof => {
-        const mediaFiles = parseMediaFiles(proof.mediaFiles);
-        const firstMedia = mediaFiles[0] || {};
-        const mediaCount = mediaFiles.length;
+        const firstMedia = proof.mediaFiles[0] || {};
         
         let mediaHtml = '';
+        let videoIcon = '';
         if (firstMedia.type === 'video') {
-          mediaHtml = `<video class="proof-video" src="${firstMedia.url}" muted loop autoplay playsinline onclick="event.stopPropagation(); openFullscreen('${firstMedia.url}', 'video')"></video>`;
+          mediaHtml = `<video class="proof-image" muted preload="metadata" playsinline><source src="${firstMedia.url || ''}#t=0.5" type="video/mp4"></video>`;
+          videoIcon = `<div style="position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.7); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 3;">▶️</div>`;
         } else {
-          mediaHtml = `<img class="proof-image" src="${firstMedia.url || ''}" alt="${escapeHtml(proof.userName)}" onclick="event.stopPropagation(); openFullscreen('${firstMedia.url}', 'image')" onerror="this.src=''; this.alt='Image failed to load'; this.style.display='none';">`;
+          mediaHtml = `<img class="proof-image" src="${firstMedia.url || ''}" alt="${escapeHtml(proof.userName)}">`;
         }
-        
-        const mediaIndicator = mediaCount > 1 ? `<div class="media-indicator">📷 ${mediaCount}</div>` : '';
         
         return `
           <div class="proof-card" onclick="openModal('${proof.id}')">
             <div class="proof-image-container">
               ${mediaHtml}
-              ${mediaIndicator}
-              <button class="save-btn saved" onclick="event.stopPropagation(); toggleSave('${proof.id}')" id="save_${proof.id}">
-                ❤️
-              </button>
+              ${videoIcon}
             </div>
           </div>
         `;
@@ -1585,29 +1333,8 @@
       }, 3000);
     }
 
-    async function init() {
-      try {
-        const liffSuccess = await initializeLIFF();
-        
-        if (liffSuccess) {
-          await loadProofs();
-          renderGallery();
-        }
-
-        document.getElementById('loadingOverlay').style.display = 'none';
-        document.querySelector('.app-container').style.display = 'block';
-
-      } catch (error) {
-        console.error('Init Error:', error);
-        document.getElementById('loadingOverlay').querySelector('p').textContent = '❌ เกิดข้อผิดพลาด: ' + error.message;
-        setTimeout(() => {
-          document.getElementById('loadingOverlay').style.display = 'none';
-          document.querySelector('.app-container').style.display = 'block';
-        }, 3000);
-      }
-    }
-
-    init();
+    // Start the app
+    initApp();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a8b78977746d02b',t:'MTc2NDg1MzA2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a8c96c2f1c8d02b',t:'MTc2NDg2NDc4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
