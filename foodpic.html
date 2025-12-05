@@ -355,47 +355,58 @@
       </div>
     </div>
 
-    <!-- RESULT PAGE -->
-    <div id="resultPage" class="hidden">
-     <div class="food-image-container" 
-     style="position: relative; margin: 0; border-radius: 0; overflow: hidden;">
+   <!-- RESULT PAGE -->
+<div id="resultPage" class="hidden">
 
-  <img id="resultFoodImage" class="result-food-image" alt="food result">
+  <!-- 📌 1) รูปอาหาร + Bubble -->
+  <div class="food-image-container" 
+       style="position: relative; margin: 0; border-radius: 0; overflow: hidden;">
 
-  <div id="resultCalBubble" class="calorie-bubble"></div>
+    <img id="resultFoodImage" class="result-food-image" alt="food result">
 
-  <div class="macro-bubbles">
-    <div id="proteinBubble" class="macro-bubble"></div>
-    <div id="fatBubble" class="macro-bubble"></div>
-    <div id="carbBubble" class="macro-bubble"></div>
+    <!-- Cal Bubble -->
+    <div id="resultCalBubble" class="calorie-bubble"></div>
+
+    <!-- Macro Bubbles -->
+    <div class="macro-bubbles">
+      <div id="proteinBubble" class="macro-bubble"></div>
+      <div id="fatBubble" class="macro-bubble"></div>
+      <div id="carbBubble" class="macro-bubble"></div>
+    </div>
   </div>
-</div>
 
 
-      <div class="full-red-card">
-        <div id="resultDishName" class="result-dish-name"></div>
-        <div id="resultTip" class="result-tip"></div>
+  <!-- 📌 2) กล่องแดงซ้อนทับบนรูป -->
+  <div class="full-red-card">
+    <div id="resultDishName" class="result-dish-name"></div>
+    <div id="resultTip" class="result-tip"></div>
 
-        <div id="resultHealthyScore" class="healthy-score-text"></div>
+    <div id="resultHealthyScore" class="healthy-score-text"></div>
 
-        <div class="healthy-bar-wrapper">
-          <div class="healthy-bar-bg">
-            <div id="healthyBarFill" class="healthy-bar-fill"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="p-4 text-center">
-        <p class="text-xs text-white/70 italic mb-2">
-          *ผลนี้คำนวณจากปริมาณ 300 g*
-        </p>
-        <div class="grid grid-cols-3 gap-3">
-          <button class="btn btn-outline" onclick="openEditModal()">✏️ Edit</button>
-          <button class="btn btn-red" onclick="saveToDatabase()">Save</button>
-          <button class="btn btn-outline" onclick="goHome()">Skip</button>
-        </div>
+    <!-- Healthy Bar -->
+    <div class="healthy-bar-wrapper">
+      <div class="healthy-bar-bg">
+        <div id="healthyBarFill" class="healthy-bar-fill"></div>
       </div>
     </div>
+  </div>
+
+
+  <!-- 📌 3) ปุ่มอยู่ท้ายสุด -->
+  <div class="p-4 text-center">
+    <p class="text-xs text-white/70 italic mb-2">
+      *ผลนี้คำนวณจากปริมาณ 300 g*
+    </p>
+
+    <div class="grid grid-cols-3 gap-3">
+      <button class="btn btn-outline" onclick="openEditModal()">✏️ Edit</button>
+      <button class="btn btn-red" onclick="saveToDatabase()">Save</button>
+      <button class="btn btn-outline" onclick="goHome()">Skip</button>
+    </div>
+  </div>
+
+</div>
+
 
     <!-- SUCCESS PAGE -->
     <div id="successPage" class="hidden text-center">
@@ -739,6 +750,7 @@ window.addEventListener('load', () => {
 
 </body>
 </html>
+
 
 
 
