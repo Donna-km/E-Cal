@@ -171,17 +171,19 @@
     }
 
     .full-red-card {
-      position: relative;
-      width: 92%;
-      margin: -30px auto 0;
-      background: #c1272d;
-      border-radius: 18px;
-      padding: 16px 18px 20px;
-      color: #fff;
-      box-shadow: 0 8px 18px rgba(0,0,0,0.35);
-      z-index: 10;
-      text-align: center;
-    }
+  width: 92%;
+  background: #C1272D;
+  border-radius: 18px;
+  padding: 18px 20px 22px;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+
+  position: relative;   /* ← สำคัญ */
+  z-index: 20;          /* ← ให้ลอยหน้า */
+  margin: -60px auto 0; /* ← อันสำคัญที่สุด: ทำให้การ์ด "ทับ" บนรูป */
+  text-align: center;
+}
+
 
     .result-dish-name {
       font-weight: 700;
@@ -732,6 +734,7 @@ window.addEventListener('load', () => {
 
 </body>
 </html>
+
 
 
 
