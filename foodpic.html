@@ -800,7 +800,7 @@ function previewImage(event) {
   showFoodLoading();
   try {
                 const formData = new FormData();
-                formData.append('image', selectedImage);
+                formData.append('file', selectedImage);
 
                 
                 // ✅ attach LINE user id so n8n can read it
