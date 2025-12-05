@@ -687,33 +687,73 @@
 
     // Supabase save
     async function saveToDatabase() {
-      const sb = window.supabase.createClient(
-        "https://lvtdqeerzxpznnayccmb.supabase.co",
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM"
-      );
-
-      const out = analysisResult.output || analysisResult;
-      const row = {
-        line_userid: currentUser.userId,
-        date: analysisResult.date,
-        food_name: out.dish,
-        calories: out.calories,
-        protein_g: out.protein,
-        fat_g: out.fat,
-        carbs_g: out.carbs,
-        created_at: new Date().toISOString()
-      };
-
-      try {
-        await sb.from("food_logs").insert([row]);
-        showPage("successPage");
-        showToast("บันทึกสำเร็จ");
-      } catch (err) {
-        console.error(err);
-        showToast("บันทึกล้มเหลว (demo)");
-        showPage("successPage");
-      }
+    if (!analysisResult || !currentUser) {
+        showToast('ไม่สามารถบันทึกข้อมูลได้', 'error');
+        return;
     }
+
+    try {
+        const editedDish = document.getElementById('editDish')?.value?.trim();
+        const editedAmount = parseInt(document.getElementById('editAmount')?.value) || null;
+        const editedNote = document.getElementById('editNote')?.value?.trim();
+
+        if (analysisResult?.output) {
+            if (editedDish) analysisResult.output.dish = editedDish;
+
+            if (editedAmount && analysisResult.output.calories) {
+
+                const baseCal = parseFloat(String(analysisResult.output.calories).replace(/[^0-9.]/g, '')) || 0;
+                const basePro = parseFloat(String(analysisResult.output.protein).replace(/[^0-9.]/g, '')) || 0;
+                const baseFat = parseFloat(String(analysisResult.output.fat).replace(/[^0-9.]/g, '')) || 0;
+                const baseCarb = parseFloat(String(analysisResult.output.carbs).replace(/[^0-9.]/g, '')) || 0;
+
+                const ratio = editedAmount / 300;
+
+                analysisResult.output.calories = Math.round(baseCal * ratio);
+                analysisResult.output.protein  = Math.round(basePro * ratio);
+                analysisResult.output.fat      = Math.round(baseFat * ratio);
+                analysisResult.output.carbs    = Math.round(baseCarb * ratio);
+            }
+
+            if (editedNote) analysisResult.output.note = editedNote;
+        }
+
+        // ⭐ Ensure date exists
+        const dateOnly = analysisResult.date || new Date().toISOString().split("T")[0];
+
+        const foodLog = {
+            line_userid: currentUser.userId,
+            date: dateOnly,
+            food_name: analysisResult.output.dish,
+            calories: Number(analysisResult.output.calories) || 0,
+            protein_g: Number(analysisResult.output.protein) || 0,
+            fat_g: Number(analysisResult.output.fat) || 0,
+            carbs_g: Number(analysisResult.output.carbs) || 0,
+            created_at: new Date().toISOString()
+        };
+
+        // ⭐ ใช้ sb แทน supabase
+        const sb = window.supabase.createClient(
+            "https://lvtdqeerzxpznnayccmb.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM"
+        );
+
+        const { data, error } = await sb
+            .from('food_logs')
+            .insert([foodLog]);
+
+        if (error) throw error;
+
+        console.log("Food log saved:", foodLog);
+        showPage('successPage');
+        showToast('บันทึกข้อมูลสำเร็จ!', 'success');
+
+    } catch (error) {
+        console.error("Save error:", error);
+        showToast("บันทึกล้มเหลว", "error");
+    }
+}
+
 
     function showToast(msg) {
       const t = document.getElementById("toast");
@@ -765,4 +805,5 @@
 
 </body>
 </html>
+
 
