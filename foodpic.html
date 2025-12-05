@@ -272,6 +272,113 @@
     .hidden {
       display: none !important;
     }
+
+    /* ================= FULL RESULT PAGE STYLE ================= */
+
+/* รูปอาหาร */
+.result-food-image {
+  width: 100%;
+  height: 100vh;
+  object-fit: cover;
+}
+
+/* Cal bubble */
+.calorie-bubble {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: #C1272D;
+  color: #FFF;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+
+/* Macro bubbles */
+.macro-bubbles {
+  position: absolute;
+  right: 16px;
+  top: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.macro-bubble {
+  width: 68px;
+  height: 68px;
+  background: #C1272D;
+  color: #FFF;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  font-weight: bold;
+  font-size: 13px;
+  line-height: 1.2;
+  padding: 4px;
+}
+
+/* กล่องแดงเต็มความกว้าง */
+.full-red-card {
+  width: 100%;
+  background: #C1272D;
+  border-radius: 14px 14px 0 0;
+  padding: 18px 20px 24px;
+  margin-top: -30px;
+  position: relative;
+  z-index: 10;
+  color: white;
+}
+
+/* ชื่อเมนู */
+.result-dish-name {
+  font-weight: 700;
+  font-size: 17px;
+  text-align: center;
+  color: white; /* ชื่อเป็นสีขาวตามแบบภาพ */
+  margin-bottom: 6px;
+}
+
+/* ข้อความวิเคราะห์ */
+.result-tip {
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 14px;
+  line-height: 1.35;
+}
+
+/* Healthy Score */
+.healthy-score-text {
+  font-size: 12px;
+  color: white;
+  margin-bottom: 6px;
+}
+
+/* Progress bar */
+.healthy-bar-wrapper {
+  width: 100%;
+  padding: 0 4px;
+}
+
+.healthy-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.healthy-bar-fill {
+  height: 100%;
+  background: #FFECD0; /* สีครีมตามภาพ */
+  width: 0%;
+  transition: width 0.5s ease;
+}
+
   </style>
 </head>
 
@@ -317,25 +424,52 @@
   </div>
 
   <!-- ================= RESULT PAGE ================= -->
-  <div id="resultPage" class="hidden">
-    <div class="relative">
-      <img id="resultFoodImage" class="result-food-image" />
+<div id="resultPage" class="hidden">
+  <div class="relative w-full">
 
-      <div id="resultContent"></div>
+    <!-- รูปอาหารเต็มหน้า -->
+    <img id="resultFoodImage" class="result-food-image" />
+
+    <!-- แคลอรี่ Bubble -->
+    <div id="resultCalBubble" class="calorie-bubble"></div>
+
+    <!-- Macro Bubbles -->
+    <div class="macro-bubbles">
+      <div class="macro-bubble" id="proteinBubble"></div>
+      <div class="macro-bubble" id="fatBubble"></div>
+      <div class="macro-bubble" id="carbBubble"></div>
     </div>
 
-    <div class="p-4 text-center">
-      <p class="text-xs text-white/70 italic mb-2">
-        *ผลนี้คำนวณจากปริมาณ 300 g*
-      </p>
+  </div>
 
-      <div class="grid grid-cols-3 gap-3">
-        <button class="btn btn-outline" onclick="openEditModal()">✏️ Edit</button>
-        <button class="btn btn-red" onclick="saveToDatabase()">Save</button>
-        <button class="btn btn-outline" onclick="goHome()">Skip</button>
+  <!-- กล่องแดงด้านล่างเต็มความกว้าง -->
+  <div class="full-red-card">
+
+    <div id="resultDishName" class="result-dish-name"></div>
+
+    <div id="resultTip" class="result-tip"></div>
+
+    <!-- Healthy Score -->
+    <div id="resultHealthyScore" class="healthy-score-text"></div>
+
+    <div class="healthy-bar-wrapper">
+      <div class="healthy-bar-bg">
+        <div id="healthyBarFill" class="healthy-bar-fill"></div>
       </div>
     </div>
+
   </div>
+
+  <!-- ปุ่มด้านล่าง -->
+  <div class="p-4 text-center">
+    <div class="grid grid-cols-3 gap-3">
+      <button class="btn btn-outline" onclick="openEditModal()">✏️ Edit</button>
+      <button class="btn btn-red" onclick="saveToDatabase()">Save</button>
+      <button class="btn btn-outline" onclick="goHome()">Skip</button>
+    </div>
+  </div>
+</div>
+
 
   <!-- ================= SUCCESS PAGE ================= -->
   <div id="successPage" class="hidden text-center">
@@ -528,37 +662,46 @@
        DISPLAY RESULT
     -------------------------------------------*/
     function displayResult() {
-      const out = analysisResult.output;
-      const resultImage = document.getElementById("resultFoodImage");
-      const preview = document.getElementById("previewImage");
+  const out = analysisResult.output;
 
-      if (preview && preview.src) {
-        resultImage.src = preview.src;
-      }
+  /* แสดงรูป */
+  const resultImage = document.getElementById("resultFoodImage");
+  const preview = document.getElementById("previewImage");
+  if (preview?.src) resultImage.src = preview.src;
 
-      document.querySelector(".container")?.classList.add("no-frame");
+  /* Cal bubble */
+  document.getElementById("resultCalBubble").innerHTML =
+    `${out.calories} Cal`;
 
-      const html = `
-        <div class="calorie-bubble">${out.calories} Cal</div>
+  /* Macro bubbles */
+  document.getElementById("proteinBubble").innerHTML =
+    `${out.protein}g<br>Protein`;
+  document.getElementById("fatBubble").innerHTML =
+    `${out.fat}g<br>Fat`;
+  document.getElementById("carbBubble").innerHTML =
+    `${out.carbs}g<br>Carbs`;
 
-        <div class="macro-bubbles">
-          <div class="macro-bubble">${out.protein} g<br>Protein</div>
-          <div class="macro-bubble">${out.fat} g<br>Fat</div>
-          <div class="macro-bubble">${out.carbs} g<br>Carbs</div>
-        </div>
+  /* กล่องแดงด้านล่าง */
+  document.getElementById("resultDishName").innerHTML = out.dish || "";
+  document.getElementById("resultTip").innerHTML = out.tip_th || "";
 
-        <div class="fun-message">
-          <strong>${out.dish}</strong>
-          ${out.tip_th || ""}
-        </div>
-      `;
+  /* Healthy Score Text */
+  document.getElementById("resultHealthyScore").innerHTML =
+    `Healthy Score: ${out.healthy_score}/10 - ${out.healthy_reason}`;
 
-      document.getElementById("resultContent").innerHTML = html;
+  /* Progress Bar */
+  document.getElementById("healthyBarFill").style.width =
+    `${(out.healthy_score || 0) * 10}%`;
 
-      document.getElementById("editDish").value = out.dish || "";
-      document.getElementById("editAmount").value = 300;
-      document.getElementById("editNote").value = "";
-    }
+  /* ====== เติมค่าใน Edit Modal ====== */
+  document.getElementById("editDish").value = out.dish || "";
+  document.getElementById("editAmount").value = 300;
+  document.getElementById("editNote").value = "";
+
+  /* แสดงหน้า */
+  showPage("resultPage");
+}
+
 
     /* ------------------------------------------
        EDIT MODAL
@@ -657,3 +800,4 @@
   </script>
 </body>
 </html>
+
