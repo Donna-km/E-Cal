@@ -643,42 +643,47 @@
     }
 
     async function reAnalyze() {
-      closeEditModal();
-      await showFoodLoading();
+  closeEditModal();
+  await showFoodLoading();
 
-      const out = analysisResult.output || analysisResult;
-      const form = new FormData();
-      form.append("dish", document.getElementById("editDish").value.trim());
-      form.append(
-        "amount",
-        parseInt(document.getElementById("editAmount").value) || 300
-      );
-      form.append("note", document.getElementById("editNote").value.trim());
-      form.append("line_user_id", currentUser.userId);
+  const form = new FormData();
+  form.append("dish", document.getElementById("editDish").value.trim());
+  form.append("amount", parseInt(document.getElementById("editAmount").value) || 300);
+  form.append("note", document.getElementById("editNote").value.trim());
+  form.append("line_user_id", currentUser.userId);
 
-      if (selectedImage) {
-        form.append("image", selectedImage);
-      }
+  if (selectedImage) {
+    form.append("image", selectedImage);
+  }
 
-      try {
-        const res = await fetch(
-          "https://primary-production-49d9.up.railway.app/webhook/ecal-image",
-          { method: "POST", body: form }
-        );
-        const data = await res.json();
-        analysisResult = Array.isArray(data)
-          ? data[0]
-          : data.output
-          ? data
-          : { output: data };
+  try {
+    const res = await fetch(
+      "https://primary-production-49d9.up.railway.app/webhook/ecal-image",
+      { method: "POST", body: form }
+    );
 
-        displayResult();
-      } catch (err) {
-        console.error(err);
-        showToast("Re-Analyze failed");
-        showPage("resultPage");
-      }
+    const data = await res.json();
+
+    analysisResult = Array.isArray(data)
+      ? data[0]
+      : data.output
+        ? data
+        : { output: data };
+
+    // ⭐ FIX: เพิ่มวันที่ถ้า output ไม่มี date
+    if (!analysisResult.date) {
+      analysisResult.date = new Date().toISOString().split("T")[0];
     }
+
+    displayResult();
+
+  } catch (err) {
+    console.error(err);
+    showToast("Re-Analyze failed");
+    showPage("resultPage");
+  }
+}
+
 
     // Supabase save
     async function saveToDatabase() {
@@ -760,3 +765,4 @@
 
 </body>
 </html>
+
