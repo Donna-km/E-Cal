@@ -179,9 +179,9 @@
   color: #fff;
   box-shadow: 0 8px 18px rgba(0,0,0,0.35);
 
-  position: relative;   /* ← สำคัญ */
-  z-index: 20;          /* ← ให้ลอยหน้า */
-  margin: -60px auto 0; /* ← อันสำคัญที่สุด: ทำให้การ์ด "ทับ" บนรูป */
+  position: relative;
+  z-index: 20;
+  margin: -60px auto 0;
   text-align: center;
 }
 
@@ -306,6 +306,10 @@
     .toast.show {
       opacity: 1;
     }
+    .container.no-frame {
+  padding: 0 !important;
+}
+
   </style>
 </head>
 <body>
@@ -735,6 +739,7 @@ window.addEventListener('load', () => {
 
 </body>
 </html>
+
 
 
 
