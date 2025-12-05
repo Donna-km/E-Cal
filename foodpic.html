@@ -1145,7 +1145,7 @@ async function reAnalyze(){
 
     // attach image (prefer selectedImage; fallback to result image src -> blob)
     if (window.selectedImage) {
-      formData.append('image', window.selectedImage);
+      formData.append('file', window.selectedImage);
     } else {
       const src =
         document.getElementById('resultFoodImage')?.src ||
