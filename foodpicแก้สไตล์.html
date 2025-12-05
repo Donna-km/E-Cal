@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Cal Smart Scan</title>
+
+  <!-- LINE LIFF -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ====== GLOBAL RED/BLACK MINIMAL STYLE ====== -->
+  <style>
+    body {
+      background: #000000 !important;
+      color: #ffffff !important;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, sans-serif;
+      padding: 16px;
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ==============================
+       CONTAINER
+    ===============================*/
+    .container {
+      max-width: 430px;
+      margin: auto;
+      background: #000 !important;
+      border: 1px solid #c1272d !important;
+      border-radius: 22px;
+      padding: 20px;
+    }
+
+    .container.no-frame {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+    }
+
+    /* ==============================
+       BUTTONS (WEIGHT STYLE)
+    ===============================*/
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+
+    .btn-outline {
+      background: #000 !important;
+      color: #ffffff !important;
+      border: 1px solid #c1272d !important;
+    }
+    .btn-outline:hover {
+      background: #1a1a1a !important;
+    }
+
+    .btn-red {
+      background: #c1272d !important;
+      color: #ffffff !important;
+      border: 1px solid #c1272d !important;
+    }
+    .btn-red:hover {
+      background: #a52026 !important;
+    }
+
+    .btn-black {
+      background: #000 !important;
+      color: #ffffff !important;
+      border: 1px solid #ffffff33 !important;
+    }
+    .btn-black:hover {
+      background: #111 !important;
+    }
+
+    /* ==============================
+       PREVIEW IMAGE
+    ===============================*/
+    .preview-image {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid #c1272d;
+      margin-bottom: 12px;
+      object-fit: cover;
+    }
+
+    /* ==============================
+       LOADING PAGE
+    ===============================*/
+    #loadingPage {
+      text-align: center;
+      color: #ffffff;
+    }
+    #scanAreaFood {
+      border: 1px solid #c1272d;
+      border-radius: 18px;
+    }
+    .scan-line {
+      position: absolute;
+      top: -10%;
+      width: 100%;
+      height: 6px;
+      background: rgba(193, 39, 45, 0.9);
+      animation: scanMove 1.8s linear infinite;
+    }
+    @keyframes scanMove {
+      0% { top: -10%; }
+      50% { top: 100%; }
+      100% { top: -10%; }
+    }
+
+    /* ==============================
+       RESULT PAGE
+    ===============================*/
+    .result-food-image {
+      width: 100%;
+      height: 100vh;
+      object-fit: cover;
+    }
+
+    .calorie-bubble {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 8px 18px;
+      background: #c1272d !important;
+      color: #ffffff !important;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .macro-bubbles {
+      position: absolute;
+      top: 90px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .macro-bubble {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: #c1272d !important;
+      color: #ffffff !important;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .fun-message {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid #c1272d;
+      padding: 16px;
+      border-radius: 14px;
+      text-align: center;
+      color: #ffffff;
+      font-size: 14px;
+    }
+    .fun-message strong {
+      color: #c1272d !important; /* ชื่อเมนูสีแดง */
+      font-size: 17px;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* ==============================
+       MODAL
+    ===============================*/
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+    }
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal {
+      width: 90%;
+      max-width: 430px;
+      background: #000 !important;
+      border: 1px solid #c1272d;
+      border-radius: 16px;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      background: #c1272d;
+      color: #ffffff;
+      padding: 14px 18px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-body {
+      padding: 14px 18px;
+    }
+
+    .modal input,
+    .modal textarea {
+      width: 100%;
+      padding: 10px;
+      background: #000;
+      color: #fff;
+      border: 1px solid #c1272d;
+      border-radius: 10px;
+      margin-top: 6px;
+      margin-bottom: 14px;
+    }
+
+    .modal-footer {
+      padding: 14px 18px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      background: #111;
+    }
+
+    /* ==============================
+       TOAST
+    ===============================*/
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #c1272d;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      z-index: 999999;
+    }
+    .toast.show {
+      opacity: 1;
+    }
+
+    /* ==============================
+       HIDE
+    ===============================*/
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ================= CAMERA PAGE ================= -->
+  <div class="container" id="cameraPage">
+    <div class="text-center mb-6">
+      <h1 class="text-lg font-semibold text-white">Smart Scan</h1>
+      <i class="fi fi-tr-camera-viewfinder text-6xl text-white"></i>
+    </div>
+
+    <input type="file" id="cameraInput" class="hidden"
+           accept="image/*" capture="environment" onchange="previewImage(event)">
+    <input type="file" id="galleryInput" class="hidden"
+           accept="image/*" onchange="previewImage(event)" />
+
+    <button class="btn btn-red" onclick="openCamera()">Take Photo</button>
+    <button class="btn btn-outline" onclick="openGallery()">Choose Image</button>
+
+    <div id="previewContainer" class="hidden mt-4">
+      <img id="previewImage" class="preview-image" />
+      <button class="btn btn-red" onclick="submitPhoto()">✨ Analyze Food</button>
+      <button class="btn btn-outline" onclick="goHome()">← Cancel</button>
+    </div>
+  </div>
+
+  <!-- ================= LOADING PAGE ================= -->
+  <div id="loadingPage" class="hidden">
+    <div class="flex flex-col justify-center items-center">
+      <div id="scanAreaFood"
+           class="relative mx-auto mb-6 overflow-hidden"
+           style="max-width:320px; aspect-ratio:1/1;">
+        <img id="scanImageFood"
+             class="w-full h-full object-cover"
+             src="https://via.placeholder.com/300x300?text=Loading" />
+
+        <div class="scan-line"></div>
+      </div>
+
+      <p class="text-white font-semibold animate-pulse">กำลังวิเคราะห์อาหารของคุณ...</p>
+    </div>
+  </div>
+
+  <!-- ================= RESULT PAGE ================= -->
+  <div id="resultPage" class="hidden">
+    <div class="relative">
+      <img id="resultFoodImage" class="result-food-image" />
+
+      <div id="resultContent"></div>
+    </div>
+
+    <div class="p-4 text-center">
+      <p class="text-xs text-white/70 italic mb-2">
+        *ผลนี้คำนวณจากปริมาณ 300 g*
+      </p>
+
+      <div class="grid grid-cols-3 gap-3">
+        <button class="btn btn-outline" onclick="openEditModal()">✏️ Edit</button>
+        <button class="btn btn-red" onclick="saveToDatabase()">Save</button>
+        <button class="btn btn-outline" onclick="goHome()">Skip</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SUCCESS PAGE ================= -->
+  <div id="successPage" class="hidden text-center">
+    <h2 class="text-xl text-red-600 font-bold">Saved Successfully</h2>
+    <p class="text-white mt-2 mb-4">Your food data has been recorded</p>
+
+    <button class="btn btn-red" onclick="goHome()">Back to Home</button>
+  </div>
+
+  <!-- ================= MODAL ================= -->
+  <div id="editModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        แก้ไขข้อมูลอาหาร
+        <button onclick="closeEditModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <label>🍽 ชื่ออาหาร</label>
+        <input id="editDish" placeholder="เช่น ข้าวกะเพรา" />
+
+        <label>⚖ ปริมาณ (กรัม)</label>
+        <input id="editAmount" type="number" placeholder="300" />
+
+        <label>🧂 หมายเหตุ</label>
+        <textarea id="editNote" rows="3"></textarea>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+        <button class="btn btn-red" onclick="reAnalyze()">Re-Analyze</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOAST ================= -->
+  <div id="toast" class="toast"></div>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    /* ------------------------------------------
+       GLOBAL STATE
+    -------------------------------------------*/
+    let selectedImage = null;
+    let analysisResult = null;
+    let currentUser = null;
+
+    /* ------------------------------------------
+       INIT LIFF
+    -------------------------------------------*/
+    async function initializeLIFF() {
+      try {
+        await liff.init({ liffId: "2007859046-doqQg8qv" });
+
+        if (!liff.isLoggedIn()) {
+          return liff.login();
+        }
+
+        const profile = await liff.getProfile();
+        currentUser = { userId: profile.userId };
+
+        localStorage.setItem("line_user_id", profile.userId);
+      } catch (e) {
+        console.warn("LIFF init failed, demo mode.");
+        currentUser = { userId: "demo_" + Date.now() };
+      }
+    }
+
+    /* ------------------------------------------
+       SHOW PAGE
+    -------------------------------------------*/
+    function showPage(id) {
+      ["cameraPage", "loadingPage", "resultPage", "successPage"].forEach(
+        (page) => {
+          document.getElementById(page).classList.add("hidden");
+        }
+      );
+      document.getElementById(id).classList.remove("hidden");
+    }
+
+    function goHome() {
+      showPage("cameraPage");
+      selectedImage = null;
+      analysisResult = null;
+      document.getElementById("previewContainer").classList.add("hidden");
+    }
+
+    /* ------------------------------------------
+       CAMERA & GALLERY
+    -------------------------------------------*/
+    function openCamera() {
+      document.getElementById("cameraInput").click();
+    }
+
+    function openGallery() {
+      document.getElementById("galleryInput").click();
+    }
+
+    function previewImage(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      selectedImage = file;
+
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        document.getElementById("previewImage").src = ev.target.result;
+        document.getElementById("previewContainer").classList.remove("hidden");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    /* ------------------------------------------
+       STABLE IMAGE LOAD (Loading Page)
+    -------------------------------------------*/
+    async function showFoodLoading() {
+      showPage("loadingPage");
+
+      const img = document.getElementById("scanImageFood");
+      let src = selectedImage ? URL.createObjectURL(selectedImage) : "";
+
+      const load = () =>
+        new Promise((resolve) => {
+          img.onload = () => resolve(true);
+          img.onerror = () => resolve(false);
+          img.src = src;
+        });
+
+      let ok = false;
+      for (let i = 0; i < 3; i++) {
+        ok = await load();
+        if (ok) break;
+        await new Promise((r) => setTimeout(r, 300));
+      }
+
+      if (!ok) {
+        img.src =
+          "https://via.placeholder.com/300x300?text=Error+Loading+Image";
+      }
+
+      if (selectedImage) {
+        setTimeout(() => URL.revokeObjectURL(src), 5000);
+      }
+    }
+
+    /* ------------------------------------------
+       SUBMIT PHOTO → N8N
+    -------------------------------------------*/
+    async function submitPhoto() {
+      if (!selectedImage) return;
+
+      await showFoodLoading();
+
+      const form = new FormData();
+      form.append("image", selectedImage);
+      form.append("line_user_id", currentUser.userId);
+      form.append("amount", "");
+      form.append("dish", "");
+      form.append("note", "");
+
+      try {
+        const res = await fetch(
+          "https://primary-production-49d9.up.railway.app/webhook/ecal-image",
+          {
+            method: "POST",
+            body: form,
+          }
+        );
+
+        const data = await res.json();
+        analysisResult = Array.isArray(data)
+          ? data[0]
+          : data.output
+          ? data
+          : { output: data };
+
+        if (!analysisResult.date) {
+          analysisResult.date = new Date().toISOString().split("T")[0];
+        }
+
+        displayResult();
+        showPage("resultPage");
+      } catch (e) {
+        console.error(e);
+        showToast("Error analyzing image");
+      }
+    }
+
+    /* ------------------------------------------
+       DISPLAY RESULT
+    -------------------------------------------*/
+    function displayResult() {
+      const out = analysisResult.output;
+      const resultImage = document.getElementById("resultFoodImage");
+      const preview = document.getElementById("previewImage");
+
+      if (preview && preview.src) {
+        resultImage.src = preview.src;
+      }
+
+      document.querySelector(".container")?.classList.add("no-frame");
+
+      const html = `
+        <div class="calorie-bubble">${out.calories} Cal</div>
+
+        <div class="macro-bubbles">
+          <div class="macro-bubble">${out.protein} g<br>Protein</div>
+          <div class="macro-bubble">${out.fat} g<br>Fat</div>
+          <div class="macro-bubble">${out.carbs} g<br>Carbs</div>
+        </div>
+
+        <div class="fun-message">
+          <strong>${out.dish}</strong>
+          ${out.tip_th || ""}
+        </div>
+      `;
+
+      document.getElementById("resultContent").innerHTML = html;
+
+      document.getElementById("editDish").value = out.dish || "";
+      document.getElementById("editAmount").value = 300;
+      document.getElementById("editNote").value = "";
+    }
+
+    /* ------------------------------------------
+       EDIT MODAL
+    -------------------------------------------*/
+    function openEditModal() {
+      document.getElementById("editModal").classList.add("show");
+    }
+    function closeEditModal() {
+      document.getElementById("editModal").classList.remove("show");
+    }
+
+    /* ------------------------------------------
+       RE-ANALYZE
+    -------------------------------------------*/
+    async function reAnalyze() {
+      closeEditModal();
+      await showFoodLoading();
+
+      const form = new FormData();
+      form.append("dish", document.getElementById("editDish").value.trim());
+      form.append(
+        "amount",
+        parseInt(document.getElementById("editAmount").value) || 300
+      );
+      form.append("note", document.getElementById("editNote").value.trim());
+      form.append("line_user_id", currentUser.userId);
+      form.append("image", selectedImage);
+
+      const res = await fetch(
+        "https://primary-production-49d9.up.railway.app/webhook/ecal-image",
+        {
+          method: "POST",
+          body: form,
+        }
+      );
+
+      const data = await res.json();
+      analysisResult = Array.isArray(data)
+        ? data[0]
+        : data.output
+        ? data
+        : { output: data };
+
+      displayResult();
+      showPage("resultPage");
+    }
+
+    /* ------------------------------------------
+       SAVE TO SUPABASE
+    -------------------------------------------*/
+    async function saveToDatabase() {
+      const sb = window.supabase.createClient(
+        "https://lvtdqeerzxpznnayccmb.supabase.co",
+        "eyJhbGciOiJIUzI1NiIs..."
+      );
+
+      const out = analysisResult.output;
+
+      const row = {
+        line_userid: currentUser.userId,
+        date: analysisResult.date,
+        food_name: out.dish,
+        calories: out.calories,
+        protein_g: out.protein,
+        fat_g: out.fat,
+        carbs_g: out.carbs,
+        created_at: new Date().toISOString(),
+      };
+
+      try {
+        await sb.from("food_logs").insert([row]);
+        showPage("successPage");
+      } catch (e) {
+        console.error(e);
+        showToast("Save failed");
+      }
+    }
+
+    /* ------------------------------------------
+       TOAST
+    -------------------------------------------*/
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.innerText = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2800);
+    }
+
+    /* ------------------------------------------
+       INIT
+    -------------------------------------------*/
+    window.onload = () => {
+      initializeLIFF();
+      showPage("cameraPage");
+    };
+  </script>
+</body>
+</html>
