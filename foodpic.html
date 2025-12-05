@@ -122,11 +122,13 @@
     /* ========== Result Layout แบบในรูป ========== */
 
     .result-food-image {
-      width: 100%;
-      height: auto;
-      display: block;
-      object-fit: cover;
-    }
+  width: 100%;
+  height: 70vh;            /* ← เพิ่มบังคับความสูงให้ซูม */
+  object-fit: cover;        /* ← ครอปรูปให้เต็ม */
+  object-position: center;  /* ← จัดรูปให้อยู่ตรงกลาง */
+  display: block;
+}
+
 
     .calorie-bubble {
       position: absolute;
@@ -687,4 +689,5 @@
   </script>
 </body>
 </html>
+
 
