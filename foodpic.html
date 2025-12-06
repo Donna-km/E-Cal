@@ -684,9 +684,23 @@
   }
 }
 
+function getEcalDate() {
+  const now = new Date();
 
-    // Supabase save
-    async function saveToDatabase() {
+  // เวลาไทย +7
+  const local = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+
+  // ถ้าก่อน 04:00 = ถือว่ายังเป็น "วันก่อนหน้า"
+  if (local.getHours() < 4) {
+    local.setDate(local.getDate() - 1);
+  }
+
+  return local.toISOString().split("T")[0];
+}
+
+
+// Supabase save
+async function saveToDatabase() {
     if (!analysisResult || !currentUser) {
         showToast('ไม่สามารถบันทึกข้อมูลได้', 'error');
         return;
@@ -697,11 +711,12 @@
         const editedAmount = parseInt(document.getElementById('editAmount')?.value) || null;
         const editedNote = document.getElementById('editNote')?.value?.trim();
 
+        // ⭐ Update ค่าหลัง edit
         if (analysisResult?.output) {
+
             if (editedDish) analysisResult.output.dish = editedDish;
 
             if (editedAmount && analysisResult.output.calories) {
-
                 const baseCal = parseFloat(String(analysisResult.output.calories).replace(/[^0-9.]/g, '')) || 0;
                 const basePro = parseFloat(String(analysisResult.output.protein).replace(/[^0-9.]/g, '')) || 0;
                 const baseFat = parseFloat(String(analysisResult.output.fat).replace(/[^0-9.]/g, '')) || 0;
@@ -718,21 +733,21 @@
             if (editedNote) analysisResult.output.note = editedNote;
         }
 
-        // ⭐ Ensure date exists
-        const dateOnly = analysisResult.date || new Date().toISOString().split("T")[0];
+        // ⭐ ใช้วันแบบ E-Cal (วันใหม่=04:00)
+        const dateOnly = getEcalDate();
 
         const foodLog = {
             line_userid: currentUser.userId,
-            date: dateOnly,
+            date: dateOnly,  // ← ใช้ E-Cal Date
             food_name: analysisResult.output.dish,
             calories: Number(analysisResult.output.calories) || 0,
             protein_g: Number(analysisResult.output.protein) || 0,
             fat_g: Number(analysisResult.output.fat) || 0,
             carbs_g: Number(analysisResult.output.carbs) || 0,
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString() // PK ตอนนี้เป็น id แล้ว, ใช้ created_at ได้ปกติ
         };
 
-        // ⭐ ใช้ sb แทน supabase
+        // ⭐ Supabase Client
         const sb = window.supabase.createClient(
             "https://lvtdqeerzxpznnayccmb.supabase.co",
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM"
@@ -753,7 +768,6 @@
         showToast("บันทึกล้มเหลว", "error");
     }
 }
-
 
     function showToast(msg) {
       const t = document.getElementById("toast");
@@ -805,5 +819,6 @@
 
 </body>
 </html>
+
 
 
