@@ -530,11 +530,24 @@ if (!userProfile || !userProfile.tdee || !userProfile.weight || !userProfile.goa
             }
         }
 
+   function getEcalDate() {
+  const now = new Date();
+  const local = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+
+  // วันใหม่ = 04:00
+  if (local.getHours() < 4) {
+    local.setDate(local.getDate() - 1);
+  }
+
+  return local.toISOString().split("T")[0];
+}
+
+
         // Get date range based on period
         function getDateRange(period) {
-            const now = new Date();
-            // Use local timezone for date calculations
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const todayStr = getEcalDate();
+            const today = new Date(todayStr);
+
             let start, end;
 
             switch (period) {
@@ -1015,6 +1028,7 @@ function smoothGo(url) {
   
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a583a5147632731',t:'MTc2NDMxNTczOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
