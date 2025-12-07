@@ -734,7 +734,7 @@ async function saveToDatabase() {
         }
 
         // ⭐ ใช้วันแบบ E-Cal (วันใหม่=04:00)
-        const dateOnly = getEcalDate();
+       const dateOnly = analysisResult.date || getEcalDate();
 
         const foodLog = {
             line_userid: currentUser.userId,
@@ -819,6 +819,7 @@ async function saveToDatabase() {
 
 </body>
 </html>
+
 
 
 
