@@ -693,54 +693,47 @@
       }
     }
 
-    async function loadProofs() {
-      try {
-        // Load proofs with media, comments, ratings, and saves
-        const { data: proofsData, error: proofsError } = await supabase
-          .from('user_challenges_proof')
-          .select(`
-            *,
-            proof_media (
-              id,
-              media_url,
-              media_type,
-              media_order
-            ),
-            proof_comments (
-              id,
-              comment_text,
-              commenter_line_user_id,
-              created_at
-            ),
-            proof_ratings (
-              id,
-              rating,
-              rater_line_user_id
-            ),
-            proof_saves (
-              id,
-              saver_line_user_id
-            )
-          `)
-          .order('proof_date', { ascending: false });
+   async function loadProofs() {
+  try {
+    // Load proofs with media, comments, ratings, and saves
+    const { data: proofsData, error: proofsError } = await supabase
+      .from('user_challenges_proof')
+      .select(`
+        *,
+        proof_media (
+          id,
+          media_url,
+          media_type,
+          media_order
+        ),
+        proof_comments (
+          id,
+          comment_text,
+          commenter_line_user_id,
+          created_at
+        ),
+        proof_ratings (
+          id,
+          rating,
+          rater_line_user_id
+        ),
+        proof_saves (
+          id,
+          saver_line_user_id
+        )
+      `)
+      .order('proof_date', { ascending: false });
 
-        if (proofsError) throw proofsError;
+    if (proofsError) throw proofsError;
 
-        // Get unique user IDs for fetching names
-        const userIds = [...new Set(proofsData.map(p => p.line_user_id))];
-        const { data: usersData } = await supabase
-          .from('tdee_form')
-          .select('line_user_id, full_name, profile_picture_url')
-          .in('line_user_id', userIds);
-
-        const usersMap = {};
-        if (usersData) {
-          usersData.forEach(u => {
-            usersMap[u.line_user_id] = {
-              name: u.full_name || 'ผู้ใช้',
-              picture: u.profile_picture_url
-            };
-          });
+    // ใช้ข้อมูลจาก user_challenges_proof โดยตรง
+    const usersMap = {};
+    proofsData.forEach(proof => {
+      usersMap[proof.line_user_id] = {
+        name: proof.full_name || 'ผู้ใช้',
+        picture: proof.profile_picture_url
+      };
+    });
         }
 
         // Process proofs
@@ -1370,3 +1363,4 @@
   </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a8ca8ae6760d32d',t:'MTc2NDg2NTUxOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
