@@ -112,6 +112,8 @@
           return;
         }
         const profile = await liff.getProfile();
+        // ⭐ บันทึกโปรไฟล์ LINE ทันทีที่โหลดหน้า index
+await saveLineProfile(profile);
         const { data: userPlan, error } = await supabase.from('user_plans').select('plan_type').eq('line_user_id', profile.userId).single();
         let planType = 'free';
         if (!error && userPlan) planType = userPlan.plan_type;
@@ -165,7 +167,33 @@
         document.getElementById('loading').textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
       }
     }
+// -------------------------------
+// บันทึกรูป LINE ลง Supabase
+// -------------------------------
+async function saveLineProfile(profile) {
+  try {
+    const payload = {
+      line_user_id: profile.userId,
+      display_name: profile.displayName,
+      profile_picture_url: profile.pictureUrl,
+      updated_at: new Date().toISOString()
+    };
 
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .upsert(payload);
+
+    if (error) {
+      console.error("❌ Error saving LINE profile:", error);
+    } else {
+      console.log("✅ LINE profile saved:", data);
+    }
+  } catch (err) {
+    console.error("❌ Unexpected error saving profile:", err);
+  }
+}
+
+    
     window.addEventListener('load', initApp);
     
 document.addEventListener('DOMContentLoaded', () => {
