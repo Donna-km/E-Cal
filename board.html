@@ -1,1366 +1,709 @@
 <!doctype html>
-<html lang="th">
+<html lang="th" class="h-full">
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>E-Cal Proof Gallery</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>E-Cal Gallery</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Kanit', -apple-system, BlinkMacSystemFont, 'Arial', sans-serif;
-      background: #0A0A0A;
-      color: #FFFFFF;
-      min-height: 100%;
-      width: 100%;
     }
 
     * {
-      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .app-container {
+    .masonry-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .masonry-item {
+      break-inside: avoid;
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .masonry-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(193, 39, 45, 0.3);
+    }
+
+    .masonry-item img,
+    .masonry-item video {
       width: 100%;
-      min-height: 100%;
-      background: #0A0A0A;
+      height: auto;
+      display: block;
     }
 
-    .loading-screen {
-      position: fixed;
+    .media-count-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+      backdrop-filter: blur(10px);
+    }
+
+    .page {
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: #0A0A0A;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
     }
 
-    .loading-spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid #333;
-      border-top-color: #FF6B9D;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+    .page.active {
+      opacity: 1;
+      pointer-events: auto;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .heart-icon {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .header {
-      background: rgba(10, 10, 10, 0.98);
-      backdrop-filter: blur(20px);
-      padding: 15px 20px;
-      text-align: center;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-      box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.5);
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    .heart-icon.liked {
+      fill: #C1272D;
+      transform: scale(1.1);
     }
 
-    .header-buttons {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .btn {
-      padding: 12px 28px;
-      border: none;
-      border-radius: 24px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-      font-family: 'Kanit', 'Arial', sans-serif;
-      flex: 1;
-      min-width: 100px;
-    }
-
-    .btn-primary {
-      background: #FF6B9D;
-      color: #FFFFFF;
-      box-shadow: 0 4px 12px rgba(255, 107, 157, 0.25);
-    }
-
-    .btn-primary:hover {
-      background: #FF5088;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 107, 157, 0.35);
-    }
-
-    .btn-secondary {
-      background: #1A1A1A;
-      color: #FFFFFF;
-      border: 1.5px solid #333333;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    .btn-secondary:hover {
-      background: #2A2A2A;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    }
-
-    .gallery-grid {
-      column-count: 4;
-      column-gap: 8px;
-      padding: 10px 8px 80px 8px;
-      width: 100%;
-    }
-
-    @media (max-width: 1200px) {
-      .gallery-grid {
-        column-count: 3;
-        column-gap: 8px;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .gallery-grid {
-        column-count: 2;
-        column-gap: 6px;
-        padding: 6px;
-      }
-    }
-
-    .proof-card {
-      background: #000000;
-      border-radius: 8px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      break-inside: avoid;
-      margin-bottom: 6px;
-      display: inline-block;
-      width: 100%;
-      position: relative;
-    }
-
-    .proof-card:hover {
-      transform: scale(1.02);
+    .saved-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #C1272D;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: bold;
       z-index: 10;
     }
 
-    .proof-image-container {
+    .comment-item {
+      animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .nav-btn {
+      color: #9CA3AF;
+    }
+
+    .nav-btn.active {
+      color: #C1272D;
+    }
+
+    .nav-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .media-slider {
       position: relative;
       width: 100%;
       overflow: hidden;
-      background: #000000;
+      border-radius: 16px;
+      background: #000;
     }
 
-    .proof-image {
-      width: 100%;
-      height: auto;
-      display: block;
-      object-fit: contain;
-      filter: brightness(1.02) contrast(0.98) saturate(1.1);
+    .media-slider-track {
+      display: flex;
+      transition: transform 0.3s ease-in-out;
     }
 
-    .proof-video {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 1000;
-      overflow-y: auto;
-      padding: 20px;
-    }
-
-    .modal.active {
-      display: block;
-    }
-
-    .modal-content {
-      max-width: 600px;
-      margin: 0 auto;
-      background: #1A1A1A;
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8);
-    }
-
-    .carousel-container {
-      position: relative;
-      width: 100%;
-      background: #000000;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    .fullscreen-viewer {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.98);
-      z-index: 10000;
+    .media-slide {
+      min-width: 100%;
+      display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .fullscreen-viewer.active {
-      display: flex;
-    }
-
-    .fullscreen-viewer img,
-    .fullscreen-viewer video {
-      max-width: 95%;
-      max-height: 95%;
+    .media-slide img,
+    .media-slide video {
+      max-width: 100%;
+      max-height: 500px;
       object-fit: contain;
     }
 
-    .fullscreen-close {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 40px;
-      color: white;
-      cursor: pointer;
-      z-index: 10001;
-    }
-
-    .carousel-track {
-      display: flex;
-      transition: transform 0.3s ease;
-    }
-
-    .carousel-slide {
-      min-width: 100%;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      background: #000000;
-    }
-
-    .carousel-image {
-      width: 100%;
-      height: auto;
-      object-fit: contain;
-      display: block;
-    }
-
-    .carousel-video {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .carousel-btn {
+    .slider-nav-btn {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(255, 255, 255, 0.95);
-      color: #2D2D2D;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
       border: none;
-      padding: 15px 20px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      font-size: 24px;
+      transition: all 0.2s;
       z-index: 10;
-      transition: all 0.3s;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
     }
 
-    .carousel-btn:hover {
-      background: #FFFFFF;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    .slider-nav-btn:hover {
+      background: rgba(193, 39, 45, 0.8);
+      transform: translateY(-50%) scale(1.1);
     }
 
-    .carousel-btn.prev {
-      left: 10px;
-      border-radius: 0 12px 12px 0;
+    .slider-nav-btn.prev {
+      left: 12px;
     }
 
-    .carousel-btn.next {
-      right: 10px;
-      border-radius: 12px 0 0 12px;
+    .slider-nav-btn.next {
+      right: 12px;
     }
 
-    .carousel-dots {
-      position: absolute;
-      bottom: 15px;
-      left: 50%;
-      transform: translateX(-50%);
+    .slider-dots {
       display: flex;
       gap: 8px;
-      z-index: 10;
+      justify-content: center;
+      padding: 16px 0;
     }
 
-    .carousel-dot {
+    .slider-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.3);
       cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s;
     }
 
-    .carousel-dot.active {
-      background: #FF6B9D;
+    .slider-dot.active {
+      background: #C1272D;
       width: 24px;
       border-radius: 4px;
     }
 
-    .modal-body {
-      padding: 24px;
-    }
-
-    .modal-close {
-      float: right;
-      font-size: 28px;
-      cursor: pointer;
-      color: #FF6B9D;
-      line-height: 1;
-      font-weight: 300;
-    }
-
-    .modal-close:hover {
-      color: #FF5088;
-    }
-
-    .modal-user-header {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 15px;
-    }
-
-    .modal-avatar {
-      width: 50px;
-      height: 50px;
+    .loading-spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid #C1272D;
       border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #FF6B9D;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
     }
 
-    .rating-section {
-      margin: 15px 0;
-      padding: 12px;
-      background: linear-gradient(135deg, #2A2A2A 0%, #1A1A1A 100%);
-      border-radius: 12px;
-      border: 1px solid rgba(255, 107, 157, 0.3);
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
-    .rating-section h3 {
-      font-size: 14px;
-      margin-bottom: 8px;
-      margin-top: 0;
-    }
-
-    .rating-stars {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin: 10px 0;
-    }
-
-    .rating-star {
-      font-size: 28px;
-      cursor: pointer;
-      color: #E0E0E0;
-      transition: all 0.2s;
-    }
-
-    .rating-star:hover,
-    .rating-star.active {
-      color: #FFB800;
-      transform: scale(1.15);
-    }
-
-    .comment-section {
-      margin: 20px 0;
-    }
-
-    .comment-section h3 {
-      color: #FFFFFF;
-      font-size: 18px;
-      margin-bottom: 12px;
-    }
-
-    .comment-box {
-      width: 100%;
-      padding: 15px;
-      background: #2A2A2A;
-      border: 1.5px solid #444444;
-      border-radius: 12px;
-      color: #FFFFFF;
-      font-size: 15px;
-      font-family: 'Kanit', 'Arial', sans-serif;
-      resize: vertical;
-      min-height: 80px;
-      transition: all 0.3s;
-    }
-
-    .comment-box:focus {
-      outline: none;
-      border-color: #FF6B9D;
-      background: #1A1A1A;
-      box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.3);
-    }
-
-    .comment-list {
-      margin-top: 20px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .comment-item {
-      padding: 14px;
-      background: #2A2A2A;
-      border-left: 3px solid #FF6B9D;
-      margin-bottom: 10px;
-      border-radius: 8px;
-    }
-
-    .comment-user {
-      font-weight: 600;
-      color: #FF6B9D;
-      margin-bottom: 5px;
-      font-size: 14px;
-    }
-
-    .comment-text {
-      color: #CCCCCC;
-      line-height: 1.5;
-    }
-
-    .emoji-picker {
-      display: flex;
-      background: #2A2A2A;
-      border: 1px solid #444;
-      border-radius: 8px;
-      padding: 10px;
-      flex-wrap: wrap;
-      gap: 5px;
-    }
-
-    .emoji-item {
-      font-size: 22px;
-      cursor: pointer;
-      padding: 4px;
-      transition: transform 0.2s;
-      border-radius: 4px;
-    }
-
-    .emoji-item:hover {
-      transform: scale(1.2);
-      background: #3A3A3A;
-    }
-
-    .ranking-view {
-      display: none;
-      padding: 20px 20px 80px 20px;
-    }
-
-    .ranking-view.active {
-      display: block;
-    }
-
-    .ranking-item {
-      background: #1A1A1A;
-      border-radius: 20px;
-      padding: 18px;
-      margin-bottom: 15px;
-      display: flex;
-      gap: 15px;
-      align-items: center;
-      transition: all 0.3s;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .ranking-item:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.7);
-      border-color: rgba(255, 107, 157, 0.3);
-    }
-
-    .ranking-number {
-      font-size: 32px;
-      font-weight: 700;
-      color: #FF6B9D;
-      min-width: 50px;
-      text-align: center;
-    }
-
-    .ranking-number.top3 {
-      color: #FFB800;
-    }
-
-    .ranking-thumb {
-      width: 80px;
-      height: 100px;
-      object-fit: cover;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    }
-
-    .ranking-details {
-      flex: 1;
-    }
-
-    .ranking-user {
-      font-size: 16px;
-      font-weight: 600;
-      color: #FFFFFF;
-    }
-
-    .ranking-score {
-      font-size: 13px;
-      color: #FFB800;
-      margin-top: 3px;
-      font-weight: 500;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: #999999;
-    }
-
-    .empty-state-icon {
-      font-size: 64px;
-      margin-bottom: 20px;
-    }
-
-    .toast {
+    .loading-overlay {
       position: fixed;
-      bottom: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #2D2D2D;
-      color: #FFFFFF;
-      padding: 15px 25px;
-      border-radius: 12px;
-      z-index: 10000;
-      font-weight: 600;
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
-      animation: slideUp 0.3s ease;
-    }
-
-    @keyframes slideUp {
-      from {
-        transform: translateX(-50%) translateY(100px);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(-50%) translateY(0);
-        opacity: 1;
-      }
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
     }
   </style>
   <style>@view-transition { navigation: auto; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
   <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
-  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
  </head>
- <body>
-  <div class="loading-screen" id="loadingScreen">
-   <div class="loading-spinner"></div>
-   <p style="margin-top: 20px; color: #999;">กำลังโหลด...</p>
-  </div>
-  <div class="app-container" id="mainApp" style="display: none;">
-   <div class="header">
-    <div class="header-buttons"><button class="btn btn-secondary" id="galleryBtn">Gallery</button> <button class="btn btn-secondary" id="rankingBtn">Top 10</button> <button class="btn btn-secondary" id="savedBtn">Saved</button>
+ <body class="h-full w-full bg-black text-white overflow-hidden"><!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay">
+   <div class="text-center">
+    <div class="loading-spinner"></div>
+    <p class="text-white mt-4">กำลังโหลด...</p>
+   </div>
+  </div><!-- PAGE 1: Gallery (Masonry Grid) -->
+  <div id="gallery-page" class="page active">
+   <div class="masonry-grid" style="padding-bottom: 80px;"><!-- Posts will be loaded here -->
+   </div>
+  </div><!-- PAGE 2: Saved -->
+  <div id="saved-page" class="page">
+   <div class="sticky top-0 bg-black z-10 px-4 py-4 border-b border-gray-800">
+    <div class="flex items-center"><button onclick="navigateTo('gallery-page')" class="p-2">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      </svg></button>
+     <h1 class="flex-1 text-center text-xl font-bold">Saved</h1>
+     <div class="w-10"></div>
     </div>
    </div>
-   <div id="galleryView">
-    <div class="gallery-grid" id="galleryGrid"></div>
+   <div id="saved-grid" class="masonry-grid" style="padding-bottom: 80px;"><!-- Saved items will be inserted here -->
    </div>
-   <div class="ranking-view" id="rankingView">
-    <div id="rankingList"></div>
-   </div>
-   <div class="ranking-view" id="savedView">
-    <div class="gallery-grid" id="savedGrid"></div>
-    <div class="empty-state" id="savedEmpty" style="display:none;">
-     <div class="empty-state-icon">
-      💝
+  </div><!-- PAGE 3: Full Media View -->
+  <div id="media-view-page" class="page">
+   <div class="fade-in h-full overflow-y-auto"><!-- Top bar -->
+    <div class="sticky top-0 bg-black z-20 px-4 py-4 flex items-center justify-between"><button onclick="navigateTo('gallery-page')" class="p-2">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      </svg></button>
+     <h2 id="media-title" class="flex-1 text-center font-semibold text-white"></h2><button class="p-2">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+      </svg></button>
+    </div><!-- Media Slider Container -->
+    <div class="px-4 pb-6">
+     <div class="media-slider shadow-2xl">
+      <div id="media-slider-track" class="media-slider-track"><!-- Slides will be inserted here -->
+      </div><!-- Navigation Buttons --> <button id="slider-prev" class="slider-nav-btn prev" onclick="previousSlide()" style="display: none;">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+       </svg></button> <button id="slider-next" class="slider-nav-btn next" onclick="nextSlide()" style="display: none;">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+       </svg></button>
+     </div><!-- Slider Dots -->
+     <div id="slider-dots" class="slider-dots"><!-- Dots will be inserted here -->
      </div>
-     <h2>ยังไม่มี Proof ที่ Save</h2>
-     <p>กดหัวใจเพื่อ Save Proof ที่ชอบ!</p>
+    </div><!-- Actions row -->
+    <div class="px-4 py-4 flex items-center gap-6">
+     <div class="flex-1"></div><button id="save-btn" onclick="toggleSave()" class="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-full font-bold text-white transition-all"> Save </button>
+    </div><!-- Post details -->
+    <div class="px-4 py-4 border-t border-gray-800">
+     <div class="flex items-center gap-3 mb-4"><img id="creator-avatar" class="w-10 h-10 rounded-full" src="" alt="Profile">
+      <div>
+       <p id="creator-name" class="font-semibold text-white"></p>
+      </div>
+     </div>
+     <h3 id="post-title-detail" class="text-xl font-bold text-white mb-2"></h3>
+     <p id="post-description" class="text-gray-400 text-sm mb-4"></p>
+     <p id="post-date" class="text-gray-500 text-xs"></p>
     </div>
    </div>
-   <div class="fullscreen-viewer" id="fullscreenViewer"><span class="fullscreen-close" id="fullscreenClose">×</span>
-    <div id="fullscreenContent"></div>
-   </div>
-   <div class="modal" id="proofModal">
-    <div class="modal-content">
-     <div class="carousel-container" id="carouselContainer">
-      <div class="carousel-track" id="carouselTrack"></div><button class="carousel-btn prev" id="carouselPrev">‹</button> <button class="carousel-btn next" id="carouselNext">›</button>
-      <div class="carousel-dots" id="carouselDots"></div>
-     </div>
-     <div class="modal-body"><span class="modal-close" id="modalClose">×</span>
-      <div class="modal-user-header" id="modalUserHeader"></div>
-      <p id="modalMission"></p>
-      <div style="display: flex; align-items: center; gap: 10px;">
-       <div style="flex: 1;"></div>
-       <div style="font-size: 32px; cursor: pointer; transition: all 0.3s;" id="modalSaveBtn" onclick="toggleSaveFromModal()"></div>
-      </div>
-      <div class="rating-section">
-       <h3>ให้คะแนน Proof นี้</h3>
-       <div class="rating-stars" id="ratingStars"></div>
-       <p style="text-align:center; color:#777; font-size: 12px; margin: 5px 0;" id="currentRating"></p>
-      </div>
-      <div class="comment-section">
-       <h3>แซวเพื่อนหน่อย 😈</h3>
-       <div style="position: relative;"><textarea class="comment-box" id="commentBox" placeholder="พิมพ์คอมเมนต์..."></textarea>
-        <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; padding: 10px; background: #2A2A2A; border-radius: 8px;" id="emojiPicker"></div>
-       </div><button class="btn btn-primary" id="submitComment" style="width:100%; margin-top:10px;"> ส่งคอมเมนต์ </button>
-      </div>
-      <div class="comment-section">
-       <h3>คอมเมนต์ล่าสุด</h3>
-       <div class="comment-list" id="commentList"></div>
-      </div>
-     </div>
-    </div>
+  </div><!-- Bottom Navigation Bar -->
+  <div class="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 px-4 py-3 z-50" style="box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);">
+   <div class="flex items-center justify-around max-w-md mx-auto"><button id="nav-gallery" onclick="navigateToTab('gallery-page')" class="flex flex-col items-center gap-1 transition-all nav-btn active">
+     <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z"></path>
+     </svg><span class="text-xs font-semibold">Gallery</span> </button> <button id="nav-saved" onclick="navigateToTab('saved-page')" class="flex flex-col items-center gap-1 transition-all nav-btn">
+     <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+     </svg><span class="text-xs font-semibold">Saved</span> </button>
    </div>
   </div>
   <script>
-    const LIFF_ID = '2007859046-z3WDAbWV';
-    const SUPABASE_URL = 'https://lvtdqeerzxpznnayccmb.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM';
+const LIFF_ID = '2007859046-z3WDAbWV';
+const SUPABASE_URL = 'https://lvtdqeerzxpznnayccmb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM';
 
-    let supabase;
-    let currentView = 'gallery';
-    let proofs = [];
-    let currentProofId = null;
-    let currentUserId = null;
-    let currentUserName = '';
-    let currentUserProfile = '';
-    let currentSlideIndex = 0;
-    let currentMediaFiles = [];
+let supabase;
+let currentUser = null;
+let allPosts = [];
+let savedPosts = new Set();
+let currentMediaIndex = null;
+let currentSlideIndex = 0;
 
-    const emojis = ['😀', '😂', '🤣', '😍', '🥰', '😎', '🤔', '😮', '😱', '🔥', '💪', '👏', '🎉', '✨', '❤️', '💯', '👍', '🙏', '💕'];
+// Initialize Supabase
+supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Initialize
-    async function initApp() {
-      try {
-        // Initialize Supabase
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // Initialize LIFF
-        await liff.init({ liffId: LIFF_ID });
-
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
-
-        // Get user profile
-        const profile = await liff.getProfile();
-        currentUserId = profile.userId;
-        currentUserName = profile.displayName;
-        currentUserProfile = profile.pictureUrl || '';
-
-        // Load proofs
-        await loadProofs();
-
-        // Hide loading, show app
-        document.getElementById('loadingScreen').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block';
-
-        renderGallery();
-      } catch (error) {
-        console.error('Init error:', error);
-        showToast('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ');
-      }
-    }
-
-   async function loadProofs() {
+// Initialize LIFF
+async function initializeLiff() {
   try {
-    // Load proofs with media, comments, ratings, and saves
-    const { data: proofsData, error: proofsError } = await supabase
+    await liff.init({ liffId: LIFF_ID });
+    
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
+    
+    const profile = await liff.getProfile();
+    currentUser = {
+      lineUserId: profile.userId,
+      displayName: profile.displayName,
+      pictureUrl: profile.pictureUrl
+    };
+    
+    await loadData();
+  } catch (error) {
+    console.error('LIFF initialization failed:', error);
+    document.getElementById('loading-overlay').innerHTML = `
+      <div class="text-center">
+        <p class="text-white">เกิดข้อผิดพลาดในการเชื่อมต่อ</p>
+        <p class="text-gray-400 text-sm mt-2">${error.message}</p>
+      </div>
+    `;
+  }
+}
+
+// Load all data
+async function loadData() {
+  try {
+    // Load posts with media
+    const { data: posts, error: postsError } = await supabase
       .from('user_challenges_proof')
       .select(`
         *,
         proof_media (
-          id,
           media_url,
           media_type,
           media_order
-        ),
-        proof_comments (
-          id,
-          comment_text,
-          commenter_line_user_id,
-          created_at
-        ),
-        proof_ratings (
-          id,
-          rating,
-          rater_line_user_id
-        ),
-        proof_saves (
-          id,
-          saver_line_user_id
         )
       `)
+      .eq('is_verified', true)
       .order('proof_date', { ascending: false });
+    
+    if (postsError) throw postsError;
+    
+    // Process posts
+    allPosts = posts.map(post => ({
+      id: post.id,
+      lineUserId: post.line_user_id,
+      fullName: post.full_name,
+      profilePictureUrl: post.profile_picture_url,
+      challengeName: post.challenge_name,
+      dayNumber: post.day_number,
+      proofDate: post.proof_date,
+      media: post.proof_media
+        .sort((a, b) => a.media_order - b.media_order)
+        .map(m => ({
+          type: m.media_type,
+          url: getStorageUrl(m.media_url)
+        }))
+    }));
+    
+    // Load saved posts
+    const { data: saves, error: savesError } = await supabase
+      .from('proof_saves')
+      .select('proof_id')
+      .eq('saver_line_user_id', currentUser.lineUserId);
+    
+    if (savesError) throw savesError;
+    
+    savedPosts = new Set(saves.map(s => s.proof_id));
+    
+    // Render gallery
+    renderGallery();
+    renderSavedGrid();
+    
+    // Hide loading
+    document.getElementById('loading-overlay').style.display = 'none';
+    
+  } catch (error) {
+    console.error('Error loading data:', error);
+    document.getElementById('loading-overlay').innerHTML = `
+      <div class="text-center">
+        <p class="text-white">ไม่สามารถโหลดข้อมูลได้</p>
+        <p class="text-gray-400 text-sm mt-2">${error.message}</p>
+      </div>
+    `;
+  }
+}
 
-    if (proofsError) throw proofsError;
+// Get storage URL
+function getStorageUrl(path) {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  
+  const { data } = supabase.storage
+    .from('proof')
+    .getPublicUrl(path);
+  
+  return data.publicUrl;
+}
 
-    // ใช้ข้อมูลจาก user_challenges_proof โดยตรง
-    const usersMap = {};
-    proofsData.forEach(proof => {
-      usersMap[proof.line_user_id] = {
-        name: proof.full_name || 'ผู้ใช้',
-        picture: proof.profile_picture_url
-      };
-    });
-        
-        // Process proofs
-        proofs = proofsData.map(proof => {
-          const userInfo = usersMap[proof.line_user_id] || { name: 'ผู้ใช้', picture: null };
-          
-          // Calculate rating stats
-          const ratings = proof.proof_ratings || [];
-          const totalRating = ratings.reduce((sum, r) => sum + r.rating, 0);
-          const ratingCount = ratings.length;
-          const avgRating = ratingCount > 0 ? totalRating / ratingCount : 0;
-          const userRating = ratings.find(r => r.rater_line_user_id === currentUserId);
-          
-          // Check if user saved this proof
-          const saves = proof.proof_saves || [];
-          const isSaved = saves.some(s => s.saver_line_user_id === currentUserId);
-          
-          return {
-            id: proof.id.toString(),
-            userId: proof.line_user_id,
-            userName: userInfo.name,
-            missionName: proof.challenge_name || 'Challenge',
-            uploadedAt: proof.proof_date,
-            profilePicture: userInfo.picture,
-            mediaFiles: (proof.proof_media || [])
-              .sort((a, b) => a.media_order - b.media_order)
-              .map(m => ({
-                url: m.media_url,
-                type: m.media_type
-              })),
-            comments: (proof.proof_comments || []).map(c => ({
-              id: c.id,
-              userId: c.commenter_line_user_id,
-              text: c.comment_text,
-              createdAt: c.created_at
-            })),
-            totalRating: totalRating,
-            ratingCount: ratingCount,
-            avgRating: avgRating,
-            userRating: userRating ? userRating.rating : null,
-            isSaved: isSaved,
-            saveCount: saves.length
-          };
+// Navigation functions
+function navigateTo(pageId) {
+  document.querySelectorAll('.page').forEach(page => {
+    page.classList.remove('active');
+  });
+  document.getElementById(pageId).classList.add('active');
+}
+
+function navigateToTab(pageId) {
+  navigateTo(pageId);
+  
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  
+  if (pageId === 'gallery-page') {
+    document.getElementById('nav-gallery').classList.add('active');
+  } else if (pageId === 'saved-page') {
+    document.getElementById('nav-saved').classList.add('active');
+  }
+}
+
+// Toggle save
+async function toggleSave() {
+  if (currentMediaIndex === null) return;
+  
+  const post = allPosts[currentMediaIndex];
+  const saveBtn = document.getElementById('save-btn');
+  
+  try {
+    if (savedPosts.has(post.id)) {
+      // Unsave
+      const { error } = await supabase
+        .from('proof_saves')
+        .delete()
+        .eq('proof_id', post.id)
+        .eq('saver_line_user_id', currentUser.lineUserId);
+      
+      if (error) throw error;
+      
+      savedPosts.delete(post.id);
+      saveBtn.textContent = 'Save';
+      saveBtn.style.background = '#C1272D';
+    } else {
+      // Save
+      const { error } = await supabase
+        .from('proof_saves')
+        .insert({
+          proof_id: post.id,
+          saver_line_user_id: currentUser.lineUserId
         });
-
-        // Load user names for comments
-        for (let proof of proofs) {
-          for (let comment of proof.comments) {
-            if (!usersMap[comment.userId]) {
-              const { data } = await supabase
-                .from('tdee_form')
-                .select('full_name')
-                .eq('line_user_id', comment.userId)
-                .single();
-              
-              comment.userName = data?.full_name || 'ผู้ใช้';
-            } else {
-              comment.userName = usersMap[comment.userId].name;
-            }
-          }
-        }
-
-      } catch (error) {
-        console.error('Load proofs error:', error);
-        proofs = [];
-      }
+      
+      if (error) throw error;
+      
+      savedPosts.add(post.id);
+      saveBtn.textContent = 'Saved ✓';
+      saveBtn.style.background = '#000000';
     }
+    
+    renderSavedGrid();
+  } catch (error) {
+    console.error('Error toggling save:', error);
+  }
+}
 
-    function renderGallery() {
-      const grid = document.getElementById('galleryGrid');
-      
-      if (proofs.length === 0) {
-        grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📸</div><h2>ย��งไ��่มี Proof</h2></div>';
-        return;
-      }
+// Slider functions
+function goToSlide(index) {
+  if (currentMediaIndex === null) return;
+  const post = allPosts[currentMediaIndex];
+  const totalSlides = post.media.length;
+  
+  currentSlideIndex = Math.max(0, Math.min(index, totalSlides - 1));
+  
+  const track = document.getElementById('media-slider-track');
+  track.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
+  
+  updateSliderControls();
+}
 
-      grid.innerHTML = proofs.map(proof => {
-        const firstMedia = proof.mediaFiles[0] || {};
-        
-        let mediaHtml = '';
-        let videoIcon = '';
-        if (firstMedia.type === 'video') {
-          mediaHtml = `<video class="proof-image" muted preload="metadata" playsinline><source src="${firstMedia.url || ''}#t=0.5" type="video/mp4"></video>`;
-          videoIcon = `<div style="position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.7); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 3;">▶️</div>`;
-        } else {
-          mediaHtml = `<img class="proof-image" src="${firstMedia.url || ''}" alt="${escapeHtml(proof.userName)}">`;
-        }
-        
-        let profileHtml = '';
-        if (proof.profilePicture) {
-          profileHtml = `<img src="${proof.profilePicture}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid white; margin-right: 6px;">`;
-        } else {
-          profileHtml = `<div style="width: 28px; height: 28px; border-radius: 50%; background: #FF6B9D; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 12px; border: 2px solid white; margin-right: 6px;">${proof.userName.charAt(0)}</div>`;
-        }
-        
-        return `
-          <div class="proof-card" onclick="openModal('${proof.id}')">
-            <div class="proof-image-container">
-              ${mediaHtml}
-              ${videoIcon}
-              <div style="position: absolute; bottom: 8px; left: 8px; display: flex; align-items: center; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); padding: 4px 10px; border-radius: 20px; z-index: 3;">
-                ${profileHtml}
-                <span style="color: white; font-size: 12px; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${escapeHtml(proof.userName)}</span>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
+function previousSlide() {
+  goToSlide(currentSlideIndex - 1);
+}
+
+function nextSlide() {
+  goToSlide(currentSlideIndex + 1);
+}
+
+function updateSliderControls() {
+  if (currentMediaIndex === null) return;
+  const post = allPosts[currentMediaIndex];
+  const totalSlides = post.media.length;
+  
+  const prevBtn = document.getElementById('slider-prev');
+  const nextBtn = document.getElementById('slider-next');
+  
+  if (totalSlides > 1) {
+    prevBtn.style.display = currentSlideIndex > 0 ? 'flex' : 'none';
+    nextBtn.style.display = currentSlideIndex < totalSlides - 1 ? 'flex' : 'none';
+  } else {
+    prevBtn.style.display = 'none';
+    nextBtn.style.display = 'none';
+  }
+  
+  const dotsContainer = document.getElementById('slider-dots');
+  dotsContainer.innerHTML = '';
+  
+  if (totalSlides > 1) {
+    for (let i = 0; i < totalSlides; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'slider-dot' + (i === currentSlideIndex ? ' active' : '');
+      dot.onclick = () => goToSlide(i);
+      dotsContainer.appendChild(dot);
     }
+  }
+}
 
-    function openFullscreen(mediaUrl, mediaType) {
-      const fullscreenViewer = document.getElementById('fullscreenViewer');
-      const fullscreenContent = document.getElementById('fullscreenContent');
-      
-      if (mediaType === 'video') {
-        fullscreenContent.innerHTML = `<video src="${mediaUrl}" controls style="max-width: 95%; max-height: 95%; object-fit: contain;"></video>`;
-      } else {
-        fullscreenContent.innerHTML = `<img src="${mediaUrl}" style="max-width: 95%; max-height: 95%; object-fit: contain;">`;
-      }
-      
-      fullscreenViewer.classList.add('active');
+// Open media view
+function openMediaView(index) {
+  currentMediaIndex = index;
+  currentSlideIndex = 0;
+  const post = allPosts[index];
+  
+  // Build slider
+  const sliderTrack = document.getElementById('media-slider-track');
+  sliderTrack.innerHTML = '';
+  sliderTrack.style.transform = 'translateX(0)';
+  
+  post.media.forEach(media => {
+    const slide = document.createElement('div');
+    slide.className = 'media-slide';
+    
+    if (media.type === 'video') {
+      slide.innerHTML = `
+        <video controls class="w-full">
+          <source src="${media.url}" type="video/mp4">
+        </video>
+      `;
+    } else {
+      slide.innerHTML = `
+        <img src="${media.url}" alt="Media" class="w-full h-auto">
+      `;
     }
+    
+    sliderTrack.appendChild(slide);
+  });
+  
+  // Update post details
+  document.getElementById('media-title').textContent = `${post.challengeName} - Day ${post.dayNumber}`;
+  document.getElementById('post-title-detail').textContent = `${post.challengeName} - Day ${post.dayNumber}`;
+  document.getElementById('post-description').textContent = post.fullName || 'ผู้ใช้งาน';
+  
+  const proofDate = new Date(post.proofDate);
+  document.getElementById('post-date').textContent = proofDate.toLocaleDateString('th-TH', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  // Set creator info
+  const creatorAvatar = document.getElementById('creator-avatar');
+  creatorAvatar.src = post.profilePictureUrl || 'https://via.placeholder.com/40';
+  document.getElementById('creator-name').textContent = post.fullName || 'ผู้ใช้งาน';
+  
+  // Update save button
+  const saveBtn = document.getElementById('save-btn');
+  if (savedPosts.has(post.id)) {
+    saveBtn.textContent = 'Saved ✓';
+    saveBtn.style.background = '#000000';
+  } else {
+    saveBtn.textContent = 'Save';
+    saveBtn.style.background = '#C1272D';
+  }
+  
+  updateSliderControls();
+  navigateTo('media-view-page');
+}
 
-    function openModal(proofId) {
-      currentProofId = proofId;
-      const proof = proofs.find(p => p.id === proofId);
-      if (!proof) return;
-      
-      currentMediaFiles = proof.mediaFiles;
-      currentSlideIndex = 0;
-      
-      let avatarHtml;
-      if (proof.profilePicture) {
-        avatarHtml = `<img class="modal-avatar" src="${proof.profilePicture}" alt="${escapeHtml(proof.userName)}">`;
-      } else {
-        avatarHtml = `<div style="width: 50px; height: 50px; border-radius: 50%; background: #FF6B9D; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 20px; border: 3px solid #FF6B9D;">${proof.userName.charAt(0)}</div>`;
-      }
-      
-      document.getElementById('modalUserHeader').innerHTML = `
-        ${avatarHtml}
-        <div>
-          <h2 style="margin:0;">${escapeHtml(proof.userName)}</h2>
+// Render gallery
+function renderGallery() {
+  const grid = document.querySelector('#gallery-page .masonry-grid');
+  grid.innerHTML = '';
+  
+  if (allPosts.length === 0) {
+    grid.innerHTML = `
+      <div class="col-span-2 text-center py-20">
+        <p class="text-gray-500 text-sm">ยังไม่มีโพสต์</p>
+      </div>
+    `;
+    return;
+  }
+  
+  allPosts.forEach((post, index) => {
+    const div = document.createElement('div');
+    div.className = 'masonry-item';
+    div.onclick = () => openMediaView(index);
+    
+    const firstMedia = post.media[0];
+    const mediaCount = post.media.length;
+    
+    if (firstMedia && firstMedia.type === 'video') {
+      div.innerHTML = `
+        <div class="relative" style="height: 300px; background: #1a1a1a; display: flex; align-items: center; justify-content: center;">
+          <video src="${firstMedia.url}" class="w-full h-full object-cover"></video>
+          ${mediaCount > 1 ? `<div class="media-count-badge">1/${mediaCount}</div>` : ''}
         </div>
       `;
-      document.getElementById('modalMission').textContent = '🎯 ' + proof.missionName;
-      
-      // Update save button
-      const saveBtn = document.getElementById('modalSaveBtn');
-      saveBtn.textContent = proof.isSaved ? '🔖' : '🏷️';
-      
-      renderCarousel();
-      updateModalRating();
-      loadComments(proofId);
-      
-      const emojiPicker = document.getElementById('emojiPicker');
-      if (emojiPicker) {
-        emojiPicker.innerHTML = emojis.map(emoji => 
-          `<span class="emoji-item" onclick="insertEmoji('${emoji}')">${emoji}</span>`
-        ).join('');
-      }
-      
-      document.getElementById('proofModal').classList.add('active');
+    } else if (firstMedia) {
+      div.innerHTML = `
+        <div class="relative">
+          <img src="${firstMedia.url}" alt="Gallery image" class="w-full h-auto" style="display: block;">
+          ${mediaCount > 1 ? `<div class="media-count-badge">1/${mediaCount}</div>` : ''}
+        </div>
+      `;
     }
+    
+    grid.appendChild(div);
+  });
+}
 
-    function renderCarousel() {
-      const track = document.getElementById('carouselTrack');
-      const dots = document.getElementById('carouselDots');
-      const prevBtn = document.getElementById('carouselPrev');
-      const nextBtn = document.getElementById('carouselNext');
-      
-      track.innerHTML = currentMediaFiles.map((media, index) => {
-        let mediaElement = '';
-        if (media.type === 'video') {
-          mediaElement = `<video class="carousel-video" src="${media.url}" controls autoplay muted loop></video>`;
-        } else {
-          mediaElement = `<img class="carousel-image" src="${media.url}" alt="Proof">`;
-        }
-        
-        return `
-          <div class="carousel-slide">
-            ${mediaElement}
-          </div>
-        `;
-      }).join('');
-      
-      dots.innerHTML = currentMediaFiles.map((_, index) => 
-        `<div class="carousel-dot ${index === 0 ? 'active' : ''}" onclick="goToSlide(${index})"></div>`
-      ).join('');
-      
-      if (currentMediaFiles.length > 1) {
-        prevBtn.style.display = 'block';
-        nextBtn.style.display = 'block';
-      } else {
-        prevBtn.style.display = 'none';
-        nextBtn.style.display = 'none';
-      }
-      
-      updateCarousel();
-    }
-
-    function updateCarousel() {
-      const track = document.getElementById('carouselTrack');
-      track.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
-      
-      const dotElements = document.querySelectorAll('.carousel-dot');
-      dotElements.forEach((dot, index) => {
-        dot.classList.toggle('active', index === currentSlideIndex);
-      });
-    }
-
-    function goToSlide(index) {
-      currentSlideIndex = index;
-      updateCarousel();
-    }
-
-    document.getElementById('carouselPrev').onclick = function() {
-      currentSlideIndex = (currentSlideIndex - 1 + currentMediaFiles.length) % currentMediaFiles.length;
-      updateCarousel();
+// Render saved grid
+function renderSavedGrid() {
+  const grid = document.getElementById('saved-grid');
+  grid.innerHTML = '';
+  
+  const savedArray = allPosts.filter(post => savedPosts.has(post.id));
+  
+  if (savedArray.length === 0) {
+    grid.innerHTML = `
+      <div class="col-span-2 text-center py-20">
+        <p class="text-gray-500 text-sm">ยังไม่มีรายการที่บันทึก</p>
+      </div>
+    `;
+    return;
+  }
+  
+  savedArray.forEach((post) => {
+    const div = document.createElement('div');
+    div.className = 'masonry-item';
+    const itemIndex = allPosts.findIndex(p => p.id === post.id);
+    div.onclick = () => {
+      openMediaView(itemIndex);
+      navigateTo('media-view-page');
     };
-
-    document.getElementById('carouselNext').onclick = function() {
-      currentSlideIndex = (currentSlideIndex + 1) % currentMediaFiles.length;
-      updateCarousel();
-    };
-
-    document.getElementById('carouselContainer').onclick = function(e) {
-      if (e.target.tagName === 'BUTTON' || e.target.classList.contains('carousel-dot')) return;
-      
-      const currentMedia = currentMediaFiles[currentSlideIndex];
-      if (!currentMedia) return;
-      
-      openFullscreen(currentMedia.url, currentMedia.type);
-    };
-
-    document.getElementById('fullscreenClose').onclick = function() {
-      document.getElementById('fullscreenViewer').classList.remove('active');
-      document.getElementById('fullscreenContent').innerHTML = '';
-    };
-
-    document.getElementById('fullscreenViewer').onclick = function(e) {
-      if (e.target.id === 'fullscreenViewer') {
-        this.classList.remove('active');
-        document.getElementById('fullscreenContent').innerHTML = '';
-      }
-    };
-
-    function insertEmoji(emoji) {
-      const commentBox = document.getElementById('commentBox');
-      const cursorPos = commentBox.selectionStart;
-      const textBefore = commentBox.value.substring(0, cursorPos);
-      const textAfter = commentBox.value.substring(cursorPos);
-      commentBox.value = textBefore + emoji + textAfter;
-      commentBox.focus();
-      commentBox.selectionStart = commentBox.selectionEnd = cursorPos + emoji.length;
+    
+    const firstMedia = post.media[0];
+    const mediaCount = post.media.length;
+    
+    if (firstMedia && firstMedia.type === 'video') {
+      div.innerHTML = `
+        <div class="relative" style="height: 300px; background: #1a1a1a; display: flex; align-items: center; justify-content: center;">
+          <video src="${firstMedia.url}" class="w-full h-full object-cover"></video>
+          <div class="saved-badge">✓</div>
+          ${mediaCount > 1 ? `<div class="media-count-badge" style="top: 8px; right: 48px;">1/${mediaCount}</div>` : ''}
+        </div>
+      `;
+    } else if (firstMedia) {
+      div.innerHTML = `
+        <div class="relative">
+          <img src="${firstMedia.url}" alt="Saved image" class="w-full h-auto" style="display: block;">
+          <div class="saved-badge">✓</div>
+          ${mediaCount > 1 ? `<div class="media-count-badge" style="top: 8px; right: 48px;">1/${mediaCount}</div>` : ''}
+        </div>
+      `;
     }
+    
+    grid.appendChild(div);
+  });
+}
 
-    function updateModalRating() {
-      const proof = proofs.find(p => p.id === currentProofId);
-      if (!proof) return;
-      
-      const avgRating = proof.ratingCount > 0 ? proof.avgRating.toFixed(1) : 'ยังไม่มี';
-      const ratingText = proof.ratingCount > 0 ? `คะแนนเฉลี่ย: ${avgRating} ⭐ (${proof.ratingCount} รีวิว)` : 'ยังไม่มีรีวิว - เป็นคนแรก!';
-      
-      document.getElementById('currentRating').textContent = ratingText;
-      
-      const starsContainer = document.getElementById('ratingStars');
-      starsContainer.innerHTML = '';
-      
-      for (let i = 1; i <= 5; i++) {
-        const star = document.createElement('span');
-        star.className = 'rating-star';
-        star.textContent = '⭐';
-        
-        // Highlight if user already rated
-        if (proof.userRating && i <= proof.userRating) {
-          star.classList.add('active');
-        }
-        
-        star.onclick = () => submitRating(i);
-        starsContainer.appendChild(star);
-      }
-    }
-
-    async function submitRating(stars) {
-      const proof = proofs.find(p => p.id === currentProofId);
-      if (!proof) return;
-
-      if (proof.userRating) {
-        showToast('❌ คุณให้คะแนนแล้ว!');
-        return;
-      }
-
-      try {
-        const { error } = await supabase
-          .from('proof_ratings')
-          .insert({
-            proof_id: parseInt(currentProofId),
-            rater_line_user_id: currentUserId,
-            rating: stars
-          });
-
-        if (error) throw error;
-
-        // Update local data
-        proof.userRating = stars;
-        proof.totalRating += stars;
-        proof.ratingCount += 1;
-        proof.avgRating = proof.totalRating / proof.ratingCount;
-
-        showToast(`✅ ให้ ${stars} ดาว!`);
-        updateModalRating();
-      } catch (error) {
-        console.error('Submit rating error:', error);
-        showToast('❌ ไม่สามารถให้คะแนนได้');
-      }
-    }
-
-    function loadComments(proofId) {
-      const proof = proofs.find(p => p.id === proofId);
-      const commentList = document.getElementById('commentList');
-      
-      if (!proof || !proof.comments || proof.comments.length === 0) {
-        commentList.innerHTML = '<p style="color:#999; text-align:center;">ยังไม่มีคอมเมนต์</p>';
-        return;
-      }
-
-      commentList.innerHTML = proof.comments.map(comment => {
-        const avatarHtml = `<div style="width: 36px; height: 36px; border-radius: 50%; background: #FF6B9D; margin-right: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; flex-shrink: 0;">${comment.userName.charAt(0)}</div>`;
-        
-        const isOwnComment = comment.userId === currentUserId;
-        
-        let deleteBtn = '';
-        if (isOwnComment) {
-          deleteBtn = `<button style="color: #FF6B9D; cursor: pointer; font-size: 20px; margin-left: 10px; flex-shrink: 0; padding: 8px; background: transparent; border: none; display: flex; align-items: center; justify-content: center;" onclick="deleteCommentHandler(${comment.id})" title="ลบคอมเมนต์">🗑️</button>`;
-        }
-        
-        return `
-          <div class="comment-item" style="display: flex; align-items: flex-start; gap: 10px;">
-            ${avatarHtml}
-            <div style="flex: 1; min-width: 0;">
-              <div class="comment-user">${escapeHtml(comment.userName)}</div>
-              <div class="comment-text">${escapeHtml(comment.text)}</div>
-            </div>
-            ${deleteBtn}
-          </div>
-        `;
-      }).join('');
-    }
-
-    window.deleteCommentHandler = async function(commentId) {
-      try {
-        const { error } = await supabase
-          .from('proof_comments')
-          .delete()
-          .eq('id', commentId);
-
-        if (error) throw error;
-
-        // Update local data
-        const proof = proofs.find(p => p.id === currentProofId);
-        if (proof) {
-          proof.comments = proof.comments.filter(c => c.id !== commentId);
-        }
-
-        loadComments(currentProofId);
-        showToast('🗑️ ลบคอมเมนต์แล้ว!');
-      } catch (error) {
-        console.error('Delete comment error:', error);
-        showToast('❌ ไม่สามารถลบคอมเมนต์ได้');
-      }
-    };
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
-    document.getElementById('submitComment').onclick = async function() {
-      const commentText = document.getElementById('commentBox').value.trim();
-      if (!commentText) {
-        showToast('❌ พิมพ์คอมเมนต์ก่อ���!');
-        return;
-      }
-
-      try {
-        // Insert comment
-        const { data, error } = await supabase
-          .from('proof_comments')
-          .insert({
-            proof_id: parseInt(currentProofId),
-            commenter_line_user_id: currentUserId,
-            comment_text: commentText
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        // Update local data
-        const proof = proofs.find(p => p.id === currentProofId);
-        if (proof) {
-          if (!proof.comments) proof.comments = [];
-          proof.comments.unshift({
-            id: data.id,
-            userId: currentUserId,
-            userName: currentUserName,
-            text: commentText,
-            createdAt: data.created_at
-          });
-        }
-
-        loadComments(currentProofId);
-        document.getElementById('commentBox').value = '';
-        showToast('✅ ส่งคอมเมนต์แล้ว!');
-      } catch (error) {
-        console.error('Submit comment error:', error);
-        showToast('❌ ไม่สามารถส่งคอมเมนต์ได้');
-      }
-    };
-
-    document.getElementById('modalClose').onclick = function() {
-      document.getElementById('proofModal').classList.remove('active');
-      currentProofId = null;
-    };
-
-    document.getElementById('galleryBtn').onclick = function() {
-      currentView = 'gallery';
-      document.getElementById('galleryView').style.display = 'block';
-      document.getElementById('rankingView').classList.remove('active');
-      document.getElementById('savedView').classList.remove('active');
-    };
-
-    document.getElementById('rankingBtn').onclick = function() {
-      currentView = 'ranking';
-      document.getElementById('galleryView').style.display = 'none';
-      document.getElementById('rankingView').classList.add('active');
-      document.getElementById('savedView').classList.remove('active');
-      renderRanking();
-    };
-
-    document.getElementById('savedBtn').onclick = function() {
-      currentView = 'saved';
-      document.getElementById('galleryView').style.display = 'none';
-      document.getElementById('rankingView').classList.remove('active');
-      document.getElementById('savedView').classList.add('active');
-      renderSavedProofs();
-    };
-
-    function renderRanking() {
-      const rankingList = document.getElementById('rankingList');
-      
-      // Rank by average rating, then by rating count
-      const rankedProofs = proofs
-        .filter(p => p.ratingCount > 0)
-        .sort((a, b) => {
-          if (b.avgRating === a.avgRating) {
-            return b.ratingCount - a.ratingCount;
-          }
-          return b.avgRating - a.avgRating;
-        })
-        .slice(0, 10);
-      
-      if (rankedProofs.length === 0) {
-        rankingList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏆</div><h2>ยังไม่มีอันดับ</h2><p>ให้คะแนน Proof เพื่อดูอันดับ!</p></div>';
-        return;
-      }
-
-      rankingList.innerHTML = rankedProofs.map((proof, index) => {
-        const rank = index + 1;
-        const rankClass = rank <= 3 ? 'top3' : '';
-        const stars = '⭐'.repeat(Math.round(proof.avgRating));
-        
-        const firstMedia = proof.mediaFiles[0] || {};
-        const thumbUrl = firstMedia.url || '';
-        
-        let thumbHtml = '';
-        if (firstMedia.type === 'video') {
-          thumbHtml = `
-            <div style="position: relative; width: 80px; height: 100px;">
-              <video class="ranking-thumb" style="width: 100%; height: 100%; object-fit: cover;" muted preload="metadata" playsinline><source src="${thumbUrl}#t=0.5" type="video/mp4"></video>
-              <div style="position: absolute; top: 4px; right: 4px; background: rgba(0, 0, 0, 0.7); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px;">▶️</div>
-            </div>
-          `;
-        } else {
-          thumbHtml = `<img class="ranking-thumb" src="${thumbUrl}" alt="${escapeHtml(proof.userName)}">`;
-        }
-        
-        let profileHtml = '';
-        if (proof.profilePicture) {
-          profileHtml = `<img src="${proof.profilePicture}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #FF6B9D; margin-right: 8px;">`;
-        } else {
-          profileHtml = `<div style="width: 36px; height: 36px; border-radius: 50%; background: #FF6B9D; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 14px; border: 2px solid #FF6B9D; margin-right: 8px;">${proof.userName.charAt(0)}</div>`;
-        }
-        
-        return `
-          <div class="ranking-item" onclick="openModal('${proof.id}')" style="cursor: pointer;">
-            <div class="ranking-number ${rankClass}">${rank}</div>
-            ${thumbHtml}
-            <div class="ranking-details">
-              <div style="display: flex; align-items: center; margin-bottom: 5px;">
-                ${profileHtml}
-                <div class="ranking-user">${escapeHtml(proof.userName)}</div>
-              </div>
-              <div style="color:#999; font-size: 13px;">${escapeHtml(proof.missionName)}</div>
-              <div class="ranking-score">${stars} ${proof.avgRating.toFixed(1)} (${proof.ratingCount} รีวิว)</div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    async function toggleSaveFromModal() {
-      if (!currentProofId) return;
-      
-      const proof = proofs.find(p => p.id === currentProofId);
-      if (!proof) return;
-
-      try {
-        if (proof.isSaved) {
-          // Remove save
-          const { error } = await supabase
-            .from('proof_saves')
-            .delete()
-            .eq('proof_id', parseInt(currentProofId))
-            .eq('saver_line_user_id', currentUserId);
-
-          if (error) throw error;
-
-          proof.isSaved = false;
-          proof.saveCount -= 1;
-          showToast('💔 ยกเลิก Save แล้ว');
-        } else {
-          // Add save
-          const { error } = await supabase
-            .from('proof_saves')
-            .insert({
-              proof_id: parseInt(currentProofId),
-              saver_line_user_id: currentUserId
-            });
-
-          if (error) throw error;
-
-          proof.isSaved = true;
-          proof.saveCount += 1;
-          showToast('❤️ Save แล้ว!');
-        }
-
-        const saveBtn = document.getElementById('modalSaveBtn');
-        saveBtn.textContent = proof.isSaved ? '🔖' : '🏷️';
-
-        if (currentView === 'saved') {
-          renderSavedProofs();
-        }
-      } catch (error) {
-        console.error('Toggle save error:', error);
-        showToast('❌ ไม่สามารถบันทึกได้');
-      }
-    }
-
-    function renderSavedProofs() {
-      const savedGrid = document.getElementById('savedGrid');
-      const savedEmpty = document.getElementById('savedEmpty');
-      
-      const savedProofs = proofs.filter(proof => proof.isSaved);
-      
-      if (savedProofs.length === 0) {
-        savedGrid.innerHTML = '';
-        savedEmpty.style.display = 'block';
-        return;
-      }
-      
-      savedEmpty.style.display = 'none';
-      
-      savedGrid.innerHTML = savedProofs.map(proof => {
-        const firstMedia = proof.mediaFiles[0] || {};
-        
-        let mediaHtml = '';
-        let videoIcon = '';
-        if (firstMedia.type === 'video') {
-          mediaHtml = `<video class="proof-image" muted preload="metadata" playsinline><source src="${firstMedia.url || ''}#t=0.5" type="video/mp4"></video>`;
-          videoIcon = `<div style="position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.7); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 3;">▶️</div>`;
-        } else {
-          mediaHtml = `<img class="proof-image" src="${firstMedia.url || ''}" alt="${escapeHtml(proof.userName)}">`;
-        }
-        
-        let profileHtml = '';
-        if (proof.profilePicture) {
-          profileHtml = `<img src="${proof.profilePicture}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid white; margin-right: 6px;">`;
-        } else {
-          profileHtml = `<div style="width: 28px; height: 28px; border-radius: 50%; background: #FF6B9D; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 12px; border: 2px solid white; margin-right: 6px;">${proof.userName.charAt(0)}</div>`;
-        }
-        
-        return `
-          <div class="proof-card" onclick="openModal('${proof.id}')">
-            <div class="proof-image-container">
-              ${mediaHtml}
-              ${videoIcon}
-              <div style="position: absolute; bottom: 8px; left: 8px; display: flex; align-items: center; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); padding: 4px 10px; border-radius: 20px; z-index: 3;">
-                ${profileHtml}
-                <span style="color: white; font-size: 12px; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${escapeHtml(proof.userName)}</span>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function showToast(message) {
-      const existingToast = document.querySelector('.toast');
-      if (existingToast) {
-        existingToast.remove();
-      }
-      
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.textContent = message;
-      document.body.appendChild(toast);
-      
-      setTimeout(() => {
-        toast.remove();
-      }, 3000);
-    }
-
-    // Start the app
-    initApp();
-  </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a8ca8ae6760d32d',t:'MTc2NDg2NTUxOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+// Initialize app
+initializeLiff();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab1b1ee44487b5c',t:'MTc2NTI1Mzg3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
-
-
