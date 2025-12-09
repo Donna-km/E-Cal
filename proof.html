@@ -377,185 +377,220 @@
     }
     
     async function handleSubmit() {
-      if (selectedFiles.length === 0) {
-        const customFont = config.font_family || defaultConfig.font_family;
-        const baseSize = config.font_size || defaultConfig.font_size;
-        
-        const popup = document.createElement('div');
-        popup.className = 'popup-overlay';
-        popup.innerHTML = `
-          <div class="popup-content max-w-md mx-4" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
-            <div class="glass-card rounded-2xl p-8 text-center">
-              <div class="text-7xl mb-4">📸</div>
-              <h2 class="font-bold mb-4" style="font-size: ${baseSize * 1.5}px; color: ${config.text_color || defaultConfig.text_color};">
-                ยังไม่ได้เลือกไฟล์
-              </h2>
-              <p class="mb-6" style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color};">
-                กรุณาเลือกรูปภาพหรือวิดีโออย่างน้อย 1 ไฟล์
-              </p>
-              <button 
-                class="glass-button w-full py-4 rounded-xl font-bold"
-                style="font-size: ${baseSize * 1.125}px; background: ${config.primary_color || defaultConfig.primary_color}; color: ${config.text_color || defaultConfig.text_color};"
-                onclick="this.closest('.popup-overlay').remove()"
-              >
-                เข้าใจแล้ว
-              </button>
-            </div>
-          </div>
-        `;
-        document.body.appendChild(popup);
-        return;
-      }
-      // ❌ บล็อกส่งย้อนหลัง / ล่วงหน้า
-if (!isMissionDateValid()) {
-  const popup = document.createElement('div');
-  popup.className = 'popup-overlay';
-  popup.innerHTML = `
-    <div class="popup-content max-w-md mx-4">
-      <div class="glass-card rounded-2xl p-8 text-center">
-        <div class="text-7xl mb-4">⛔</div>
-        <h2 class="font-bold mb-4 text-red-400" style="font-size: 22px;">
-          หมดเวลาส่งภารกิจแล้วน้าแม่ ❤️
-        </h2>
-        <p class="text-sm text-gray-300 mb-6">
-          ภารกิจนี้ส่งได้เฉพาะวันที่ ${urlParams.date} เท่านั้น<br>
-          พรุ่งนี้รอภารกิจใหม่ได้เลยน้า 🥰
-        </p>
-        <button 
-          class="glass-button w-full py-4 rounded-xl font-bold"
-          onclick="this.closest('.popup-overlay').remove()"
-        >
-          เข้าใจแล้ว
-        </button>
+  if (selectedFiles.length === 0) {
+    const customFont = config.font_family || defaultConfig.font_family;
+    const baseSize = config.font_size || defaultConfig.font_size;
+    
+    const popup = document.createElement('div');
+    popup.className = 'popup-overlay';
+    popup.innerHTML = `
+      <div class="popup-content max-w-md mx-4" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
+        <div class="glass-card rounded-2xl p-8 text-center">
+          <div class="text-7xl mb-4">📸</div>
+          <h2 class="font-bold mb-4" style="font-size: ${baseSize * 1.5}px; color: ${config.text_color || defaultConfig.text_color};">
+            ยังไม่ได้เลือกไฟล์
+          </h2>
+          <p class="mb-6" style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color};">
+            กรุณาเลือกรูปภาพหรือวิดีโออย่างน้อย 1 ไฟล์
+          </p>
+          <button 
+            class="glass-button w-full py-4 rounded-xl font-bold"
+            style="font-size: ${baseSize * 1.125}px; background: ${config.primary_color || defaultConfig.primary_color}; color: ${config.text_color || defaultConfig.text_color};"
+            onclick="this.closest('.popup-overlay').remove()"
+          >
+            เข้าใจแล้ว
+          </button>
+        </div>
       </div>
-    </div>
-  `;
-  document.body.appendChild(popup);
-  return;
-}
-      if (isLoading) return;
-      isLoading = true;
-      renderUploadPage();
+    `;
+    document.body.appendChild(popup);
+    return;
+  }
+
+  // ❌ บล็อกส่งย้อนหลัง / ล่วงหน้า
+  if (!isMissionDateValid()) {
+    const popup = document.createElement('div');
+    popup.className = 'popup-overlay';
+    popup.innerHTML = `
+      <div class="popup-content max-w-md mx-4">
+        <div class="glass-card rounded-2xl p-8 text-center">
+          <div class="text-7xl mb-4">⛔</div>
+          <h2 class="font-bold mb-4 text-red-400" style="font-size: 22px;">
+            หมดเวลาส่งภารกิจแล้วน้าแม่ ❤️
+          </h2>
+          <p class="text-sm text-gray-300 mb-6">
+            ภารกิจนี้ส่งได้เฉพาะวันที่ ${urlParams.date} เท่านั้น<br>
+            พรุ่งนี้รอภารกิจใหม่ได้เลยน้า 🥰
+          </p>
+          <button 
+            class="glass-button w-full py-4 rounded-xl font-bold"
+            onclick="this.closest('.popup-overlay').remove()"
+          >
+            เข้าใจแล้ว
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(popup);
+    return;
+  }
+
+  if (isLoading) return;
+  isLoading = true;
+  renderUploadPage();
+  
+  try {
+    // ✅ เช็คว่ามี TDEE form
+    const { data: tdeeCheck } = await supabaseClient
+      .from('tdee_form')
+      .select('line_user_id')
+      .eq('line_user_id', urlParams.line_user_id)
+      .maybeSingle();
+    
+    if (!tdeeCheck) {
+      isLoading = false;
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseSize = config.font_size || defaultConfig.font_size;
       
-      try {
-        const { data: tdeeCheck } = await supabaseClient
-          .from('tdee_form')
-          .select('line_user_id')
-          .eq('line_user_id', urlParams.line_user_id)
-          .maybeSingle();
-        
-        if (!tdeeCheck) {
-          isLoading = false;
-          const customFont = config.font_family || defaultConfig.font_family;
-          const baseSize = config.font_size || defaultConfig.font_size;
-          
-          const popup = document.createElement('div');
-          popup.className = 'popup-overlay';
-          popup.innerHTML = `
-            <div class="popup-content max-w-md mx-4" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
-              <div class="glass-card rounded-2xl p-8 text-center">
-                <div class="text-7xl mb-4">⚠️</div>
-                <h2 class="font-bold mb-4" style="font-size: ${baseSize * 1.5}px; color: ${config.text_color || defaultConfig.text_color};">
-                  ไม่พบข้อมูลผู้ใช้
-                </h2>
-                <p class="mb-6" style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color};">
-                  กรุณากรอกแบบฟอร์ม TDEE ก่อน
-                </p>
-                <button 
-                  class="glass-button w-full py-4 rounded-xl font-bold"
-                  style="font-size: ${baseSize * 1.125}px; background: ${config.primary_color || defaultConfig.primary_color}; color: ${config.text_color || defaultConfig.text_color};"
-                  onclick="this.closest('.popup-overlay').remove()"
-                >
-                  เข้าใจแล้ว
-                </button>
-              </div>
-            </div>
-          `;
-          document.body.appendChild(popup);
-          renderUploadPage();
-          return;
-        }
-        
-        const existingProof = await supabaseClient
-          .from('user_challenges_proof')
-          .select('id')
-          .eq('line_user_id', urlParams.line_user_id)
-          .eq('day_number', parseInt(urlParams.day))
-          .eq('challenge_name', urlParams.challenge_name)
-          .maybeSingle();
-        
-        if (existingProof.data) {
-          isLoading = false;
-          showDuplicatePopup();
-          return;
-        }
-        
-        const urls = [];
-        for (const file of selectedFiles) {
-          const url = await uploadFile(file, urlParams.line_user_id);
-          urls.push(url);
-        }
-        
-        // อัปเดตรูป Profile และชื่อล่าสุดใน user_points (กรณียูสเซอร์เปลี่ยนรูป LINE)
-        await supabaseClient
-          .from('user_points')
-          .update({ 
-            profile_picture_url: liffProfile.pictureUrl,
-            display_name: liffProfile.displayName
-          })
-          .eq('line_user_id', urlParams.line_user_id);
-        
-        const { error: proofError } = await supabaseClient
-  .from('user_challenges_proof')
-  .insert([{
-    line_user_id: urlParams.line_user_id,
-    day_number: parseInt(urlParams.day),
-    proof_type: 'image',
-    challenge_name: urlParams.challenge_name,
-    profile_picture_url: liffProfile.pictureUrl,
-    full_name: liffProfile.displayName,
-    proof_date: new Date().toISOString(),
-    proof_image_url: urls[0] || null
-  }]);
-        
-        if (proofError) throw proofError;
-        
-        isLoading = false;
-        currentPage = 'success';
-        render();
-        fireConfetti();
-      } catch (error) {
-        console.error('Submit Error:', error);
-        isLoading = false;
-        const customFont = config.font_family || defaultConfig.font_family;
-        const baseSize = config.font_size || defaultConfig.font_size;
-        
-        const popup = document.createElement('div');
-        popup.className = 'popup-overlay';
-        popup.innerHTML = `
-          <div class="popup-content max-w-md mx-4" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
-            <div class="glass-card rounded-2xl p-8 text-center">
-              <div class="text-7xl mb-4">😢</div>
-              <h2 class="font-bold mb-4" style="font-size: ${baseSize * 1.5}px; color: ${config.text_color || defaultConfig.text_color};">
-                เกิดข้อผิดพลาด
-              </h2>
-              <p class="mb-6" style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color};">
-                ${error.message || 'กรุณาลองใหม่อีกครั้ง'}
-              </p>
-              <button 
-                class="glass-button w-full py-4 rounded-xl font-bold"
-                style="font-size: ${baseSize * 1.125}px; background: ${config.primary_color || defaultConfig.primary_color}; color: ${config.text_color || defaultConfig.text_color};"
-                onclick="this.closest('.popup-overlay').remove()"
-              >
-                เข้าใจแล้ว
-              </button>
-            </div>
+      const popup = document.createElement('div');
+      popup.className = 'popup-overlay';
+      popup.innerHTML = `
+        <div class="popup-content max-w-md mx-4" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
+          <div class="glass-card rounded-2xl p-8 text-center">
+            <div class="text-7xl mb-4">⚠️</div>
+            <h2 class="font-bold mb-4" style="font-size: ${baseSize * 1.5}px; color: ${config.text_color || defaultConfig.text_color};">
+              ไม่พบข้อมูลผู้ใช้
+            </h2>
+            <p class="mb-6" style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color};">
+              กรุณากรอกแบบฟอร์ม TDEE ก่อน
+            </p>
+            <button 
+              class="glass-button w-full py-4 rounded-xl font-bold"
+              style="font-size: ${baseSize * 1.125}px; background: ${config.primary_color || defaultConfig.primary_color}; color: ${config.text_color || defaultConfig.text_color};"
+              onclick="this.closest('.popup-overlay').remove()"
+            >
+              เข้าใจแล้ว
+            </button>
           </div>
-        `;
-        document.body.appendChild(popup);
-        renderUploadPage();
-      }
+        </div>
+      `;
+      document.body.appendChild(popup);
+      renderUploadPage();
+      return;
     }
+    
+    // ✅ เช็คว่าส่งวันนี้ไปแล้วหรือยัง
+    const existingProof = await supabaseClient
+      .from('user_challenges_proof')
+      .select('id')
+      .eq('line_user_id', urlParams.line_user_id)
+      .eq('day_number', parseInt(urlParams.day))
+      .eq('challenge_name', urlParams.challenge_name)
+      .maybeSingle();
+    
+    if (existingProof.data) {
+      isLoading = false;
+      showDuplicatePopup();
+      return;
+    }
+    
+    // ⬇️⬇️⬇️ จุดที่เปลี่ยนจริง ๆ อยู่ตรงนี้ ⬇️⬇️⬇️
+
+    // 1) อัปโหลดไฟล์ทั้งหมด เก็บ url + type
+    const uploaded = [];
+    for (const file of selectedFiles) {
+      const url = await uploadFile(file, urlParams.line_user_id);
+      uploaded.push({
+        url,
+        type: file.type.startsWith('video/') ? 'video' : 'image'
+      });
+    }
+    
+    // 2) อัปเดตรูป Profile และชื่อใน user_points
+    await supabaseClient
+      .from('user_points')
+      .update({ 
+        profile_picture_url: liffProfile.pictureUrl,
+        display_name: liffProfile.displayName
+      })
+      .eq('line_user_id', urlParams.line_user_id);
+    
+    // 3) insert user_challenges_proof แล้วขอ id กลับมา
+    const { data: proofRow, error: proofError } = await supabaseClient
+      .from('user_challenges_proof')
+      .insert([{
+        line_user_id: urlParams.line_user_id,
+        day_number: parseInt(urlParams.day),
+        proof_type: 'image', // ตอนนี้ถือว่าเป็น image proof
+        challenge_name: urlParams.challenge_name,
+        profile_picture_url: liffProfile.pictureUrl,
+        full_name: liffProfile.displayName,
+        proof_date: new Date().toISOString(),
+        // เก็บรูปแรกไว้เหมือนเดิม เพื่อใช้ fallback ที่ board
+        proof_image_url: uploaded[0]?.url || null
+      }])
+      .select('id')
+      .single();
+    
+    if (proofError) throw proofError;
+
+    const proofId = proofRow.id;
+
+    // 4) insert หลายแถวเข้า proof_media
+    if (uploaded.length > 0) {
+      const mediaRows = uploaded.map((m, index) => ({
+        proof_id: proofId,
+        media_url: m.url,         // เก็บเป็น full public URL
+        media_type: m.type,       // 'image' หรือ 'video'
+        media_order: index        // 0,1,2,...
+      }));
+
+      const { error: mediaError } = await supabaseClient
+        .from('proof_media')
+        .insert(mediaRows);
+
+      if (mediaError) throw mediaError;
+    }
+
+    // ⬆️⬆️⬆️ จบส่วนใหม่ ⬆️⬆️⬆️
+    
+    isLoading = false;
+    currentPage = 'success';
+    render();
+    fireConfetti();
+  } catch (error) {
+    console.error('Submit Error:', error);
+    isLoading = false;
+    const customFont = config.font_family || defaultConfig.font_family;
+    const baseSize = config.font_size || defaultConfig.font_size;
+    
+    const popup = document.createElement('div');
+    popup.className = 'popup-overlay';
+    popup.innerHTML = `
+      <div class="popup-content max-w-md mx-4" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
+        <div class="glass-card rounded-2xl p-8 text-center">
+          <div class="text-7xl mb-4">😢</div>
+          <h2 class="font-bold mb-4" style="font-size: ${baseSize * 1.5}px; color: ${config.text_color || defaultConfig.text_color};">
+            เกิดข้อผิดพลาด
+          </h2>
+          <p class="mb-6" style="font-size: ${baseSize}px; color: ${config.text_color || defaultConfig.text_color};">
+            ${error.message || 'กรุณาลองใหม่อีกครั้ง'}
+          </p>
+          <button 
+            class="glass-button w-full py-4 rounded-xl font-bold"
+            style="font-size: ${baseSize * 1.125}px; background: ${config.primary_color || defaultConfig.primary_color}; color: ${config.text_color || defaultConfig.text_color};"
+            onclick="this.closest('.popup-overlay').remove()"
+          >
+            เข้าใจแล้ว
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(popup);
+    renderUploadPage();
+  }
+}
+
     
     function fireConfetti() {
       const duration = 3000;
@@ -995,5 +1030,6 @@ if (!isMissionDateValid()) {
   </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a15ec9250bc7b50',t:'MTc2MzYyMDQ5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
