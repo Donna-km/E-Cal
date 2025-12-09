@@ -945,6 +945,9 @@
                     liff.login();
                     return;
                 }
+             / เก็บรูป LINE ไว้ในตัวแปร
+userData.profilePictureUrl = profile.pictureUrl || null;
+console.log("LINE Picture:", userData.profilePictureUrl);
 
                 const profile = await liff.getProfile();
                 lineUserId = profile.userId;
@@ -1248,17 +1251,27 @@
                     const updateData = { ...calculationData };
                     delete updateData.created_at;
                     
-                    result = await supabaseClient
-                        .from('tdee_form')
-                        .update(updateData)
-                        .eq('id', existingRecordId);
-                } else {
-                    // Insert new record
-                    console.log("Inserting new record");
-                    result = await supabaseClient
-                        .from('tdee_form')
-                        .insert([calculationData]);
-                }
+                   if (existingRecordId) {
+
+    // ⭐ เพิ่มรูป LINE สำหรับการอัปเดต
+    updateData.profile_picture_url = userData.profilePictureUrl;
+
+    result = await supabaseClient
+        .from('tdee_form')
+        .update(updateData)
+        .eq('id', existingRecordId);
+
+} else {
+
+    // ⭐ เพิ่มรูป LINE สำหรับการ insert ใหม่
+    calculationData.profile_picture_url = userData.profilePictureUrl;
+
+    console.log("Inserting new record");
+    result = await supabaseClient
+        .from('tdee_form')
+        .insert([calculationData]);
+}
+
 
                 const { data, error } = result;
 
@@ -1948,5 +1961,6 @@
 </a>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99fc1b68f45c7b5e',t:'MTc2MzM0OTc4Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
