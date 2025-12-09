@@ -372,6 +372,8 @@ async function initializeLiff() {
       pictureUrl: profile.pictureUrl
     };
     
+    console.log('Current user:', currentUser);
+    
     await loadData();
   } catch (error) {
     console.error('LIFF initialization failed:', error);
@@ -387,6 +389,8 @@ async function initializeLiff() {
 // Load all data
 async function loadData() {
   try {
+    console.log('Starting to load data...');
+    
     // Load posts with media
     const { data: posts, error: postsError } = await supabase
       .from('user_challenges_proof')
@@ -401,26 +405,45 @@ async function loadData() {
       .eq('is_verified', true)
       .order('proof_date', { ascending: false });
     
-    if (postsError) throw postsError;
+    if (postsError) {
+      console.error('Error loading posts:', postsError);
+      throw postsError;
+    }
+    
+    console.log('Raw posts data:', posts);
+    console.log('Total posts loaded:', posts?.length || 0);
     
     // Process posts - support both proof_media and proof_image_url
     allPosts = posts.map(post => {
       let mediaArray = [];
       
+      console.log(`Processing post ID ${post.id}:`, {
+        has_proof_media: post.proof_media?.length > 0,
+        proof_media_count: post.proof_media?.length || 0,
+        has_proof_image_url: !!post.proof_image_url,
+        proof_image_url: post.proof_image_url
+      });
+      
       // First, check if proof_media has data (new system - multiple files)
       if (post.proof_media && post.proof_media.length > 0) {
         mediaArray = post.proof_media
           .sort((a, b) => a.media_order - b.media_order)
-          .map(m => ({
-            type: m.media_type || 'image',
-            url: getStorageUrl(m.media_url)
-          }));
+          .map(m => {
+            const url = getStorageUrl(m.media_url);
+            console.log(`Media URL generated:`, url);
+            return {
+              type: m.media_type || 'image',
+              url: url
+            };
+          });
       } 
       // Fallback to proof_image_url (old system - single image)
       else if (post.proof_image_url) {
+        const url = getStorageUrl(post.proof_image_url);
+        console.log(`Image URL (fallback) generated:`, url);
         mediaArray = [{
           type: 'image',
-          url: getStorageUrl(post.proof_image_url)
+          url: url
         }];
       }
       
@@ -436,8 +459,13 @@ async function loadData() {
       };
     });
     
+    console.log('Processed posts:', allPosts);
+    console.log('Posts with media:', allPosts.filter(p => p.media.length > 0).length);
+    
     // Filter out posts with no media
     allPosts = allPosts.filter(post => post.media.length > 0);
+    
+    console.log('Final allPosts to display:', allPosts.length);
     
     // Load saved posts
     const { data: saves, error: savesError } = await supabase
@@ -448,6 +476,8 @@ async function loadData() {
     if (savesError) throw savesError;
     
     savedPosts = new Set(saves.map(s => s.proof_id));
+    
+    console.log('Saved posts:', savedPosts);
     
     // Render gallery
     renderGallery();
@@ -811,6 +841,8 @@ function openMediaView(index) {
 
 // Render gallery
 function renderGallery() {
+  console.log('Rendering gallery with', allPosts.length, 'posts');
+  
   const grid = document.querySelector('#gallery-page .masonry-grid');
   grid.innerHTML = '';
   
@@ -831,6 +863,8 @@ function renderGallery() {
     const firstMedia = post.media[0];
     const mediaCount = post.media.length;
     
+    console.log(`Rendering post ${index}:`, { firstMedia, mediaCount });
+    
     if (firstMedia && firstMedia.type === 'video') {
       div.innerHTML = `
         <div class="relative" style="height: 300px; background: #1a1a1a; display: flex; align-items: center; justify-content: center;">
@@ -849,6 +883,8 @@ function renderGallery() {
     
     grid.appendChild(div);
   });
+  
+  console.log('Gallery rendered successfully');
 }
 
 // Render saved grid
@@ -904,5 +940,5 @@ function renderSavedGrid() {
 // Initialize app
 initializeLiff();
 </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab242ed929d7b46',t:'MTc2NTI1OTgwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab254043464ee4e',t:'MTc2NTI2MDUwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
