@@ -268,7 +268,31 @@
    </div>
    <div id="saved-grid" class="masonry-grid" style="padding-bottom: 80px;"><!-- Saved items will be inserted here -->
    </div>
-  </div><!-- PAGE 3: Full Media View -->
+  </div><!-- PAGE 3: Comments -->
+  <div id="comments-page" class="page">
+   <div class="h-full flex flex-col"><!-- Header -->
+    <div class="bg-black px-4 py-4 border-b border-gray-800">
+     <div class="flex items-center"><button onclick="navigateTo('media-view-page')" class="p-2">
+       <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+       </svg></button>
+      <h1 id="comments-title" class="flex-1 text-center text-lg font-semibold text-white">คอมเมนต์</h1>
+      <div class="w-10"></div>
+     </div>
+    </div><!-- Comments list -->
+    <div class="flex-1 overflow-y-auto px-4 py-4" style="padding-bottom: 100px;" id="comments-container">
+     <div id="comments-list"><!-- Comments will be loaded here -->
+     </div>
+    </div><!-- Comment input - FIXED POSITION -->
+    <div class="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-30">
+     <div class="px-4 py-4">
+      <div style="display: flex; align-items: center; gap: 12px; background: #3D3D3D; border-radius: 9999px; padding: 14px 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);"><input type="text" id="comment-input" placeholder="เพิ่มคอมเมนต์..." style="flex: 1; background: transparent; color: white; outline: none; border: none; font-size: 15px;" onkeypress="if(event.key === 'Enter') postComment(event)"> <button onclick="postComment(event)" style="padding: 8px; background: #C1272D; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; width: 36px; height: 36px; transition: all 0.2s;">
+        <svg style="width: 20px; height: 20px; color: white; fill: white;" viewbox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+        </svg></button>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- PAGE 4: Full Media View -->
   <div id="media-view-page" class="page">
    <div class="fade-in h-full overflow-y-auto"><!-- Top bar -->
     <div class="sticky top-0 bg-black z-20 px-4 py-4 flex items-center justify-between"><button onclick="navigateTo('gallery-page')" class="p-2">
@@ -290,7 +314,9 @@
      <div id="slider-dots" class="slider-dots"><!-- Dots will be inserted here -->
      </div>
     </div><!-- Actions row -->
-    <div class="px-4 py-4 flex items-center gap-6">
+    <div class="px-4 py-4 flex items-center gap-6"><button onclick="navigateTo('comments-page')" class="flex items-center gap-2">
+      <svg class="w-7 h-7" fill="none" stroke="white" stroke-width="2" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+      </svg><span id="comment-count" class="text-white font-semibold">0</span> </button>
      <div class="flex-1"></div><button id="save-btn" onclick="toggleSave()" class="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-full font-bold text-white transition-all"> Save </button>
     </div><!-- Post details -->
     <div class="px-4 py-4 border-t border-gray-800">
@@ -301,7 +327,7 @@
      </div>
      <h3 id="post-title-detail" class="text-xl font-bold text-white mb-2"></h3>
      <p id="post-description" class="text-gray-400 text-sm mb-4"></p>
-     <p id="post-date" class="text-gray-500 text-xs"></p>
+     <p id="post-date" class="text-gray-500 text-xs"></p><button onclick="navigateTo('comments-page')" id="view-comments-link" class="text-gray-400 text-sm hover:text-white transition-colors mt-2"> ดูคอมเมนต์ทั้งหมด </button>
     </div>
    </div>
   </div><!-- Bottom Navigation Bar -->
@@ -322,6 +348,7 @@ let supabase;
 let currentUser = null;
 let allPosts = [];
 let savedPosts = new Set();
+let currentComments = [];
 let currentMediaIndex = null;
 let currentSlideIndex = 0;
 
@@ -549,6 +576,158 @@ function updateSliderControls() {
   }
 }
 
+// Load comments for current post
+async function loadComments() {
+  if (currentMediaIndex === null) return;
+  
+  const post = allPosts[currentMediaIndex];
+  
+  try {
+    const { data: comments, error } = await supabase
+      .from('proof_comments')
+      .select(`
+        *,
+        tdee_form!proof_comments_commenter_line_user_id_fkey (
+          line_user_id,
+          full_name,
+          profile_picture_url
+        )
+      `)
+      .eq('proof_id', post.id)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    currentComments = comments || [];
+    renderComments();
+    
+    // Update comment count
+    document.getElementById('comment-count').textContent = currentComments.length;
+    
+  } catch (error) {
+    console.error('Error loading comments:', error);
+  }
+}
+
+// Render comments
+function renderComments() {
+  const commentsList = document.getElementById('comments-list');
+  commentsList.innerHTML = '';
+  
+  if (currentComments.length === 0) {
+    commentsList.innerHTML = `
+      <div class="text-center py-10">
+        <p class="text-gray-500 text-sm">ยังไม่มีคอมเมนต์</p>
+      </div>
+    `;
+    return;
+  }
+  
+  currentComments.forEach(comment => {
+    const commentDiv = document.createElement('div');
+    commentDiv.className = 'comment-item flex gap-3 mb-6';
+    
+    const commenterData = comment.tdee_form;
+    const profilePic = commenterData?.profile_picture_url || 'https://via.placeholder.com/32';
+    const displayName = commenterData?.full_name || 'ผู้ใช้งาน';
+    
+    const createdAt = new Date(comment.created_at);
+    const timeAgo = getTimeAgo(createdAt);
+    
+    commentDiv.innerHTML = `
+      <img src="${profilePic}" class="w-8 h-8 rounded-full flex-shrink-0" alt="Profile">
+      <div class="flex-1">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="font-semibold text-white text-sm">${displayName}</span>
+          <span class="text-gray-500 text-xs">${timeAgo}</span>
+        </div>
+        <p class="text-white text-sm">${escapeHtml(comment.comment_text)}</p>
+      </div>
+    `;
+    
+    commentsList.appendChild(commentDiv);
+  });
+}
+
+// Post new comment
+async function postComment(event) {
+  if (event) {
+    event.preventDefault();
+  }
+  
+  if (currentMediaIndex === null) return;
+  
+  const input = document.getElementById('comment-input');
+  const commentText = input.value.trim();
+  
+  if (!commentText) return;
+  
+  const post = allPosts[currentMediaIndex];
+  
+  try {
+    const { data, error } = await supabase
+      .from('proof_comments')
+      .insert({
+        proof_id: post.id,
+        commenter_line_user_id: currentUser.lineUserId,
+        comment_text: commentText
+      })
+      .select(`
+        *,
+        tdee_form!proof_comments_commenter_line_user_id_fkey (
+          line_user_id,
+          full_name,
+          profile_picture_url
+        )
+      `)
+      .single();
+    
+    if (error) throw error;
+    
+    // Add new comment to the top
+    currentComments.unshift(data);
+    renderComments();
+    
+    // Update comment count
+    document.getElementById('comment-count').textContent = currentComments.length;
+    
+    // Clear input
+    input.value = '';
+    
+  } catch (error) {
+    console.error('Error posting comment:', error);
+  }
+}
+
+// Helper function: Get time ago
+function getTimeAgo(date) {
+  const now = new Date();
+  const seconds = Math.floor((now - date) / 1000);
+  
+  if (seconds < 60) return 'เมื่อสักครู่';
+  
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} นาทีที่แล้ว`;
+  
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} ชั่วโมงที่แล้ว`;
+  
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} วันที่แล้ว`;
+  
+  const weeks = Math.floor(days / 7);
+  if (weeks < 4) return `${weeks} สัปดาห์ที่แล้ว`;
+  
+  return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+// Helper function: Escape HTML
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 // Open media view
 function openMediaView(index) {
   currentMediaIndex = index;
@@ -594,7 +773,7 @@ function openMediaView(index) {
   // Set creator info
   const creatorAvatar = document.getElementById('creator-avatar');
   creatorAvatar.src = post.profilePictureUrl || 'https://via.placeholder.com/40';
-  document.getElementById('creator-name').textContent = post.fullName || 'ผู้ใช้งาน';
+  document.getElementById('creator-name').textContent = post.fullName || '��ู้ใช้งาน';
   
   // Update save button
   const saveBtn = document.getElementById('save-btn');
@@ -607,6 +786,7 @@ function openMediaView(index) {
   }
   
   updateSliderControls();
+  loadComments();
   navigateTo('media-view-page');
 }
 
@@ -705,5 +885,5 @@ function renderSavedGrid() {
 // Initialize app
 initializeLiff();
 </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab1b1ee44487b5c',t:'MTc2NTI1Mzg3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab1b95a67e2ee46',t:'MTc2NTI1NDE3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
