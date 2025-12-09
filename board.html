@@ -259,6 +259,50 @@
       justify-content: center;
       z-index: 100;
     }
+
+    .emoji-picker {
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      background: #2D2D2D;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      display: none;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 8px;
+      max-width: 320px;
+    }
+
+    .emoji-picker.show {
+      display: grid;
+    }
+
+    .emoji-btn {
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      background: transparent;
+      border: none;
+    }
+
+    .emoji-btn:hover {
+      background: rgba(193, 39, 45, 0.3);
+      transform: scale(1.2);
+    }
+
+    .reply-input-container {
+      display: none;
+      margin-top: 12px;
+      padding-left: 44px;
+    }
+
+    .reply-input-container.show {
+      display: block;
+    }
   </style>
   <style>@view-transition { navigation: auto; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
@@ -303,8 +347,9 @@
       </div>
      </div><!-- Comment input - FIXED POSITION -->
      <div style="position: fixed; bottom: 60px; left: 0; right: 0; background: #000; border-top: 1px solid #374151; z-index: 30; flex-shrink: 0;">
-      <div style="padding: 16px;">
-       <div style="display: flex; align-items: center; gap: 12px; background: #3D3D3D; border-radius: 9999px; padding: 14px 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);"><input type="text" id="comment-input" placeholder="เพิ่มคอมเมนต์..." style="flex: 1; background: transparent; color: white; outline: none; border: none; font-size: 15px;" onkeypress="if(event.key === 'Enter') postComment(event)"> <button onclick="postComment(event)" style="padding: 8px; background: #C1272D; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; width: 36px; height: 36px; transition: all 0.2s;">
+      <div style="padding: 16px; position: relative;"><!-- Emoji Picker -->
+       <div id="emoji-picker" class="emoji-picker"></div>
+       <div style="display: flex; align-items: center; gap: 12px; background: #3D3D3D; border-radius: 9999px; padding: 14px 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);"><button id="emoji-trigger" onclick="toggleEmojiPicker()" style="padding: 4px; background: transparent; border: none; cursor: pointer; font-size: 20px;"> 😊 </button> <input type="text" id="comment-input" placeholder="เพิ่มคอมเมนต์..." style="flex: 1; background: transparent; color: white; outline: none; border: none; font-size: 15px;" onkeypress="if(event.key === 'Enter') postComment(event)"> <button onclick="postComment(event)" style="padding: 8px; background: #C1272D; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; width: 36px; height: 36px; transition: all 0.2s;">
          <svg style="width: 20px; height: 20px; color: white; fill: white;" viewbox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
          </svg></button>
        </div>
@@ -348,7 +393,7 @@
       </div>
       <h3 id="post-title-detail" class="text-xl font-bold text-white mb-2"></h3>
       <p id="post-description" class="text-gray-400 text-sm mb-4"></p>
-      <p id="post-date" class="text-gray-500 text-xs"></p><button onclick="navigateTo('comments-page')" id="view-comments-link" class="text-gray-400 text-sm hover:text-white transition-colors mt-2"> ดูคอมเมนต์ท��้งหมด </button>
+      <p id="post-date" class="text-gray-500 text-xs"></p><button onclick="navigateTo('comments-page')" id="view-comments-link" class="text-gray-400 text-sm hover:text-white transition-colors mt-2"> ดูคอมเมนต์ทั้งหมด </button>
      </div>
     </div>
    </div><!-- Bottom Navigation Bar -->
@@ -371,9 +416,14 @@ let currentUser = null;
 let allPosts = [];
 let savedPosts = new Set();
 let likedPosts = new Set();
+let commentLikes = new Map();
 let currentComments = [];
 let currentMediaIndex = null;
 let currentSlideIndex = 0;
+let replyingToCommentId = null;
+
+// Emoji list
+const emojis = ['😊', '😂', '❤️', '👍', '🔥', '✨', '💪', '🎉', '😍', '🥰', '😎', '👏', '🙏', '💯', '⭐', '🎊', '🌟', '💖', '😭', '🤔', '😱', '🤩', '👌', '🙌'];
 
 // Initialize Supabase
 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -400,16 +450,63 @@ async function initializeLiff() {
     console.log('✅ Current user:', currentUser);
     
     await loadData();
+    initializeEmojiPicker();
   } catch (error) {
     console.error('❌ LIFF initialization failed:', error);
     document.getElementById('loading-overlay').innerHTML = `
       <div class="text-center">
-        <p class="text-white">เกิดข้อผิดพลาดในก��รเชื่อม��่อ</p>
+        <p class="text-white">เกิดข้อผิดพลาดในการเชื่อมต่อ</p>
         <p class="text-gray-400 text-sm mt-2">${error.message}</p>
       </div>
     `;
   }
 }
+
+// Initialize emoji picker
+function initializeEmojiPicker() {
+  const picker = document.getElementById('emoji-picker');
+  picker.innerHTML = '';
+  
+  emojis.forEach(emoji => {
+    const btn = document.createElement('button');
+    btn.className = 'emoji-btn';
+    btn.textContent = emoji;
+    btn.onclick = () => insertEmoji(emoji);
+    picker.appendChild(btn);
+  });
+}
+
+// Toggle emoji picker
+function toggleEmojiPicker() {
+  const picker = document.getElementById('emoji-picker');
+  picker.classList.toggle('show');
+}
+
+// Insert emoji
+function insertEmoji(emoji) {
+  const input = document.getElementById('comment-input');
+  const cursorPos = input.selectionStart;
+  const textBefore = input.value.substring(0, cursorPos);
+  const textAfter = input.value.substring(cursorPos);
+  
+  input.value = textBefore + emoji + textAfter;
+  input.focus();
+  
+  const newCursorPos = cursorPos + emoji.length;
+  input.setSelectionRange(newCursorPos, newCursorPos);
+  
+  document.getElementById('emoji-picker').classList.remove('show');
+}
+
+// Close emoji picker when clicking outside
+document.addEventListener('click', (e) => {
+  const picker = document.getElementById('emoji-picker');
+  const trigger = document.getElementById('emoji-trigger');
+  
+  if (picker && !picker.contains(e.target) && e.target !== trigger) {
+    picker.classList.remove('show');
+  }
+});
 
 // Load all data
 async function loadData() {
@@ -488,7 +585,7 @@ async function loadData() {
     
     console.log('💾 Saved posts:', savedPosts);
     
-    // Load liked posts (ถ้ามี table proof_likes)
+    // Load liked posts
     const { data: likes, error: likesError } = await supabase
       .from('proof_likes')
       .select('proof_id')
@@ -653,6 +750,59 @@ async function updateLikeCount(proofId) {
   }
 }
 
+// Toggle comment like
+async function toggleCommentLike(commentId, heartElement, countElement) {
+  try {
+    const isLiked = commentLikes.has(commentId);
+    
+    if (isLiked) {
+      // Unlike comment
+      const { error } = await supabase
+        .from('comment_likes')
+        .delete()
+        .eq('comment_id', commentId)
+        .eq('liker_line_user_id', currentUser.lineUserId);
+      
+      if (error) throw error;
+      
+      commentLikes.delete(commentId);
+      heartElement.classList.remove('liked');
+    } else {
+      // Like comment
+      const { error } = await supabase
+        .from('comment_likes')
+        .insert({
+          comment_id: commentId,
+          liker_line_user_id: currentUser.lineUserId
+        });
+      
+      if (error) throw error;
+      
+      commentLikes.add(commentId);
+      heartElement.classList.add('liked');
+    }
+    
+    // Update count
+    const { count } = await supabase
+      .from('comment_likes')
+      .select('*', { count: 'exact', head: true })
+      .eq('comment_id', commentId);
+    
+    countElement.textContent = count || 0;
+    
+  } catch (error) {
+    console.error('Error toggling comment like:', error);
+  }
+}
+
+// Show reply input
+function showReplyInput(commentId) {
+  replyingToCommentId = commentId;
+  const input = document.getElementById('comment-input');
+  input.placeholder = 'เขียนการตอบกลับ...';
+  input.focus();
+}
+
 // Slider functions
 function goToSlide(index) {
   if (currentMediaIndex === null) return;
@@ -723,10 +873,10 @@ async function loadComments() {
     // Get unique commenter IDs
     const commenterIds = [...new Set(comments.map(c => c.commenter_line_user_id))];
     
-    // Get commenter profiles from user_challenges_proof
+    // Get commenter profiles from user_profiles
     const { data: profiles, error: profilesError } = await supabase
-      .from('user_challenges_proof')
-      .select('line_user_id, full_name, profile_picture_url')
+      .from('user_profiles')
+      .select('line_user_id, display_name, profile_picture_url')
       .in('line_user_id', commenterIds);
     
     if (profilesError) throw profilesError;
@@ -743,6 +893,20 @@ async function loadComments() {
       commenter_profile: profileMap.get(comment.commenter_line_user_id)
     }));
     
+    // Load comment likes for current user
+    const { data: commentLikesData } = await supabase
+      .from('comment_likes')
+      .select('comment_id')
+      .eq('liker_line_user_id', currentUser.lineUserId)
+      .in('comment_id', comments.map(c => c.id));
+    
+    commentLikes = new Map();
+    if (commentLikesData) {
+      commentLikesData.forEach(like => {
+        commentLikes.add(like.comment_id);
+      });
+    }
+    
     renderComments();
     
     // Update comment count
@@ -754,7 +918,7 @@ async function loadComments() {
 }
 
 // Render comments
-function renderComments() {
+async function renderComments() {
   const commentsList = document.getElementById('comments-list');
   commentsList.innerHTML = '';
   
@@ -767,16 +931,24 @@ function renderComments() {
     return;
   }
   
-  currentComments.forEach(comment => {
+  for (const comment of currentComments) {
     const commentDiv = document.createElement('div');
     commentDiv.className = 'comment-item flex gap-3 mb-6';
     
     const commenterData = comment.commenter_profile;
     const profilePic = commenterData?.profile_picture_url || 'https://via.placeholder.com/32';
-    const displayName = commenterData?.full_name || 'ผู้ใช้งาน';
+    const displayName = commenterData?.display_name || 'ผู้ใช้งาน';
     
     const createdAt = new Date(comment.created_at);
     const timeAgo = getTimeAgo(createdAt);
+    
+    // Get like count for this comment
+    const { count: likeCount } = await supabase
+      .from('comment_likes')
+      .select('*', { count: 'exact', head: true })
+      .eq('comment_id', comment.id);
+    
+    const isLiked = commentLikes.has(comment.id);
     
     commentDiv.innerHTML = `
       <img src="${profilePic}" class="w-8 h-8 rounded-full flex-shrink-0" alt="Profile">
@@ -787,13 +959,13 @@ function renderComments() {
         </div>
         <p class="text-white text-sm mb-2">${escapeHtml(comment.comment_text)}</p>
         <div class="flex items-center gap-4">
-          <button class="flex items-center gap-1 text-gray-400 hover:text-white transition-colors text-xs">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <button onclick="toggleCommentLike('${comment.id}', this.querySelector('.heart-icon'), this.querySelector('span'))" class="flex items-center gap-1 text-gray-400 hover:text-white transition-colors text-xs">
+            <svg class="w-4 h-4 heart-icon ${isLiked ? 'liked' : ''}" fill="${isLiked ? '#C1272D' : 'none'}" stroke="${isLiked ? '#C1272D' : 'currentColor'}" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
             </svg>
-            <span>0</span>
+            <span>${likeCount || 0}</span>
           </button>
-          <button class="text-gray-400 hover:text-white transition-colors text-xs font-semibold">
+          <button onclick="showReplyInput('${comment.id}')" class="text-gray-400 hover:text-white transition-colors text-xs font-semibold">
             ตอบกลับ
           </button>
         </div>
@@ -801,7 +973,7 @@ function renderComments() {
     `;
     
     commentsList.appendChild(commentDiv);
-  });
+  }
 }
 
 // Post new comment
@@ -826,19 +998,19 @@ async function postComment(event) {
       .insert({
         proof_id: post.id,
         commenter_line_user_id: currentUser.lineUserId,
-        comment_text: commentText
+        comment_text: commentText,
+        parent_comment_id: replyingToCommentId
       })
       .select()
       .single();
     
     if (error) throw error;
     
-    // Get commenter profile from user_challenges_proof
+    // Get commenter profile from user_profiles
     const { data: profile, error: profileError } = await supabase
-      .from('user_challenges_proof')
-      .select('line_user_id, full_name, profile_picture_url')
+      .from('user_profiles')
+      .select('line_user_id, display_name, profile_picture_url')
       .eq('line_user_id', currentUser.lineUserId)
-      .limit(1)
       .single();
     
     if (profileError) {
@@ -850,7 +1022,7 @@ async function postComment(event) {
       ...newComment,
       commenter_profile: profile || {
         line_user_id: currentUser.lineUserId,
-        full_name: currentUser.displayName,
+        display_name: currentUser.displayName,
         profile_picture_url: currentUser.pictureUrl
       }
     };
@@ -862,8 +1034,10 @@ async function postComment(event) {
     // Update comment count
     document.getElementById('comment-count').textContent = currentComments.length;
     
-    // Clear input
+    // Clear input and reset reply state
     input.value = '';
+    input.placeholder = 'เพิ่มคอมเมนต์...';
+    replyingToCommentId = null;
     
   } catch (error) {
     console.error('Error posting comment:', error);
@@ -878,13 +1052,13 @@ function getTimeAgo(date) {
   if (seconds < 60) return 'เมื่อสักครู่';
   
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} นาที���ี่แล้ว`;
+  if (minutes < 60) return `${minutes} นาทีที่แล้ว`;
   
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours} ชั่วโมงที่แล้ว`;
   
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} ���ันที่แล้ว`;
+  if (days < 7) return `${days} วันที่แล้ว`;
   
   const weeks = Math.floor(days / 7);
   if (weeks < 4) return `${weeks} สัปดาห์ที่แล้ว`;
@@ -905,7 +1079,7 @@ function openMediaView(index) {
   currentSlideIndex = 0;
   const post = allPosts[index];
   
-  // Build slider - แสดง���ูปของโพสต์นี้เท่านั้น
+  // Build slider - แสดงรูปของโพสต์นี้เท่านั้น
   const sliderTrack = document.getElementById('media-slider-track');
   sliderTrack.innerHTML = '';
   sliderTrack.style.transform = 'translateX(0)';
@@ -1069,5 +1243,5 @@ function renderSavedGrid() {
 // Initialize app
 initializeLiff();
 </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab3201da6347b46',t:'MTc2NTI2ODg2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
