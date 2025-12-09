@@ -1185,18 +1185,47 @@ function renderGallery() {
     
     const firstMedia = post.media[0];
     const mediaCount = post.media.length;
-    
+
+    // -----------------------------
+    // Video Thumbnail Version
+    // -----------------------------
     if (firstMedia && firstMedia.type === 'video') {
       div.innerHTML = `
-        <div class="relative" style="height: 300px; background: #1a1a1a; display: flex; align-items: center; justify-content: center;">
-          <video src="${firstMedia.url}" class="w-full h-full object-cover"></video>
+        <div class="relative" 
+             style="height: 300px; background: #000; overflow: hidden; border-radius: 12px;">
+          
+          <!-- Thumbnail video (muted + preload) -->
+          <video 
+            src="${firstMedia.url}" 
+            class="w-full h-full object-cover"
+            muted
+            playsinline
+            preload="metadata"
+          ></video>
+
+          <!-- Play icon -->
+          <div class="absolute top-2 right-2 bg-black/60 rounded-full p-1">
+            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"></path>
+            </svg>
+          </div>
+
+          <!-- Media count -->
           ${mediaCount > 1 ? `<div class="media-count-badge">1/${mediaCount}</div>` : ''}
         </div>
       `;
-    } else if (firstMedia) {
+    }
+
+    // -----------------------------
+    // Image Version
+    // -----------------------------
+    else if (firstMedia) {
       div.innerHTML = `
-        <div class="relative">
-          <img src="${firstMedia.url}" alt="Gallery image" class="w-full h-auto" style="display: block;">
+        <div class="relative" style="border-radius: 12px; overflow: hidden;">
+          <img src="${firstMedia.url}" 
+               alt="Gallery image" 
+               class="w-full h-auto block object-cover">
+
           ${mediaCount > 1 ? `<div class="media-count-badge">1/${mediaCount}</div>` : ''}
         </div>
       `;
@@ -1207,6 +1236,7 @@ function renderGallery() {
   
   console.log('✅ Gallery rendered successfully');
 }
+
 
 // Render saved grid
 function renderSavedGrid() {
@@ -1263,6 +1293,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
