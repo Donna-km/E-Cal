@@ -1094,30 +1094,28 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// ===============================
-// Open Media View (Full-farm + Build Slides)
-// ===============================
+// Open media view (Full-screen reels)
 function openMediaView(index) {
   currentMediaIndex = index;
   currentSlideIndex = 0;
   const post = allPosts[index];
-  
-  // Build slider - แสดงรูปของโพสต์นี้เท่านั้น
+
+  // =========================
+  // 1) Build slider (full-frame)
+  // =========================
   const sliderTrack = document.getElementById('media-slider-track');
   sliderTrack.innerHTML = '';
   sliderTrack.style.transform = 'translateX(0)';
-  
+
   post.media.forEach(media => {
     const slide = document.createElement('div');
     slide.className = 'media-slide';
-
-    // ===== Full-frame slide =====
     slide.style.width = '100vw';
     slide.style.height = '100vh';
     slide.style.overflow = 'hidden';
     slide.style.position = 'relative';
     slide.style.background = 'black';
-    
+
     if (media.type === 'video') {
       slide.innerHTML = `
         <video 
@@ -1136,9 +1134,29 @@ function openMediaView(index) {
         >
       `;
     }
-    
+
     sliderTrack.appendChild(slide);
   });
+
+  // =========================
+  // 2) Update overlay UI (เฉพาะ element ที่มีอยู่จริง)
+  // =========================
+
+  const creatorNameEl = document.getElementById('creator-name');
+  if (creatorNameEl) creatorNameEl.textContent = post.full_name || post.creator_name || "เพื่อนอีแคล";
+
+  const avatarEl = document.getElementById('creator-avatar');
+  if (avatarEl) avatarEl.src = post.profile_picture_url || "https://placehold.co/80x80";
+
+  const descEl = document.getElementById('post-description');
+  if (descEl) descEl.textContent = post.caption || post.description || "";
+
+  const likeCountEl = document.getElementById('like-count');
+  if (likeCountEl) likeCountEl.textContent = post.like_count || 0;
+
+  const commentCountEl = document.getElementById('comment-count');
+  if (commentCountEl) commentCountEl.textContent = post.comment_count || 0;
+}
 
 
 // ===============================
@@ -1374,6 +1392,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
