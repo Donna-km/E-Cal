@@ -1094,7 +1094,9 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// Open media view
+// ===============================
+// Open Media View (Full-farm + Build Slides)
+// ===============================
 function openMediaView(index) {
   currentMediaIndex = index;
   currentSlideIndex = 0;
@@ -1109,7 +1111,7 @@ function openMediaView(index) {
     const slide = document.createElement('div');
     slide.className = 'media-slide';
 
-    // เพิ่ม full-frame ให้ slide
+    // ===== Full-frame slide =====
     slide.style.width = '100vw';
     slide.style.height = '100vh';
     slide.style.overflow = 'hidden';
@@ -1139,44 +1141,55 @@ function openMediaView(index) {
   });
 }
 
- // ===== Swipe Gesture =====
+
+// ===============================
+// Swipe Gesture (Touch Events)
+// ===============================
 let startX = 0;
 let isSwiping = false;
 
-const sliderTrack = document.getElementById('media-slider-track');
+// เปลี่ยนชื่อตัวแปรเพื่อไม่ให้ชนกับ sliderTrack ใน openMediaView()
+const trackEl = document.getElementById('media-slider-track');
 
-sliderTrack.addEventListener('touchstart', (e) => {
+trackEl.addEventListener('touchstart', (e) => {
   startX = e.touches[0].clientX;
   isSwiping = true;
 });
 
-sliderTrack.addEventListener('touchmove', (e) => {
+trackEl.addEventListener('touchmove', (e) => {
   if (!isSwiping) return;
 
   const currentX = e.touches[0].clientX;
   const diff = currentX - startX;
 
+  // ปัดซ้าย = next
   if (diff < -50) {
     goNextSlide();
     isSwiping = false;
   }
 
+  // ปัดขวา = prev
   if (diff > 50) {
     goPrevSlide();
     isSwiping = false;
   }
 });
 
-sliderTrack.addEventListener('touchend', () => {
+trackEl.addEventListener('touchend', () => {
   isSwiping = false;
 });
 
-   function goNextSlide() {
+
+// ===============================
+// Slide Navigation Functions
+// ===============================
+function goNextSlide() {
   if (currentSlideIndex < allPosts[currentMediaIndex].media.length - 1) {
     currentSlideIndex++;
     updateSliderPosition();
   }
 }
+
 function goPrevSlide() {
   if (currentSlideIndex > 0) {
     currentSlideIndex--;
@@ -1186,6 +1199,7 @@ function goPrevSlide() {
 
 function updateSliderPosition() {
   const track = document.getElementById('media-slider-track');
+  track.style.transition = "transform 0.25s ease";  // เพิ่มความลื่นนิดนึง
   track.style.transform = `translateX(-${currentSlideIndex * 100}vw)`;
 }
 
@@ -1382,6 +1396,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
