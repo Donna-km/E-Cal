@@ -636,18 +636,21 @@ async function loadData() {
       let mediaArray = [];
       
       // First, check if proof_media has data (new system - multiple files)
-      if (post.proof_media && post.proof_media.length > 0) {
-        mediaArray = post.proof_media
-  .sort((a, b) => a.media_order - b.media_order)
-  .map(m => ({
-    type: m.media_type || 'image',
-    url: m.media_type === 'video'
-        ? getStorageUrl(m.thumbnail_url || m.media_url)   // ใช้ thumbnail ก่อน
-        : getStorageUrl(m.media_url),
-    fullUrl: getStorageUrl(m.media_url)  // สำหรับเปิดเล่นจริง ๆ ใน full view
-  }));
+if (post.proof_media && post.proof_media.length > 0) {
+  mediaArray = post.proof_media
+    .sort((a, b) => a.media_order - b.media_order)
+    .map(m => ({
+      type: m.media_type || 'image',
 
-      } 
+      // สำหรับหน้า Gallery → ใช้ thumbnail ก่อน ถ้ามี
+      url: m.media_type === 'video'
+        ? getStorageUrl(m.thumbnail_url || m.media_url)
+        : getStorageUrl(m.media_url),
+
+      // สำหรับ Full Media View → ใช้วิดีโอจริงเสมอ
+      fullUrl: getStorageUrl(m.media_url)
+    }));
+  } 
       // Fallback to proof_image_url (old system - single image)
       else if (post.proof_image_url) {
         mediaArray = [{
@@ -1453,6 +1456,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
