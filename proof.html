@@ -771,7 +771,15 @@ for (const file of selectedFiles) {
   class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 text-sm"
   rows="2"
 ></textarea>
+<!-- Emoji Quick Bar -->
+<div class="flex gap-3 mt-2 text-2xl">
+  <button onclick="addEmoji('🥭')" class="opacity-80 hover:opacity-100">🥭</button>
+  <button onclick="addEmoji('🥰')" class="opacity-80 hover:opacity-100">🥰</button>
+  <button onclick="addEmoji('🤩')" class="opacity-80 hover:opacity-100">🤩</button>
+  <button onclick="addEmoji('🔥')" class="opacity-80 hover:opacity-100">🔥</button>
+  <button onclick="addEmoji('💪')" class="opacity-80 hover:opacity-100">💪</button>
 </div>
+
           
           <button 
             class="glass-button w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2"
@@ -820,8 +828,8 @@ for (const file of selectedFiles) {
                 คะแนนที่ได้รับ
               </p>
               <p class="font-bold" style="font-size: ${baseSize * 3}px; color: ${config.primary_color || defaultConfig.primary_color};">
-                +5
-              </p>
+  +${calculatePoints()}
+</p>
               <p class="text-xs mt-2 opacity-70" style="font-size: ${baseSize * 0.75}px; color: ${config.text_color || defaultConfig.text_color};">
                 (คะแนนถูกจัดการโดย Trigger อัตโนมัติ)
               </p>
@@ -1088,10 +1096,17 @@ async function extractFrameFromVideo(file) {
     video.onerror = () => reject("Video load error");
   });
 }
+   function addEmoji(emoji) {
+  const input = document.getElementById("captionInput");
+  input.value += emoji;
+  input.focus();
+}
+
 
   </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a15ec9250bc7b50',t:'MTc2MzYyMDQ5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
