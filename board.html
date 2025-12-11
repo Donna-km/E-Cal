@@ -616,7 +616,8 @@ async function loadData() {
         proof_media (
           media_url,
           media_type,
-          media_order
+          media_order,
+          thumbnail_url
         )
       `)
       .eq('is_verified', true)
@@ -637,11 +638,15 @@ async function loadData() {
       // First, check if proof_media has data (new system - multiple files)
       if (post.proof_media && post.proof_media.length > 0) {
         mediaArray = post.proof_media
-          .sort((a, b) => a.media_order - b.media_order)
-          .map(m => ({
-            type: m.media_type || 'image',
-            url: getStorageUrl(m.media_url)
-          }));
+  .sort((a, b) => a.media_order - b.media_order)
+  .map(m => ({
+    type: m.media_type || 'image',
+    url: m.media_type === 'video'
+        ? getStorageUrl(m.thumbnail_url || m.media_url)   // ใช้ thumbnail ก่อน
+        : getStorageUrl(m.media_url),
+    fullUrl: getStorageUrl(m.media_url)  // สำหรับเปิดเล่นจริง ๆ ใน full view
+  }));
+
       } 
       // Fallback to proof_image_url (old system - single image)
       else if (post.proof_image_url) {
@@ -1349,13 +1354,12 @@ function renderGallery() {
              style="height: 300px; background: #000; overflow: hidden; border-radius: 12px;">
           
           <!-- Thumbnail video (muted + preload) -->
-          <video 
-            src="${firstMedia.url}" 
-            class="w-full h-full object-cover"
-            muted
-            playsinline
-            preload="metadata"
-          ></video>
+          <img 
+  src="${firstMedia.url}" 
+  class="w-full h-full object-cover"
+  alt="thumbnail"
+/>
+
 
           <!-- Play icon -->
           <div class="absolute top-2 right-2 bg-black/60 rounded-full p-1">
@@ -1447,6 +1451,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
