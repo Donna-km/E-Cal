@@ -705,17 +705,7 @@ for (const file of selectedFiles) {
               ${config.upload_instruction || defaultConfig.upload_instruction}
             </h2>
             
-<!-- Caption Input -->
-<div class="mt-4">
-   <textarea 
-    id="captionInput"
-    placeholder="Tap to add captions..."
-    class="w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-700"
-    rows="3"
-  ></textarea>
-</div>
-
-            
+           
             <label class="block cursor-pointer">
               <div class="border-2 border-dashed border-gray-500 rounded-xl p-8 text-center hover:border-gray-400 transition-colors">
                 <div class="text-4xl mb-2">📸</div>
@@ -772,6 +762,16 @@ for (const file of selectedFiles) {
               </div>
             ` : ''}
           </div>
+
+          <!-- Caption Input -->
+<div class="mt-4">
+   <textarea
+  id="captionInput"
+  placeholder="Tap to add captions..."
+  class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 text-sm"
+  rows="2"
+></textarea>
+</div>
           
           <button 
             class="glass-button w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2"
@@ -1092,6 +1092,7 @@ async function extractFrameFromVideo(file) {
   </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a15ec9250bc7b50',t:'MTc2MzYyMDQ5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
