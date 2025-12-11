@@ -530,59 +530,46 @@ if (!userProfile || !userProfile.tdee || !userProfile.weight || !userProfile.goa
             }
         }
 
-  function getEcalDate() {
-  const now = new Date();
-  const local = new Date(now.getTime() + 7 * 60 * 60 * 1000); // เวลาไทย
+ // Get date range based on period
+function getDateRange(period) {
+    const today = new Date(); // ใช้วันที่ปกติของเครื่อง โดยไม่คิด 04:00 ใหม่
 
-  // วันใหม่เริ่ม 04:00
-  if (local.getHours() < 4) {
-    local.setDate(local.getDate() - 1);
-  }
+    let start, end;
 
-  return local.toISOString().split("T")[0];
+    switch (period) {
+        case 'daily':
+            start = new Date(today);
+            end = new Date(today);
+            break;
+
+        case 'weekly':
+            // Start of week (Sunday = index 0)
+            const dayOfWeek = today.getDay();
+            start = new Date(today);
+            start.setDate(today.getDate() - dayOfWeek);
+            end = new Date(start);
+            end.setDate(start.getDate() + 6);
+            break;
+
+        case 'monthly':
+            start = new Date(today.getFullYear(), today.getMonth(), 1);
+            end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            break;
+    }
+
+    // Format date YYYY-MM-DD
+    const formatDate = (date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    };
+
+    return {
+        start: formatDate(start),
+        end: formatDate(end)
+    };
 }
-
-
-
-        // Get date range based on period
-        function getDateRange(period) {
-            const todayStr = getEcalDate();
-            const today = new Date(todayStr);
-
-            let start, end;
-
-            switch (period) {
-                case 'daily':
-                    start = new Date(today);
-                    end = new Date(today);
-                    break;
-                case 'weekly':
-                    // Get start of current week (Sunday = 0)
-                    const dayOfWeek = today.getDay();
-                    start = new Date(today);
-                    start.setDate(today.getDate() - dayOfWeek);
-                    end = new Date(start);
-                    end.setDate(start.getDate() + 6);
-                    break;
-                case 'monthly':
-                    start = new Date(today.getFullYear(), today.getMonth(), 1);
-                    end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                    break;
-            }
-
-            // Format dates as YYYY-MM-DD strings
-            const formatDate = (date) => {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            };
-
-            return {
-                start: formatDate(start),
-                end: formatDate(end)
-            };
-        }
 
         // Update statistics cards
         function updateStatistics(logs) {
@@ -1029,6 +1016,7 @@ function smoothGo(url) {
   
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a583a5147632731',t:'MTc2NDMxNTczOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
