@@ -782,10 +782,10 @@ function navigateToTab(pageId) {
 // Toggle save
 async function toggleSave() {
   if (currentMediaIndex === null) return;
-  
+
   const post = allPosts[currentMediaIndex];
   const saveBtn = document.getElementById('save-btn');
-  
+
   try {
     if (savedPosts.has(post.id)) {
       // Unsave
@@ -794,12 +794,12 @@ async function toggleSave() {
         .delete()
         .eq('proof_id', post.id)
         .eq('saver_line_user_id', currentUser.lineUserId);
-      
+
       if (error) throw error;
-      
+
       savedPosts.delete(post.id);
-      saveBtn.textContent = 'Save';
-      saveBtn.style.background = '#C1272D';
+      saveBtn.classList.remove('saved');
+
     } else {
       // Save
       const { error } = await supabase
@@ -808,19 +808,20 @@ async function toggleSave() {
           proof_id: post.id,
           saver_line_user_id: currentUser.lineUserId
         });
-      
+
       if (error) throw error;
-      
+
       savedPosts.add(post.id);
-      saveBtn.textContent = 'Saved';
-      saveBtn.style.background = '#000000';
+      saveBtn.classList.add('saved');
     }
-    
+
     renderSavedGrid();
+
   } catch (error) {
     console.error('Error toggling save:', error);
   }
 }
+
 
 // Toggle like
 async function toggleLike() {
@@ -1317,16 +1318,10 @@ trackEl.addEventListener('touchend', () => {
   creatorAvatar.src = post.profilePictureUrl || 'https://via.placeholder.com/40';
   document.getElementById('creator-name').textContent = post.fullName || 'ผู้ใช้งาน';
   
-  // Update save button
-  const saveBtn = document.getElementById('save-btn');
-  if (savedPosts.has(post.id)) {
-    saveBtn.textContent = 'Saved';
-    saveBtn.style.background = '#000000';
-  } else {
-    saveBtn.textContent = 'Save';
-    saveBtn.style.background = '#C1272D';
-  }
-  
+  // Update save button (icon version)
+const saveBtn = document.getElementById('save-btn');
+saveBtn.classList.toggle('saved', savedPosts.has(post.id));
+
   // Update heart icon
   const heartIcon = document.getElementById('heart-icon');
   if (likedPosts.has(post.id)) {
@@ -1472,6 +1467,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
