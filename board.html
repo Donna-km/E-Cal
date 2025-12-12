@@ -335,6 +335,14 @@
   margin-top: 10px;
 }
 
+   .save-btn.saved i {
+  color: #ef4444; /* red-500 */
+}
+
+.save-btn.saved .fab-text {
+  color: #ef4444;
+}
+
   </style>
   <style>@view-transition { navigation: auto; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
@@ -468,13 +476,14 @@
         <span id="comment-count" class="fab-text">0</span>
       </button>
 
-      <button id="save-btn" onclick="toggleSave()" class="fab-btn save-btn">
-        <svg class="w-8 h-8" fill="none" stroke="white" stroke-width="2"
-              viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-        </svg>
-      </button>
+      <button id="save-btn"
+        onclick="toggleSave()"
+        class="fab-btn save-btn flex flex-col items-center gap-1">
+
+  <i id="save-icon" class="fi fi-rr-bookmark text-white text-3xl"></i>
+  <span id="save-count" class="fab-text">0</span>
+</button>
+
     </div>
   </div>
 </div>
@@ -1463,6 +1472,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
