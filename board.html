@@ -558,6 +558,7 @@ let supabase;
 let currentUser = null;
 let allPosts = [];
 let savedPosts = new Set();
+let currentSaveCount = 0;   
 let likedPosts = new Set();
 let commentLikes = new Set();
 let currentComments = [];
@@ -824,6 +825,10 @@ async function toggleSave() {
       // ✅ outline
       icon.className = 'fi fi-rr-bookmark save-icon';
 
+      // 🔢 update save count (ลบ)
+      currentSaveCount--;
+      document.getElementById('save-count').textContent = currentSaveCount;
+
     } else {
       // Save
       const { error } = await supabase
@@ -840,6 +845,10 @@ async function toggleSave() {
 
       // ✅ solid
       icon.className = 'fi fi-sr-bookmark save-icon';
+
+      // 🔢 update save count (เพิ่ม)
+      currentSaveCount++;
+      document.getElementById('save-count').textContent = currentSaveCount;
     }
 
     renderSavedGrid();
@@ -1234,10 +1243,19 @@ function escapeHtml(text) {
 // ===============================
 // Open Media View (Full-farm + Build Slides)
 // ===============================
-function openMediaView(index) {
+async function openMediaView(index) {
   currentMediaIndex = index;
   currentSlideIndex = 0;
   const post = allPosts[index];
+
+ // Load save count
+const { count } = await supabase
+  .from('proof_saves')
+  .select('*', { count: 'exact', head: true })
+  .eq('proof_id', post.id);
+
+currentSaveCount = count || 0;
+document.getElementById('save-count').textContent = currentSaveCount;
   
   // Build slider - แสดงรูปของโพสต์นี้เท่านั้น
   const sliderTrack = document.getElementById('media-slider-track');
@@ -1494,6 +1512,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
