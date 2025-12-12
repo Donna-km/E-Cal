@@ -112,7 +112,7 @@
       color: white;
       padding: 4px 8px;
       border-radius: 12px;
-      font-size: 20px;
+      font-size: 15px;
       font-weight: bold;
       z-index: 10;
     }
@@ -333,35 +333,39 @@
 }
 
 .save-btn {
-  margin-top: 10px;
+  margin-top: 6px;              /* ขยับขึ้นนิด */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
-   .save-btn.saved i {
-  color: #ef4444; /* red-500 */
-}
-
-.save-btn.saved .fab-text {
-  color: #ef4444;
-}
-.save-btn {
-  margin-top: 10px;
-}
-
-/* default (ยังไม่ save) */
+/* icon default (ยังไม่ save) */
 .save-btn i {
+  font-size: 34px;              /* 👈 ใหญ่ขึ้น */
   color: white;
   transition: all 0.2s ease;
 }
 
 /* saved state */
 .save-btn.saved i {
-  color: #ef4444;
+  color: #ef4444;               /* แดง */
+  transform: scale(1.05);       /* เด้งนิด */
 }
 
 /* ตัวเลข count */
+.save-btn .fab-text {
+  font-size: 13px;              /* 👈 ใหญ่ขึ้น */
+  line-height: 1;
+  color: white;
+}
+
+/* count ตอน saved */
 .save-btn.saved .fab-text {
   color: #ef4444;
+  font-weight: 600;
 }
+
 
   </style>
   <style>@view-transition { navigation: auto; }</style>
@@ -1512,6 +1516,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
