@@ -496,7 +496,7 @@
         <span id="comment-count" class="fab-text">0</span>
       </button>
 
-      <button id="save-btn"
+      <button id="save-btn" 
         onclick="toggleSave()"
         class="fab-btn save-btn flex flex-col items-center gap-1">
 
@@ -558,6 +558,7 @@ let supabase;
 let currentUser = null;
 let allPosts = [];
 let savedPosts = new Set();
+let currentSaveCount = 0;   
 let likedPosts = new Set();
 let commentLikes = new Set();
 let currentComments = [];
@@ -806,10 +807,13 @@ async function toggleSave() {
   const post = allPosts[currentMediaIndex];
   const saveBtn = document.getElementById('save-btn');
   const icon = saveBtn.querySelector('i');
+  const countEl = document.getElementById('save-count'); // 👈 เพิ่ม
 
   try {
     if (savedPosts.has(post.id)) {
+      // ======================
       // Unsave
+      // ======================
       const { error } = await supabase
         .from('proof_saves')
         .delete()
@@ -821,11 +825,17 @@ async function toggleSave() {
       savedPosts.delete(post.id);
       saveBtn.classList.remove('saved');
 
-      // ✅ outline
+      // icon → outline
       icon.className = 'fi fi-rr-bookmark save-icon';
 
+      // 🔢 count -1
+      currentSaveCount = Math.max(0, currentSaveCount - 1);
+      countEl.textContent = currentSaveCount;
+
     } else {
+      // ======================
       // Save
+      // ======================
       const { error } = await supabase
         .from('proof_saves')
         .insert({
@@ -838,8 +848,12 @@ async function toggleSave() {
       savedPosts.add(post.id);
       saveBtn.classList.add('saved');
 
-      // ✅ solid
+      // icon → solid
       icon.className = 'fi fi-sr-bookmark save-icon';
+
+      // 🔢 count +1
+      currentSaveCount++;
+      countEl.textContent = currentSaveCount;
     }
 
     renderSavedGrid();
@@ -1234,50 +1248,77 @@ function escapeHtml(text) {
 // ===============================
 // Open Media View (Full-farm + Build Slides)
 // ===============================
-function openMediaView(index) {
+async function openMediaView(index) {
   currentMediaIndex = index;
   currentSlideIndex = 0;
   const post = allPosts[index];
-  
-  // Build slider - แสดงรูปของโพสต์นี้เท่านั้น
+
+  /* ===============================
+     🔢 Load save count from DB
+     =============================== */
+  const { count } = await supabase
+    .from('proof_saves')
+    .select('*', { count: 'exact', head: true })
+    .eq('proof_id', post.id);
+
+  currentSaveCount = count || 0;
+  document.getElementById('save-count').textContent = currentSaveCount;
+
+  /* ===============================
+     🔖 Sync save button state
+     =============================== */
+  const saveBtn = document.getElementById('save-btn');
+  const icon = saveBtn.querySelector('i');
+
+  if (savedPosts.has(post.id)) {
+    saveBtn.classList.add('saved');
+    icon.className = 'fi fi-sr-bookmark save-icon';
+  } else {
+    saveBtn.classList.remove('saved');
+    icon.className = 'fi fi-rr-bookmark save-icon';
+  }
+
+  /* ===============================
+     🖼️ Build slider (โค้ดเดิมของมึง)
+     =============================== */
   const sliderTrack = document.getElementById('media-slider-track');
   sliderTrack.innerHTML = '';
   sliderTrack.style.transform = 'translateX(0)';
-  
+
   post.media.forEach(media => {
     const slide = document.createElement('div');
     slide.className = 'media-slide';
 
-    // ===== Full-frame slide =====
+    // Full-frame slide
     slide.style.width = '100vw';
     slide.style.height = '100vh';
     slide.style.overflow = 'hidden';
     slide.style.position = 'relative';
     slide.style.background = 'black';
-    
-   if (media.type === 'video') {
-  slide.innerHTML = `
-    <video
-      src="${media.fullUrl}"
-      controls
-      autoplay
-      muted
-      playsinline
-      class="absolute inset-0 w-full h-full object-cover"
-    ></video>
-  `;
-} else {
-  slide.innerHTML = `
-    <img
-      src="${media.url}"
-      class="absolute inset-0 w-full h-full object-cover"
-    >
-  `;
-}
 
-    
+    if (media.type === 'video') {
+      slide.innerHTML = `
+        <video
+          src="${media.fullUrl}"
+          controls
+          autoplay
+          muted
+          playsinline
+          class="absolute inset-0 w-full h-full object-cover"
+        ></video>
+      `;
+    } else {
+      slide.innerHTML = `
+        <img
+          src="${media.url}"
+          class="absolute inset-0 w-full h-full object-cover"
+        >
+      `;
+    }
+
     sliderTrack.appendChild(slide);
   });
+}
 
  // 🔥 Floating overlay data
 document.getElementById("floating-avatar").src =
@@ -1494,6 +1535,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
