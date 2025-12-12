@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>E-Cal Gallery</title>
   <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.4.0/uicons-solid-rounded/css/uicons-solid-rounded.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -339,6 +340,25 @@
   color: #ef4444; /* red-500 */
 }
 
+.save-btn.saved .fab-text {
+  color: #ef4444;
+}
+.save-btn {
+  margin-top: 10px;
+}
+
+/* default (ยังไม่ save) */
+.save-btn i {
+  color: white;
+  transition: all 0.2s ease;
+}
+
+/* saved state */
+.save-btn.saved i {
+  color: #ef4444;
+}
+
+/* ตัวเลข count */
 .save-btn.saved .fab-text {
   color: #ef4444;
 }
@@ -785,6 +805,7 @@ async function toggleSave() {
 
   const post = allPosts[currentMediaIndex];
   const saveBtn = document.getElementById('save-btn');
+  const icon = saveBtn.querySelector('i');
 
   try {
     if (savedPosts.has(post.id)) {
@@ -800,6 +821,9 @@ async function toggleSave() {
       savedPosts.delete(post.id);
       saveBtn.classList.remove('saved');
 
+      // ✅ outline
+      icon.className = 'fi fi-rr-bookmark save-icon';
+
     } else {
       // Save
       const { error } = await supabase
@@ -813,6 +837,9 @@ async function toggleSave() {
 
       savedPosts.add(post.id);
       saveBtn.classList.add('saved');
+
+      // ✅ solid
+      icon.className = 'fi fi-sr-bookmark save-icon';
     }
 
     renderSavedGrid();
@@ -1467,6 +1494,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
