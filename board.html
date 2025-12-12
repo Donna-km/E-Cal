@@ -391,7 +391,24 @@
    </div>
 <!-- PAGE 4: Full Media View -->
    <div id="media-view-page" class="page">
-    <div class="fade-in" style="height: 100%; overflow-y: auto;">
+
+      <!-- 🔥 Floating Profile Overlay (ตำแหน่งที่ถูกต้อง) -->
+    <div id="floating-overlay"
+         class="fixed bottom-6 left-4 z-[9999] flex items-center gap-3 pointer-events-none">
+
+      <img id="floating-avatar"
+           class="w-10 h-10 rounded-full border border-white/40 shadow-lg" />
+
+      <div class="flex flex-col">
+        <span id="floating-name"
+              class="text-white font-semibold text-base drop-shadow"></span>
+
+        <span id="floating-caption"
+              class="text-gray-300 text-xs drop-shadow max-w-[250px]"></span>
+      </div>
+    </div>
+
+   <div class="fade-in" style="height: 100%; overflow-y: auto;">
 
      <!-- Floating Top Bar -->
 <div class="absolute top-4 left-0 right-0 z-30 flex items-center justify-between px-4 pointer-events-none">
@@ -412,22 +429,7 @@
     <div class="w-6 h-6"></div>
 </div>
      
-    <!-- 🔥 Floating Profile Overlay (เฉพาะ Full Media View) -->
-<div id="floating-overlay"
-     class="fixed bottom-6 left-4 z-[9999] flex items-center gap-3 pointer-events-none">
-
-  <img id="floating-avatar"
-       class="w-10 h-10 rounded-full border border-white/40 shadow-lg" />
-
-  <div class="flex flex-col">
-    <span id="floating-name"
-          class="text-white font-semibold text-base drop-shadow"></span>
-
-    <span id="floating-caption"
-          class="text-gray-300 text-xs drop-shadow max-w-[250px]"></span>
-  </div>
-</div>
-
+    
      <!-- Media Slider Container -->
      <div class="p-0 m-0">
       <div class="media-slider">
@@ -1484,6 +1486,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
