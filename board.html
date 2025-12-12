@@ -416,20 +416,17 @@
       <div class="media-slider relative z-10">
         <div id="media-slider-track" class="media-slider-track">
         </div>
-       <button id="slider-prev" class="slider-nav-btn prev hidden" onclick="previousSlide()">
-  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-  </svg>
-</button>
+       
+      <!-- Slide Count -->
+<div id="slide-counter"
+     class="absolute top-4 left-4 z-40 bg-black/40 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm pointer-events-none"
+     style="font-weight: 500;">
+</div>
 
-<button id="slider-next" class="slider-nav-btn next hidden" onclick="nextSlide()">
-  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-  </svg>
-</button>
- </div>
-          <div id="slider-dots" class="slider-dots"></div>
-    </div>
+</div> <!-- end .media-slider -->
+
+<div id="slider-dots" class="slider-dots"></div>
+</div> <!-- end outer container -->
 
 
     <!-- ⭐ Floating Profile Overlay (ถูกต้องที่สุด) -->
@@ -931,44 +928,39 @@ function showReplyInput(commentId) {
 // Slider functions
 function goToSlide(index) {
   if (currentMediaIndex === null) return;
+
   const post = allPosts[currentMediaIndex];
   const totalSlides = post.media.length;
-  
+
   currentSlideIndex = Math.max(0, Math.min(index, totalSlides - 1));
-  
+
   const track = document.getElementById('media-slider-track');
   track.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
-  
+
+  // ⭐ Update slide counter (1 / total)
+  const slideCounter = document.getElementById("slide-counter");
+  if (slideCounter && totalSlides > 1) {
+    slideCounter.textContent = `${currentSlideIndex + 1} / ${totalSlides}`;
+  } else if (slideCounter) {
+    slideCounter.textContent = "";
+  }
+
+  // ⭐ Update dots
   updateSliderControls();
-}
-
-function previousSlide() {
-  goToSlide(currentSlideIndex - 1);
-}
-
-function nextSlide() {
-  goToSlide(currentSlideIndex + 1);
 }
 
 function updateSliderControls() {
   if (currentMediaIndex === null) return;
+
   const post = allPosts[currentMediaIndex];
   const totalSlides = post.media.length;
-  
-  const prevBtn = document.getElementById('slider-prev');
-  const nextBtn = document.getElementById('slider-next');
-  
-  if (totalSlides > 1) {
-    prevBtn.style.display = currentSlideIndex > 0 ? 'flex' : 'none';
-    nextBtn.style.display = currentSlideIndex < totalSlides - 1 ? 'flex' : 'none';
-  } else {
-    prevBtn.style.display = 'none';
-    nextBtn.style.display = 'none';
-  }
-  
+
+  // ⭐ ไม่ต้องสนใจ prev/next อีกแล้ว (ลบออกไปแล้ว)
+  //   -> ไม่ต้อง query ไม่ต้อง style ไม่ต้อง display
+
   const dotsContainer = document.getElementById('slider-dots');
   dotsContainer.innerHTML = '';
-  
+
   if (totalSlides > 1) {
     for (let i = 0; i < totalSlides; i++) {
       const dot = document.createElement('div');
@@ -978,6 +970,7 @@ function updateSliderControls() {
     }
   }
 }
+
 
 // Load comments for current post
 async function loadComments() {
@@ -1490,6 +1483,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
