@@ -390,11 +390,57 @@
     </div>
    </div>
 <!-- PAGE 4: Full Media View -->
-   <div id="media-view-page" class="page">
+<div id="media-view-page" class="page">
 
-      <!-- 🔥 Floating Profile Overlay (ตำแหน่งที่ถูกต้อง) -->
+  <div class="fade-in" style="height: 100%; overflow-y: auto;">
+
+    <!-- Floating Top Bar -->
+    <div class="absolute top-4 left-0 right-0 z-30 flex items-center justify-between px-4 pointer-events-none">
+
+      <!-- Back Button -->
+      <button onclick="navigateTo('gallery-page')" 
+              class="pointer-events-auto p-2 bg-black/40 rounded-full backdrop-blur-sm">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M15 19l-7-7 7-7"/>
+          </svg>
+      </button>
+
+      <!-- (Optional) Title -->
+      <h2 id="media-title" class="text-white font-semibold pointer-events-none"></h2>
+
+      <div class="w-6 h-6"></div>
+    </div>
+
+    <!-- Media Slider Container -->
+    <div class="p-0 m-0">
+      <div class="media-slider">
+        <div id="media-slider-track" class="media-slider-track">
+        </div>
+
+        <!-- Navigation Buttons -->
+        <button id="slider-prev" class="slider-nav-btn prev" onclick="previousSlide()">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+
+        <button id="slider-next" class="slider-nav-btn next" onclick="nextSlide()">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+
+      </div>
+
+      <!-- Slider Dots -->
+      <div id="slider-dots" class="slider-dots"></div>
+    </div>
+
+
+    <!-- 🔥 Floating Profile Overlay (ตำแหน่งที่ถูกต้องที่สุด) -->
     <div id="floating-overlay"
-         class="fixed bottom-6 left-4 z-[9999] flex items-center gap-3 pointer-events-none">
+         class="absolute bottom-6 left-4 z-[50] flex items-center gap-3 pointer-events-none">
 
       <img id="floating-avatar"
            class="w-10 h-10 rounded-full border border-white/40 shadow-lg" />
@@ -408,75 +454,43 @@
       </div>
     </div>
 
-   <div class="fade-in" style="height: 100%; overflow-y: auto;">
 
-     <!-- Floating Top Bar -->
-<div class="absolute top-4 left-0 right-0 z-30 flex items-center justify-between px-4 pointer-events-none">
+    <!-- Floating Action Buttons (Right Side) -->
+    <div class="floating-actions">
 
-    <!-- Back Button -->
-    <button onclick="navigateTo('gallery-page')" 
-            class="pointer-events-auto p-2 bg-black/40 rounded-full backdrop-blur-sm">
-        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                  d="M15 19l-7-7 7-7"/>
+      <!-- ❤️ Like -->
+      <button id="like-btn" onclick="toggleLike()" class="fab-btn">
+        <svg id="heart-icon" class="w-8 h-8 heart-icon" fill="none" stroke="white" stroke-width="2" 
+              viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
         </svg>
-    </button>
+        <span id="like-count" class="fab-text">0</span>
+      </button>
 
-    <!-- (Optional) Title — ถ้าจะเอาไว้ -->
-    <h2 id="media-title" class="text-white font-semibold pointer-events-none"></h2>
+      <!-- 💬 Comment -->
+      <button onclick="navigateTo('comments-page')" class="fab-btn">
+        <svg class="w-8 h-8" fill="none" stroke="white" stroke-width="2"
+              viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+        <span id="comment-count" class="fab-text">0</span>
+      </button>
 
-    <!-- Menu Placeholder (ไม่มีก็เอาออกได้) -->
-    <div class="w-6 h-6"></div>
-</div>
-     
-    
-     <!-- Media Slider Container -->
-     <div class="p-0 m-0">
-      <div class="media-slider">
-       <div id="media-slider-track" class="media-slider-track"><!-- Slides will be inserted here -->
-       </div><!-- Navigation Buttons --> <button id="slider-prev" class="slider-nav-btn prev" onclick="previousSlide()" style="display: none;">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-        </svg></button> <button id="slider-next" class="slider-nav-btn next" onclick="nextSlide()" style="display: none;">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-        </svg></button>
-      </div><!-- Slider Dots -->
-      <div id="slider-dots" class="slider-dots"><!-- Dots will be inserted here -->
-      </div>
-     </div>
-     
-     <!-- Floating Action Buttons (Right Side) -->
-<div class="floating-actions">
-  
-  <!-- ❤️ Like -->
-  <button id="like-btn" onclick="toggleLike()" class="fab-btn">
-    <svg id="heart-icon" class="w-8 h-8 heart-icon" fill="none" stroke="white" stroke-width="2" 
-         viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round"
-        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-    </svg>
-    <span id="like-count" class="fab-text">0</span>
-  </button>
+      <!-- 💾 Save -->
+      <button id="save-btn" onclick="toggleSave()" class="fab-btn save-btn">
+        <svg class="w-8 h-8" fill="none" stroke="white" stroke-width="2"
+              viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+        </svg>
+      </button>
 
-  <!-- 💬 Comment -->
-  <button onclick="navigateTo('comments-page')" class="fab-btn">
-    <svg class="w-8 h-8" fill="none" stroke="white" stroke-width="2"
-         viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round"
-        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-    </svg>
-    <span id="comment-count" class="fab-text">0</span>
-  </button>
+    </div> <!-- end floating-actions -->
+  </div> <!-- end fade-in -->
+</div> <!-- end media-view-page -->
 
-  <!-- 💾 Save -->
-  <button id="save-btn" onclick="toggleSave()" class="fab-btn save-btn">
-    <svg class="w-8 h-8" fill="none" stroke="white" stroke-width="2"
-         viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round"
-        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-    </svg>
-  </button>
-
-</div>
 
      
      <!-- Post details -->
@@ -1486,6 +1500,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
