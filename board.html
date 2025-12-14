@@ -1253,133 +1253,96 @@ async function openMediaView(index) {
   currentSlideIndex = 0;
   const post = allPosts[index];
 
- // Load save count
-const { count } = await supabase
-  .from('proof_saves')
-  .select('*', { count: 'exact', head: true })
-  .eq('proof_id', post.id);
+  // Load save count
+  const { count } = await supabase
+    .from('proof_saves')
+    .select('*', { count: 'exact', head: true })
+    .eq('proof_id', post.id);
 
-currentSaveCount = count || 0;
-document.getElementById('save-count').textContent = currentSaveCount;
-  
+  currentSaveCount = count || 0;
+  document.getElementById('save-count').textContent = currentSaveCount;
+
   // Build slider - แสดงรูปของโพสต์นี้เท่านั้น
   const sliderTrack = document.getElementById('media-slider-track');
   sliderTrack.innerHTML = '';
   sliderTrack.style.transform = 'translateX(0)';
-  
+
   post.media.forEach(media => {
     const slide = document.createElement('div');
     slide.className = 'media-slide';
 
-    // ===== Full-frame slide =====
     slide.style.width = '100vw';
     slide.style.height = '100vh';
     slide.style.overflow = 'hidden';
     slide.style.position = 'relative';
     slide.style.background = 'black';
-    
-   if (media.type === 'video') {
-  slide.innerHTML = `
-    <video
-      src="${media.fullUrl}"
-      controls
-      autoplay
-      muted
-      playsinline
-      class="absolute inset-0 w-full h-full object-cover"
-    ></video>
-  `;
-} else {
-  slide.innerHTML = `
-    <img
-      src="${media.url}"
-      class="absolute inset-0 w-full h-full object-cover"
-    >
-  `;
-}
 
-    
+    if (media.type === 'video') {
+      slide.innerHTML = `
+        <video
+          src="${media.fullUrl}"
+          controls
+          autoplay
+          muted
+          playsinline
+          class="absolute inset-0 w-full h-full object-cover"
+        ></video>
+      `;
+    } else {
+      slide.innerHTML = `
+        <img
+          src="${media.url}"
+          class="absolute inset-0 w-full h-full object-cover"
+        >
+      `;
+    }
+
     sliderTrack.appendChild(slide);
   });
 
- // 🔥 Floating overlay data
-document.getElementById("floating-avatar").src =
-  post.profilePictureUrl || "https://via.placeholder.com/40";
+  // Floating overlay data
+  document.getElementById("floating-avatar").src =
+    post.profilePictureUrl || "https://via.placeholder.com/40";
 
-document.getElementById("floating-name").textContent =
-  post.fullName || "ผู้ใช้งาน";
+  document.getElementById("floating-name").textContent =
+    post.fullName || "ผู้ใช้งาน";
 
-document.getElementById("floating-caption").textContent =
-  post.caption || "";
-
-
-// ===============================
-// Swipe Gesture (Touch Events)
-// ===============================
-let startX = 0;
-let swipeHandled = false; // 🔑 กันการเลื่อนซ้ำใน gesture เดียว
-
-const trackEl = document.getElementById('media-slider-track');
-
-trackEl.addEventListener('touchstart', (e) => {
-  startX = e.touches[0].clientX;
-  swipeHandled = false; // reset ทุกครั้งที่เริ่มแตะ
-});
-
-trackEl.addEventListener('touchmove', (e) => {
-  if (swipeHandled) return;
-
-  const currentX = e.touches[0].clientX;
-  const diff = currentX - startX;
-
-  const threshold = Math.min(window.innerWidth * 0.15, 120);
-
-  // ปัดซ้าย = next
-  if (diff < -threshold) {
-    goToSlide(currentSlideIndex + 1); // ⭐ ใช้ goToSlide
-    swipeHandled = true;
-  }
-
-  // ปัดขวา = prev
-  if (diff > threshold) {
-    goToSlide(currentSlideIndex - 1); // ⭐ ใช้ goToSlide
-    swipeHandled = true;
-  }
-});
-
-trackEl.addEventListener('touchend', () => {
-  swipeHandled = false;
-});
-
+  document.getElementById("floating-caption").textContent =
+    post.caption || "";
 
   // Update post details
- document.getElementById('media-title').textContent = `${post.challengeName} - Day ${post.dayNumber}`;
- document.getElementById('post-description').textContent = post.fullName || 'ผู้ใช้งาน';
-  
+  document.getElementById('media-title').textContent =
+    `${post.challengeName} - Day ${post.dayNumber}`;
+
+  document.getElementById('post-description').textContent =
+    post.fullName || 'ผู้ใช้งาน';
+
   const proofDate = new Date(post.proofDate);
-  document.getElementById('post-date').textContent = proofDate.toLocaleDateString('th-TH', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  
+  document.getElementById('post-date').textContent =
+    proofDate.toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
   // Set creator info
   const creatorAvatar = document.getElementById('creator-avatar');
-  creatorAvatar.src = post.profilePictureUrl || 'https://via.placeholder.com/40';
-  document.getElementById('creator-name').textContent = post.fullName || 'ผู้ใช้งาน';
-  
+  creatorAvatar.src =
+    post.profilePictureUrl || 'https://via.placeholder.com/40';
+
+  document.getElementById('creator-name').textContent =
+    post.fullName || 'ผู้ใช้งาน';
+
   // Update save button (icon version)
-const saveBtn = document.getElementById('save-btn');
-saveBtn.classList.toggle('saved', savedPosts.has(post.id));
+  const saveBtn = document.getElementById('save-btn');
+  saveBtn.classList.toggle('saved', savedPosts.has(post.id));
 
-const saveIcon = saveBtn.querySelector('i');
-
-if (savedPosts.has(post.id)) {
-  saveIcon.className = 'fi fi-sr-bookmark save-icon';
-} else {
-  saveIcon.className = 'fi fi-rr-bookmark save-icon';
-}
-
+  const saveIcon = saveBtn.querySelector('i');
+  if (savedPosts.has(post.id)) {
+    saveIcon.className = 'fi fi-sr-bookmark save-icon';
+  } else {
+    saveIcon.className = 'fi fi-rr-bookmark save-icon';
+  }
 
   // Update heart icon
   const heartIcon = document.getElementById('heart-icon');
@@ -1388,13 +1351,14 @@ if (savedPosts.has(post.id)) {
   } else {
     heartIcon.classList.remove('liked');
   }
-  
+
   updateSliderControls();
   loadComments();
   updateLikeCount(post.id);
-  goToSlide(0);   // ⭐⭐ เพิ่มบรรทัดนี้ ⭐⭐
+  goToSlide(0);
   navigateTo('media-view-page');
 }
+
 
 // Render gallery
 function renderGallery() {
@@ -1522,11 +1486,48 @@ function renderSavedGrid() {
   });
 }
 
+   // ===============================
+// Swipe Gesture (Bind once)
+// ===============================
+let startX = 0;
+let swipeHandled = false;
+
+const trackEl = document.getElementById('media-slider-track');
+
+if (trackEl) {
+  trackEl.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    swipeHandled = false;
+  }, { passive: true });
+
+  trackEl.addEventListener('touchmove', (e) => {
+    if (swipeHandled) return;
+
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - startX;
+    const threshold = Math.min(window.innerWidth * 0.15, 120);
+
+    if (diff < -threshold) {
+      goToSlide(currentSlideIndex + 1);
+      swipeHandled = true;
+    } else if (diff > threshold) {
+      goToSlide(currentSlideIndex - 1);
+      swipeHandled = true;
+    }
+  }, { passive: true });
+
+  trackEl.addEventListener('touchend', () => {
+    swipeHandled = false;
+  });
+}
+
+
 // Initialize app
 initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
