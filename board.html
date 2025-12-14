@@ -450,6 +450,15 @@
         <div id="media-slider-track" class="media-slider-track">
         </div>
        
+<!-- 🔊 Tap to unmute overlay -->
+  <div id="sound-hint"
+       class="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
+    <div class="bg-black/60 text-white px-4 py-2 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm">
+      🔊 แตะเพื่อเปิดเสียง
+    </div>
+  </div>
+       
+       
       <!-- Slide Count -->
 <div id="slide-counter"
   class="absolute top-6 right-4 z-40 bg-black/40 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm pointer-events-none"
@@ -1253,6 +1262,12 @@ async function openMediaView(index) {
   currentSlideIndex = 0;
   const post = allPosts[index];
 
+   // reset sound hint on new post
+  const hint = document.getElementById('sound-hint');
+  if (hint) hint.style.display = 'flex';
+  soundUnlocked = false;
+
+
   // Load save count
   const { count } = await supabase
     .from('proof_saves')
@@ -1503,13 +1518,19 @@ document.addEventListener('click', () => {
   if (soundUnlocked) return;
 
   const activeVideo = document.querySelector('#media-slider-track video');
-  if (activeVideo) {
-    activeVideo.muted = false;
-    activeVideo.volume = 1;
-    soundUnlocked = true;
-  }
+  if (!activeVideo) return;
+
+  activeVideo.muted = false;
+  activeVideo.volume = 1;
+  soundUnlocked = true;
+
+  // 🔊 ซ่อน overlay
+  const hint = document.getElementById('sound-hint');
+  if (hint) hint.style.display = 'none';
 });
 
+
+   
 
    // ===============================
 // Swipe Gesture (Bind once)
@@ -1552,6 +1573,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
