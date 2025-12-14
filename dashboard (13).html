@@ -1,0 +1,1031 @@
+<!doctype html>
+<html lang="th">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Tracking Dashboard</title>
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        
+        .glass-header {
+            background: #000000;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-red {
+            background: #C1272D;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-red:hover {
+            background: #a01f24;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(193, 39, 45, 0.4);
+        }
+        
+        .delete-btn {
+            background: rgba(220, 38, 38, 0.8);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .delete-btn:hover {
+            background: rgba(185, 28, 28, 0.9);
+            transform: scale(1.05);
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #C1272D;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stat-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+  <style>
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.25s ease-in-out;
+}
+</style>
+
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="min-h-screen" style="background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);"><!-- Header -->
+  <header class="glass-header text-white p-4 sticky top-0 z-50">
+   <div class="max-w-6xl mx-auto flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+     <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center"><span class="text-lg">🍽️</span>
+     </div>
+     <h1 class="text-xl font-semibold">Food Dashboard</h1>
+    </div>
+    <div class="flex items-center space-x-2">
+     <div class="w-9 h-9 bg-white bg-opacity-20 rounded-full overflow-hidden flex items-center justify-center border border-white/20">
+    <img id="userProfilePic" class="w-full h-full object-cover hidden" alt="Profile" />
+    <span class="text-sm text-white" id="userInitial"></span>
+</div>
+<span class="text-sm" id="userName">Loading...</span>
+    </div>
+   </div>
+  </header><!-- Loading Screen -->
+  <div id="loadingScreen" class="fixed inset-0 flex items-center justify-center z-40" style="background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);">
+   <div class="text-center">
+    <div class="loading-spinner mx-auto mb-4"></div>
+    <p class="text-white font-medium">กำลังโหลดข้อมูล...</p>
+   </div>
+  </div><!-- Error Screen -->
+  <div id="errorScreen" class="hidden fixed inset-0 flex items-center justify-center z-40" style="background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);">
+   <div class="text-center p-6 glass-effect rounded-xl max-w-md">
+    <div class="text-6xl mb-4">
+     ⚠️
+    </div>
+    <h2 class="text-xl font-semibold text-white mb-2">เกิดข้อผิดพลาด</h2>
+    <p class="text-gray-300 mb-4" id="errorMessage">ไม่สามารถโหลดข้อมูลได้</p><button onclick="location.reload()" class="btn-red text-white px-6 py-2 rounded-lg transition-all"> ลองใหม่ </button>
+   </div>
+  </div>
+  
+<!-- Main Content -->
+<main id="mainContent" class="hidden max-w-6xl mx-auto p-4 pb-20">
+  <!-- Time Period Selector -->
+  <div class="mb-6">
+    <div class="glass-effect rounded-xl p-4">
+      <div class="flex flex-wrap gap-2">
+
+        <!-- ปุ่มรายวัน (สีแดงเหมือนเดิม) -->
+        <button 
+          class="period-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 
+                 btn-red text-white shadow-lg flex items-center gap-2"
+          data-period="daily">
+            <i class="fi fi-rr-calendar-lines-pen"></i> รายวัน
+        </button>
+
+        <!-- ปุ่ม Dashboard (แก้ onclick + fade transition) -->
+        <a 
+          onclick="smoothGo('https://liff.line.me/2007859046-WDvlrevQ')" 
+          class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 
+                 text-white shadow-lg flex items-center gap-2
+                 border border-[#C1272D] bg-black hover:bg-black/70 cursor-pointer">
+
+          <i class="fi fi-rr-chart-line-up text-white"></i>
+          <span>Dashboard</span>
+        </a>
+
+      </div>
+    </div>
+  </div>
+
+   </div><!-- Daily Donut Chart -->
+   <div class="mb-6">
+    <div class="glass-effect rounded-xl p-6">
+     <h3 class="text-lg font-bold text-white mb-4">แคลอรี่วันนี้</h3>
+     <div class="relative" style="height: 250px;">
+      <canvas id="dailyDonutChart"></canvas>
+      <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+       <div class="text-sm text-gray-300" id="donutLabel">
+        Remaining
+       </div>
+       <div class="text-4xl font-bold text-white" id="remainingCalories">
+        0
+       </div>
+       <div class="text-xs text-gray-400">
+        kcal
+       </div>
+      </div>
+     </div>
+    </div>
+   </div><!-- Warnings Box for All Periods -->
+   <div id="warningsBox" class="hidden mb-6">
+    <div class="glass-effect rounded-xl p-5 border border-yellow-500/30">
+     <div class="flex items-start space-x-3">
+      <div class="text-3xl" id="warningIcon">
+      
+      </div>
+      <div class="flex-1">
+       <h4 class="font-bold text-red-300 mb-2 text-lg" id="warningTitle">คำเตือนประจำวัน</h4>
+       <div class="text-sm text-gray-200" id="warningContent"><!-- Warning messages will be inserted here -->
+       </div>
+      </div>
+     </div>
+    </div>
+   </div><!-- Stats Cards -->
+   <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="glass-effect rounded-xl p-4 stat-card">
+     <div class="flex items-center justify-between mb-2"><span class="text-2xl">🔥</span> <span class="text-xs text-gray-400">แคลอรี่</span>
+     </div>
+     <div class="text-2xl font-bold text-white" id="totalCalories">
+      0
+     </div>
+     <div class="text-sm text-gray-300">
+      จาก <span id="tdeeValue">0</span> kcal
+     </div>
+     <div class="w-full bg-gray-700/50 rounded-full h-2 mt-2">
+      <div class="h-2 rounded-full transition-all duration-300" id="calorieProgress" style="width: 0%; background: linear-gradient(90deg, #ff6b6b 0%, #ff8e53 100%);"></div>
+     </div>
+    </div>
+    <div class="glass-effect rounded-xl p-4 stat-card">
+     <div class="flex items-center justify-between mb-2"><span class="text-2xl">🍖</span> <span class="text-xs text-gray-400">โปรตีน</span>
+     </div>
+     <div class="text-2xl font-bold text-white" id="totalProtein">
+      0g
+     </div>
+     <div class="text-sm text-gray-300">
+      เป้าหมาย <span id="proteinGoal">0g</span>
+     </div>
+     <div class="w-full bg-gray-700/50 rounded-full h-2 mt-2">
+      <div class="h-2 rounded-full transition-all duration-300" id="proteinProgress" style="width: 0%; background: linear-gradient(90deg, #f87171 0%, #fb923c 100%);"></div>
+     </div>
+    </div>
+    <div class="glass-effect rounded-xl p-4 stat-card">
+     <div class="flex items-center justify-between mb-2"><span class="text-2xl">🍞</span> <span class="text-xs text-gray-400">คาร์บ</span>
+     </div>
+     <div class="text-2xl font-bold text-white" id="totalCarbs">
+      0g
+     </div>
+     <div class="text-sm text-gray-300">
+      เป้าหมาย <span id="carbsGoal">0g</span>
+     </div>
+     <div class="w-full bg-gray-700/50 rounded-full h-2 mt-2">
+      <div class="h-2 rounded-full transition-all duration-300" id="carbsProgress" style="width: 0%; background: linear-gradient(90deg, #60a5fa 0%, #3b82f6 100%);"></div>
+     </div>
+    </div>
+    <div class="glass-effect rounded-xl p-4 stat-card">
+     <div class="flex items-center justify-between mb-2"><span class="text-2xl">🥑</span> <span class="text-xs text-gray-400">ไฟต์</span>
+     </div>
+     <div class="text-2xl font-bold text-white" id="totalFat">
+      0g
+     </div>
+     <div class="text-sm text-gray-300">
+      เป้าหมาย <span id="fatGoal">0g</span>
+     </div>
+     <div class="w-full bg-gray-700/50 rounded-full h-2 mt-2">
+      <div class="h-2 rounded-full transition-all duration-300" id="fatProgress" style="width: 0%; background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%);"></div>
+     </div>
+    </div>
+   </div><!-- Recent Food Logs -->
+   <div class="glass-effect rounded-xl p-6">
+    <h3 class="text-lg font-semibold text-white mb-4">📝 บันทึกอาหารล่าสุด</h3>
+    <div id="foodLogsList" class="space-y-3">
+     <div class="text-center text-gray-400 py-8">
+      <div class="text-4xl mb-2">
+       🍽️
+      </div>
+      <p>ไม่มีข้อมูลบันทึกอาหาร</p>
+     </div>
+    </div>
+   </div>
+  </main>
+  <script>
+        // Configuration
+        const LIFF_ID = "2007859046-7NZV6xZG"; // Replace with your actual LIFF ID
+        const SUPABASE_URL = "https://lvtdqeerzxpznnayccmb.supabase.co"; // Replace with your Supabase URL
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM"; // Replace with your Supabase anon key
+
+        // Initialize Supabase
+        let supabase = null;
+        if (SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY") {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+
+        // Global variables
+        let currentUserId = null;
+        let currentPeriod = 'daily';
+        let userProfile = null;
+        let allFoodLogs = []; // Store all logs for filtering
+
+        // Initialize the application
+        async function initApp() {
+            try {
+                // Check if we have real credentials or use demo mode
+                if (LIFF_ID === "YOUR_LIFF_ID" || SUPABASE_URL === "YOUR_SUPABASE_URL") {
+                    console.log('Using demo mode - credentials not configured');
+                    await initDemoMode();
+                    return;
+                }
+
+                // Initialize LIFF
+                await liff.init({ liffId: LIFF_ID });
+
+                // Check if user is logged in
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+
+                // Get user profile from LINE
+                const profile = await liff.getProfile();
+                currentUserId = profile.userId;
+                
+                // Update UI with user info
+                document.getElementById("userName").textContent = profile.displayName;
+
+if (profile.pictureUrl) {
+    const img = document.getElementById("userProfilePic");
+    img.src = profile.pictureUrl;
+    img.classList.remove("hidden");
+
+    document.getElementById("userInitial").classList.add("hidden");
+} else {
+    document.getElementById("userInitial").textContent = profile.displayName.charAt(0);
+}
+
+
+                // Load user data
+                await loadUserData();
+                await loadFoodLogs();
+
+                // Hide loading screen and show main content
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                // If real credentials fail, try demo mode
+                console.log('Real connection failed, switching to demo mode');
+                await initDemoMode();
+            }
+        }
+
+        // Initialize demo mode with sample data
+        async function initDemoMode() {
+            // Simulate loading delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Set demo user info
+            document.getElementById('userName').textContent = 'Demo User';
+            document.getElementById('userInitial').textContent = 'D';
+            
+            // Set demo user profile
+            userProfile = {
+                tdee: 2200,
+                weight: 65,
+                goal_calories: 2200
+            };
+
+            // Calculate nutrition goals based on body weight and TDEE
+            const calories = userProfile.goal_calories || userProfile.tdee;
+            const weight = userProfile.weight || 65;
+            
+            // Protein: 1.5-2 times body weight (using 1.75 as average)
+            userProfile.protein_goal = Math.round(weight * 1.75);
+            
+            // Carbs: 3-4 times body weight (using 3.5 as average)
+            userProfile.carbs_goal = Math.round(weight * 3.5);
+            
+            // Fat: 25% of total calories
+            userProfile.fat_goal = Math.round((calories * 0.25) / 9);
+
+            // Update UI with demo profile data
+            document.getElementById('tdeeValue').textContent = userProfile.tdee;
+            document.getElementById('proteinGoal').textContent = userProfile.protein_goal + 'g';
+            document.getElementById('carbsGoal').textContent = userProfile.carbs_goal + 'g';
+            document.getElementById('fatGoal').textContent = userProfile.fat_goal + 'g';
+
+            // Generate demo food logs and store globally
+            allFoodLogs = generateDemoLogs();
+            
+            // Filter and display data for current period
+            const dateRange = getDateRange(currentPeriod);
+            const filteredLogs = allFoodLogs.filter(log => {
+                const logDate = log.date;
+                return logDate >= dateRange.start && logDate <= dateRange.end;
+            });
+            
+            // Update statistics with filtered demo data
+            updateStatistics(filteredLogs);
+            updateFoodLogsList(filteredLogs);
+
+            // Hide loading screen and show main content
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+        }
+
+        // Generate demo food logs
+        function generateDemoLogs() {
+            const foods = [
+                { name: 'ข้าวผัดกุ้ง', calories: 450, protein: 25, carbs: 65, fat: 12 },
+                { name: 'ส้มตำ', calories: 120, protein: 3, carbs: 25, fat: 2 },
+                { name: 'ไก่ย่าง', calories: 280, protein: 35, carbs: 0, fat: 14 },
+                { name: 'แกงเขียวหวาน', calories: 320, protein: 20, carbs: 15, fat: 22 },
+                { name: 'ผลไม้รวม', calories: 80, protein: 1, carbs: 20, fat: 0 },
+                { name: 'ข้าวเหนียว  ะม่  ง', calories: 350, protein: 4, carbs: 75, fat: 8 },
+                { name: 'ต้มยำกุ้ง', calories: 200, protein: 15, carbs: 12, fat: 10 },
+                { name: 'ลาบหมู', calories: 180, protein: 22, carbs: 8, fat: 7 }
+            ];
+
+            const logs = [];
+            const today = new Date();
+
+            // Generate logs for the past 30 days
+            for (let i = 0; i < 30; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() - i);
+                
+                // 2-4 meals per day
+                const mealsPerDay = Math.floor(Math.random() * 3) + 2;
+                
+                for (let j = 0; j < mealsPerDay; j++) {
+                    const food = foods[Math.floor(Math.random() * foods.length)];
+                    const portion = 0.7 + Math.random() * 0.6; // 0.7 to 1.3 portion
+                    
+                    logs.push({
+                        food_name: food.name,
+                        date: date.toISOString().split('T')[0],
+                        calories: Math.round(food.calories * portion),
+                        protein_g: Math.round(food.protein * portion),
+                        carbs_g: Math.round(food.carbs * portion),
+                        fat_g: Math.round(food.fat * portion),
+                        created_at: date.toISOString()
+                    });
+                }
+            }
+
+            return logs.sort((a, b) => new Date(b.date) - new Date(a.date));
+        }
+
+        // Load user profile data from Supabase
+        async function loadUserData() {
+            try {
+                const { data: profile, error: profileError } = await supabase
+                    .from("tdee_form")
+                    .select("tdee, weight, goal_calories")
+                    .eq("line_user_id", currentUserId)
+                    .single();
+
+                if (profileError) {
+                    console.error('Profile error:', profileError);
+                    // Set default values if no profile found
+                    userProfile = {
+                        tdee: 2000,
+                        weight: 70,
+                        goal_calories: 2000
+                    };
+                } else {
+                    userProfile = profile;
+                 }
+                // ❗ ถ้าข้อมูล TDEE หรือข้อมูลร่างกายยังไม่ครบ → หยุดและแจ้งเตือน
+if (!userProfile || !userProfile.tdee || !userProfile.weight || !userProfile.goal_calories) {
+    alert("ก่อนดู Dashboard ต้องกรอกข้อมูลร่างกายก่อนนะคะ ❤️");
+    window.location.href = "https://liff.line.me/2007859046-AM0LQo0g"; 
+    return;
+}
+
+                // Calculate nutrition goals based on body weight and TDEE
+                const calories = userProfile.goal_calories || userProfile.tdee;
+                const weight = userProfile.weight || 70;
+                
+                // Protein: 1.5-2 times body weight (using 1.75 as average)
+                userProfile.protein_goal = Math.round(weight * 1.75);
+                
+                // Carbs: 3-4 times body weight (using 3.5 as average)
+                userProfile.carbs_goal = Math.round(weight * 3.5);
+                
+                // Fat: 25% of total calories
+                userProfile.fat_goal = Math.round((calories * 0.25) / 9);
+
+                // Update UI with profile data
+                document.getElementById('tdeeValue').textContent = userProfile.goal_calories || userProfile.tdee;
+                document.getElementById('proteinGoal').textContent = userProfile.protein_goal + 'g';
+                document.getElementById('carbsGoal').textContent = userProfile.carbs_goal + 'g';
+                document.getElementById('fatGoal').textContent = userProfile.fat_goal + 'g';
+
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showError('ไม่สามารถโหลดข้อมูลผู้ใช้ได้');
+            }
+        }
+
+        // Load food logs based on current period
+        async function loadFoodLogs() {
+            try {
+                // Check if we're in demo mode
+                if (!supabase) {
+                    // Use stored demo data
+                    const dateRange = getDateRange(currentPeriod);
+                    const filteredLogs = allFoodLogs.filter(log => {
+                        const logDate = log.date;
+                        return logDate >= dateRange.start && logDate <= dateRange.end;
+                    });
+
+                    console.log(`Demo Mode - Period: ${currentPeriod}, Date range: ${dateRange.start} to ${dateRange.end}`);
+                    console.log(`Total logs: ${allFoodLogs.length}, Filtered logs: ${filteredLogs.length}`);
+
+                    updateStatistics(filteredLogs);
+                    updateCharts(filteredLogs);
+                    updateFoodLogsList(filteredLogs);
+                    return;
+                }
+
+                // For real Supabase connection
+                if (allFoodLogs.length === 0) {
+                    // Get all logs first time only
+                    const { data: logs, error: logsError } = await supabase
+                        .from("food_logs")
+                        .select("date, food_name, calories, protein_g, fat_g, carbs_g, created_at")
+                        .eq("line_userid", currentUserId)
+                        .order("date", { ascending: false });
+
+                    if (logsError) {
+                        console.error('Logs error:', logsError);
+                        return;
+                    }
+
+                    allFoodLogs = logs;
+                }
+
+                // Filter logs based on current period
+                const dateRange = getDateRange(currentPeriod);
+                const filteredLogs = allFoodLogs.filter(log => {
+                    const logDate = log.date;
+                    return logDate >= dateRange.start && logDate <= dateRange.end;
+                });
+
+                console.log(`Period: ${currentPeriod}, Date range: ${dateRange.start} to ${dateRange.end}`);
+                console.log(`Total logs: ${allFoodLogs.length}, Filtered logs: ${filteredLogs.length}`);
+
+                // Update statistics
+                updateStatistics(filteredLogs);
+                
+                // Update food logs list
+                updateFoodLogsList(filteredLogs);
+
+            } catch (error) {
+                console.error('Error loading food logs:', error);
+                showError('ไม่สามารถโหลดข้อมูลบันทึกอาหารได้');
+            }
+        }
+
+ // Get date range based on period
+function getDateRange(period) {
+    const today = new Date(); // ใช้วันที่ปกติของเครื่อง โดยไม่คิด 04:00 ใหม่
+
+    let start, end;
+
+    switch (period) {
+        case 'daily':
+            start = new Date(today);
+            end = new Date(today);
+            break;
+
+        case 'weekly':
+            // Start of week (Sunday = index 0)
+            const dayOfWeek = today.getDay();
+            start = new Date(today);
+            start.setDate(today.getDate() - dayOfWeek);
+            end = new Date(start);
+            end.setDate(start.getDate() + 6);
+            break;
+
+        case 'monthly':
+            start = new Date(today.getFullYear(), today.getMonth(), 1);
+            end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            break;
+    }
+
+    // Format date YYYY-MM-DD
+    const formatDate = (date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    };
+
+    return {
+        start: formatDate(start),
+        end: formatDate(end)
+    };
+}
+
+        // Update statistics cards
+        function updateStatistics(logs) {
+            const totals = logs.reduce((acc, log) => {
+                acc.calories += log.calories || 0;
+                acc.protein += log.protein_g || 0;
+                acc.carbs += log.carbs_g || 0;
+                acc.fat += log.fat_g || 0;
+                return acc;
+            }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+
+            // Update values
+            document.getElementById('totalCalories').textContent = Math.round(totals.calories);
+            document.getElementById('totalProtein').textContent = Math.round(totals.protein) + 'g';
+            document.getElementById('totalCarbs').textContent = Math.round(totals.carbs) + 'g';
+            document.getElementById('totalFat').textContent = Math.round(totals.fat) + 'g';
+
+            // Update progress bars
+            const targetCalories = userProfile.goal_calories || userProfile.tdee;
+            const calorieProgress = Math.min((totals.calories / targetCalories) * 100, 100);
+            const proteinProgress = Math.min((totals.protein / userProfile.protein_goal) * 100, 100);
+            const carbsProgress = Math.min((totals.carbs / userProfile.carbs_goal) * 100, 100);
+            const fatProgress = Math.min((totals.fat / userProfile.fat_goal) * 100, 100);
+
+            document.getElementById('calorieProgress').style.width = calorieProgress + '%';
+            document.getElementById('proteinProgress').style.width = proteinProgress + '%';
+            document.getElementById('carbsProgress').style.width = carbsProgress + '%';
+            document.getElementById('fatProgress').style.width = fatProgress + '%';
+
+            // Update donut chart
+            updateDailyDonut(logs);
+
+            // Show warnings for daily view
+            showDailyWarnings(logs);
+        }
+
+        // Update daily donut chart
+        function updateDailyDonut(logs) {
+            try {
+                // รอให้ DOM render เสร็จก่อน (canvas ไม่ hidden)
+                setTimeout(() => {
+                    const totals = logs.reduce((acc, log) => acc + (log.calories || 0), 0);
+                    const targetCalories = (userProfile && (userProfile.goal_calories || userProfile.tdee)) || 0;
+
+                    const diff = totals - targetCalories;
+                    const isOver = diff > 0;
+                    const remaining = Math.abs(diff);
+
+                    // --- อัปเดตข้อความกลางวง ---
+                    const labelEl = document.getElementById("donutLabel");
+                    const remEl = document.getElementById("remainingCalories");
+                    if (labelEl) labelEl.textContent = isOver ? "Over" : "Remaining";
+                    if (remEl) {
+                        remEl.textContent = Math.round(remaining);
+                        remEl.classList.remove("text-orange-700", "text-red-600");
+                        remEl.classList.add(isOver ? "text-red-600" : "text-white");
+                    }
+
+                    // --- วาดกราฟ ---
+                    const canvas = document.getElementById("dailyDonutChart");
+                    if (!canvas) return;
+                    const ctx = canvas.getContext("2d");
+
+                    // ✅ ล้างกราฟเก่าอย่างปลอดภัย (ถ้ามี)
+                    if (window.dailyDonutChart && typeof window.dailyDonutChart.destroy === "function") {
+                        window.dailyDonutChart.destroy();
+                    }
+                    window.dailyDonutChart = null;
+
+                    // ✅ สร้างกราฟใหม่
+                    window.dailyDonutChart = new Chart(ctx, {
+                        type: "doughnut",
+                        data: {
+                            labels: [isOver ? "Over" : "Remaining"],
+                            datasets: [{
+                                data: [isOver ? remaining : (targetCalories - totals), totals],
+                                backgroundColor: isOver ? ["#dc2626", "#444"] : ["#444", "#C1272D"],
+                                borderWidth: 0,
+                                cutout: "80%"
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            animation: { duration: 800, easing: "easeOutQuart" }
+                        }
+                    });
+                }, 600); // ✅ หน่วง 0.6 วิ ให้ DOM พร้อมก่อนวาด
+            } catch (e) {
+                console.error("updateDailyDonut error:", e);
+            }
+        }
+
+        // Show daily warnings
+        function showDailyWarnings(logs) {
+            if (!userProfile) {
+                return;
+            }
+
+            // Calculate daily totals
+            const totals = logs.reduce((acc, log) => {
+                acc.calories += log.calories || 0;
+                acc.protein += log.protein_g || 0;
+                acc.carbs += log.carbs_g || 0;
+                acc.fat += log.fat_g || 0;
+                return acc;
+            }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+
+            const targetCalories = userProfile.goal_calories || userProfile.tdee;
+            const warnings = [];
+            
+            // Check for no food intake or very low intake first
+            if (totals.calories === 0) {
+                const noFoodWarnings = [
+                    `🍽️ คุณยังไม่ได้บันทึกการกินวันนี้เลย - อย่าลืมกินนะคะ! 😊`,
+                    `🥺 วันนี้ยังไม่มีข้อมูลการกิน - ร่างกายต้องการพลังงานนะ!`,
+                    `⚠️ ยังไม่ได้กินอะไรเลย - รีบไปหาอะไรกินเถอะ! 🍚`,
+                                       `😭 ไม่มีร่องรอยอาหารเลย — ยูไปถือศีลอยู่รึเปล่าเนี่ย?`,
+                                       `🤨 ยังไม่กิน หรือกินแล้วแอบไม่ยอมบันทึก! สารภาพมา!`,
+                                       `🥲 ท้องว่างแบบนี้ E-Cal เป็นห่วงนะ ไปหาสักเมนูเถอะ!`,
+                                       `วันนี้ยังไม่กินอะไรเลยเหรอ… หรือแค่ลืมบันทึก? 😏`,
+                    `😟 ไม่มีบันทึกอาหารวันนี้ - ร่างกายจะอ่อนแอนะ!`
+                ];
+                warnings.push(noFoodWarnings[Math.floor(Math.random() * noFoodWarnings.length)]);
+            } else if (totals.calories < targetCalories * 0.5) {
+                // Very low intake (less than 50% of target)
+                const lowIntakeWarnings = [
+                    `🥺 วันนี้กินน้อยไปมาก - กินเพิ่มอีกนิดเน้นโปรตีนนะ! 🍖`,
+                    `😟 แคลอรี่น้อยเกินไป - ร่างกายต้องการพลังงานมากกว่านี้! ⚡`,
+                    `⚠️ กินน้อยมาก - เพิ่มไข่ ปลา เนื้อ เพื่อโปรตีน! 🥚🐟`,
+                                       `😵‍💫 พลังงานวันนี้ต่ำมาก… แบบนี้จะเดินยังไหวมั้ยเนี่ย?`,
+                                       `🍗 กินน้อยกว่าที่ลมพัดก็ปลิวแล้วนะ! กินโปรตีนเพิ่มด่วน!`,
+                                       `🫠 ยูไม่ได้ลดน้ำหนัก ยูลดพลังชีวิตอ่ะ… กินเพิ่มเถอะ!`,
+                                       `😨 วันนี้แคลต่ำเหมือนเงินในบัญชีปลายเดือนเลยนะ!`,
+                    `🍽️ อาหารไม่พอเลย - กินเพิ่มโดยเน้นโปรตีนดีๆ นะ! 💪`
+                ];
+                warnings.push(lowIntakeWarnings[Math.floor(Math.random() * lowIntakeWarnings.length)]);
+            } else if (totals.calories < targetCalories * 0.8) {
+                // Moderately low intake (less than 80% of target)
+                const moderateLowWarnings = [
+                    `🤔 วันนี้กินน้อยหน่อย - เพิ่มโปรตีนอีกนิดจะดีนะ! 🍗`,
+                    `😊 กินได้แล้วแต่ยังน้อย - เพิ่มไข่หรือนมอีกหน่อย! 🥛`,
+                    `💡 ควรกินเพิ่มอีกนิด - โปรตีนจะช่วยให้อิ่มนานขึ้น! 🥩`,
+                    `🌟 เกือบพอแล้ว - เพิ่มถั่วหรือเนื้อสักหน่อย! 🫘`
+                ];
+                warnings.push(moderateLowWarnings[Math.floor(Math.random() * moderateLowWarnings.length)]);
+            } else if (totals.calories > targetCalories) {
+                // Excess calories
+                const excess = totals.calories - targetCalories;
+                const dailyWarnings = [
+                    `🔥 วันนี้กินเกิน ${Math.round(excess)} แคลอรี่ - ออกกำลังกายเพิ่มนะ! 🏃‍♀️`,
+                    `🍔 เกินเป้า ${Math.round(excess)} แคลอรี่ - พรุ่งนี้กินน้อยลงหน่อย! 😅`,
+                    `⚠️ แคลอรี่ล้น ${Math.round(excess)} - ต้องเดินเพิ่ม 30 นาที! 🚶‍♀️`,
+                                       `🍔 เกินแคลลลลลลลล ${Math.round(excess)} แคลอรี่ - ยูทำข้าวเที่ยง 3 มื้อรวมกันใช่มั้ยเนี่ย?`,
+                                       `🍟 ยูไม่ได้กินธรรมดา ${Math.round(excess)} แคลอรี่ - ยูจัดเต็มเหมือนงานบุญหมู่บ้าน!`,
+                                       `🚨 วันนี้แคลโอเวอร์! ${Math.round(excess)} แคลอรี่ - เป้าหมายคงเป็นได้แค่ความฝัน `,
+                                       `😂 ยูไม่ได้กินเกินนิดหน่อย  ${Math.round(excess)} แคลอรี่ - ยูตั้งวงกินบุฟเฟ่ต์ทั้งวันเลยปะเนี่ย?`,
+                                       `🤣 กินเกินแบบนี้ E-Cal ${Math.round(excess)} แคลอรี่ - จะเรียกตำรวจคุมอาหารแล้วนะ!`,
+                    `🎈 กินมากไป ${Math.round(excess)} แคลอรี่ - ท้องจะโตเป็นลูกโป่ง! 😂`
+                ];
+                warnings.push(dailyWarnings[Math.floor(Math.random() * dailyWarnings.length)]);
+            }
+
+            // Check protein intake (only if calories > 0)
+            if (totals.calories > 0) {
+                if (totals.protein === 0) {
+                    const noProteinWarnings = [
+                        `🥺 วันนี้ไม่มีโปรตีนเลย - เพิ่มไข่ ปลา หรือเนื้อนะ! 🥚🐟`,
+                        `😟 ขาดโปรตีนมาก - กล้ามเนื้อจะหดนะ! เพิ่มเนื้อสัตว์สักหน่อย! 💪`,
+                        `⚠️ ไม่มีโปรตีน - ร่างกายต้องการซ่อมแซมกล้ามเนื้อ! 🍖`
+                    ];
+                    warnings.push(noProteinWarnings[Math.floor(Math.random() * noProteinWarnings.length)]);
+                } else if (totals.protein < userProfile.protein_goal * 0.5) {
+                    const lowProteinWarnings = [
+                        `🤔 โปรตีนน้อยไป - เพิ่มไข่ ปลา หรือถั่วอีกนิดนะ! 🥚🐟🫘`,
+                        `💪 โปรตีนไม่พอ - กล้ามเนื้อต้องการอาหารมากกว่านี้!`,
+                        `🍗 ควรเพิ่มโปรตีน - ไก่ หมู หรือเต้าหู้ก็ได้นะ!`
+                    ];
+                    warnings.push(lowProteinWarnings[Math.floor(Math.random() * lowProteinWarnings.length)]);
+                } else if (totals.protein > userProfile.protein_goal) {
+                    const proteinWarnings = [
+                        `🍖 โปรตีนเกินวันนี้ - กล้ามเนื้อแข็งแรงแน่นอน! 💪`,
+                        `🥩 กินเนื้อเยอะมาก - จะไปลงแข่งเป็นนักเพาะกายหรอจ๊ะ! 🏋️‍♂️`
+                    ];
+                    warnings.push(proteinWarnings[Math.floor(Math.random() * proteinWarnings.length)]);
+                }
+            }
+
+            if (totals.carbs > userProfile.carbs_goal) {
+                const carbWarnings = [
+                    `🍞 คาร์บเกินวันนี้ - พรุ่งนี้ลดข้าวนะ! 🍚`,
+                    `🍚 ข้าวเยอะไป - พลังงานล้นแล้ว! ⚡`
+                ];
+                warnings.push(carbWarnings[Math.floor(Math.random() * carbWarnings.length)]);
+            }
+
+            if (totals.fat > userProfile.fat_goal) {
+                const fatWarnings = [
+                    `🥑 ไฟต์เกินวันนี้ - ระวังอาหารทอด! 😋`,
+                    `🍟 ทอดเยอะไป - น้ำมันล้นแล้ว! 🛢️`
+                ];
+                warnings.push(fatWarnings[Math.floor(Math.random() * fatWarnings.length)]);
+            }
+
+            // Show warnings
+            showWarnings(warnings);
+        }
+
+        // Update food logs list
+        function updateFoodLogsList(logs) {
+            const container = document.getElementById('foodLogsList');
+            
+            if (logs.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-400 py-10">
+                        <div class="text-6xl mb-3">🍽️</div>
+                        <p class="font-medium text-lg">ไม่มีข้อมูลบันทึกอาหาร</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = logs.slice(0, 10).map((log, index) => `
+                <div class="flex items-center justify-between p-4 glass-effect rounded-lg hover:bg-white/10 transition-all duration-200 group">
+                    <div class="flex items-center space-x-3 flex-1">
+                        <div class="w-12 h-12 glass-effect rounded-xl flex items-center justify-center">
+                            <span class="text-2xl">🍽️</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-white text-base">${log.food_name || 'ไม่ระบุชื่อ'}</div>
+                            <div class="text-sm text-gray-400 mt-0.5">${new Date(log.date).toLocaleDateString('th-TH')}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="text-right">
+                            <div class="font-bold text-white text-lg">${Math.round(log.calories || 0)} kcal</div>
+                            <div class="text-xs text-gray-400 mt-0.5">${Math.round(log.protein_g || 0)}P ${Math.round(log.carbs_g || 0)}C ${Math.round(log.fat_g || 0)}F</div>
+                        </div>
+                        <button onclick="deleteLog(${index})" class="delete-btn text-white px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200" title="ลบรายการนี้">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Show warnings for daily view
+        function showWarnings(warnings) {
+            const warningsBox = document.getElementById('warningsBox');
+            
+    if (warnings.length > 0) {
+    // Show warnings
+    warningsBox.classList.remove('hidden');
+    
+    // เปลี่ยนกรอบกล่องให้เป็นโทนเหลือง/แจ้งเตือน
+    warningsBox.querySelector('.glass-effect').classList.remove('border-green-500/30');
+    warningsBox.querySelector('.glass-effect').classList.add('border-yellow-500/30');
+
+    // ไม่มีไอคอนแล้ว (ล้าง)
+    document.getElementById('warningIcon').innerHTML = '';
+
+    // เปลี่ยนหัวข้อเป็นสีแดง E-Cal
+    document.getElementById('warningTitle').textContent = 'คำเตือนประจำวัน';
+    document.getElementById('warningTitle').className = 'font-bold text-[#C1272D] mb-2 text-lg';
+
+    // ใส่ข้อความคำเตือน
+    document.getElementById('warningContent').innerHTML =
+        warnings.map(w => `<div class="mb-1">• ${w}</div>`).join('');
+} else {
+
+                // Show encouragement
+                const encouragements = [
+                    '🎉 เก่งมาก! วันนี้กินพอดีเลย!',
+                    '✨ สมดุลดีมาก ทำต่อไปนะ!',
+                    '🌟 วันนี้ควบคุมได้ดีเยี่ยม!',
+                    '👏 เป็นแชมป์การกินแบบสุขภาพดี!'
+                ];
+                
+                const randomEncouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
+                
+                warningsBox.classList.remove('hidden');
+                warningsBox.querySelector('.glass-effect').classList.remove('border-yellow-500/30');
+                warningsBox.querySelector('.glass-effect').classList.add('border-green-500/30');
+                document.getElementById('warningIcon').textContent = '🌟';
+                document.getElementById('warningTitle').textContent = 'ยินดีด้วย!';
+                document.getElementById('warningTitle').className = 'font-bold text-green-300 mb-2 text-lg';
+                document.getElementById('warningContent').innerHTML = `<div class="font-medium text-gray-200">${randomEncouragement}</div>`;
+            }
+        }
+
+        // Show error screen
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('errorScreen').classList.remove('hidden');
+        }
+
+        // Delete log function
+        async function deleteLog(index) {
+            const dateRange = getDateRange(currentPeriod);
+            const filteredLogs = allFoodLogs.filter(log => {
+                const logDate = log.date;
+                return logDate >= dateRange.start && logDate <= dateRange.end;
+            });
+
+            const logToDelete = filteredLogs[index];
+            
+            if (!logToDelete) {
+                return;
+            }
+
+            // Create custom confirmation UI (inline confirmation)
+            const confirmBtn = event.target;
+            const originalText = confirmBtn.innerHTML;
+            const originalClasses = confirmBtn.className;
+            
+            // Change to confirmation state
+            confirmBtn.innerHTML = '✓ ยืนยันลบ';
+            confirmBtn.className = 'bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg transition-all duration-200';
+            
+            // Create cancel button
+            const cancelBtn = document.createElement('button');
+            cancelBtn.innerHTML = '✕';
+            cancelBtn.className = 'bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg transition-all duration-200 ml-2';
+            confirmBtn.parentElement.appendChild(cancelBtn);
+            
+            // Cancel handler
+            const cancelHandler = () => {
+                confirmBtn.innerHTML = originalText;
+                confirmBtn.className = originalClasses;
+                cancelBtn.remove();
+                confirmBtn.removeEventListener('click', confirmHandler);
+            };
+            
+            cancelBtn.addEventListener('click', cancelHandler);
+            
+            // Confirm handler
+            const confirmHandler = async () => {
+                try {
+                    if (!supabase) {
+                        // Demo mode - just remove from array
+                        const originalIndex = allFoodLogs.findIndex(log => 
+                            log.food_name === logToDelete.food_name && 
+                            log.date === logToDelete.date &&
+                            log.created_at === logToDelete.created_at
+                        );
+                        
+                        if (originalIndex !== -1) {
+                            allFoodLogs.splice(originalIndex, 1);
+                            
+                            // Refresh display
+                            const newFilteredLogs = allFoodLogs.filter(log => {
+                                const logDate = log.date;
+                                return logDate >= dateRange.start && logDate <= dateRange.end;
+                            });
+                            
+                            updateStatistics(newFilteredLogs);
+                            updateFoodLogsList(newFilteredLogs);
+                        }
+                    } else {
+                        // Real Supabase - delete from database
+                        const { error } = await supabase
+                            .from('food_logs')
+                            .delete()
+                            .eq('line_userid', currentUserId)
+                            .eq('food_name', logToDelete.food_name)
+                            .eq('date', logToDelete.date)
+                            .eq('created_at', logToDelete.created_at);
+
+                        if (error) {
+                            console.error('Delete error:', error);
+                            // Show error message inline
+                            confirmBtn.innerHTML = '❌ ลบไม่สำเร็จ';
+                            setTimeout(() => {
+                                confirmBtn.innerHTML = originalText;
+                                confirmBtn.className = originalClasses;
+                                cancelBtn.remove();
+                            }, 2000);
+                            return;
+                        }
+
+                        // Remove from local array
+                        const originalIndex = allFoodLogs.findIndex(log => 
+                            log.food_name === logToDelete.food_name && 
+                            log.date === logToDelete.date &&
+                            log.created_at === logToDelete.created_at
+                        );
+                        
+                        if (originalIndex !== -1) {
+                            allFoodLogs.splice(originalIndex, 1);
+                        }
+
+                        // Refresh display
+                        const newFilteredLogs = allFoodLogs.filter(log => {
+                            const logDate = log.date;
+                            return logDate >= dateRange.start && logDate <= dateRange.end;
+                        });
+                        
+                        updateStatistics(newFilteredLogs);
+                        updateFoodLogsList(newFilteredLogs);
+                    }
+                } catch (error) {
+                    console.error('Error deleting log:', error);
+                    confirmBtn.innerHTML = '❌ เกิดข้อผิดพลาด';
+                    setTimeout(() => {
+                        confirmBtn.innerHTML = originalText;
+                        confirmBtn.className = originalClasses;
+                        cancelBtn.remove();
+                    }, 2000);
+                }
+            };
+            
+            // Replace click handler
+            confirmBtn.removeEventListener('click', deleteLog);
+            confirmBtn.addEventListener('click', confirmHandler);
+            
+            // Auto-cancel after 3 seconds
+            setTimeout(cancelHandler, 3000);
+        }
+
+        // Initialize app when page loads
+        window.addEventListener('load', initApp);
+    </script>
+
+  <script>
+function smoothGo(url) {
+  document.body.classList.add("fade-out");
+  setTimeout(() => {
+    location.href = url;
+  }, 250);
+}
+</script>
+
+  <a href="https://liff.line.me/2007859046-BpXDWpXe"
+   class="fixed bottom-6 right-6 
+          bg-[#C1272D] text-white 
+          w-14 h-14 flex items-center justify-center 
+          rounded-full shadow-md 
+          hover:bg-[#a01f24] 
+          text-3xl z-50 transition-all duration-300">
+  <i class="fi fi-rr-home text-white text-3xl"></i>
+</a>
+  
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a583a5147632731',t:'MTc2NDMxNTczOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
