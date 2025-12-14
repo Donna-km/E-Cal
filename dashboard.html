@@ -267,6 +267,8 @@
         let currentPeriod = 'daily';
         let userProfile = null;
         let allFoodLogs = []; // Store all logs for filtering
+        let activeDate = null; // YYYY-MM-DD จาก DB เท่านั้น
+
 
         // Initialize the application
         async function initApp() {
@@ -491,85 +493,47 @@ if (!userProfile || !userProfile.tdee || !userProfile.weight || !userProfile.goa
                     return;
                 }
 
-                // For real Supabase connection
-                if (allFoodLogs.length === 0) {
-                    // Get all logs first time only
-                    const { data: logs, error: logsError } = await supabase
-                        .from("food_logs")
-                        .select("date, food_name, calories, protein_g, fat_g, carbs_g, created_at")
-                        .eq("line_userid", currentUserId)
-                        .order("date", { ascending: false });
+        async function loadFoodLogs() {
+    try {
 
-                    if (logsError) {
-                        console.error('Logs error:', logsError);
-                        return;
-                    }
+        // For real Supabase connection
+        if (allFoodLogs.length === 0) {
 
-                    allFoodLogs = logs;
-                }
+            const { data: logs, error: logsError } = await supabase
+                .from("food_logs")
+                .select("date, food_name, calories, protein_g, fat_g, carbs_g, created_at")
+                .eq("line_userid", currentUserId)
+                .order("date", { ascending: false });
 
-                // Filter logs based on current period
-                const dateRange = getDateRange(currentPeriod);
-                const filteredLogs = allFoodLogs.filter(log => {
-                    const logDate = log.date;
-                    return logDate >= dateRange.start && logDate <= dateRange.end;
-                });
-
-                console.log(`Period: ${currentPeriod}, Date range: ${dateRange.start} to ${dateRange.end}`);
-                console.log(`Total logs: ${allFoodLogs.length}, Filtered logs: ${filteredLogs.length}`);
-
-                // Update statistics
-                updateStatistics(filteredLogs);
-                
-                // Update food logs list
-                updateFoodLogsList(filteredLogs);
-
-            } catch (error) {
-                console.error('Error loading food logs:', error);
+            if (logsError) {
+                console.error('Logs error:', logsError);
                 showError('ไม่สามารถโหลดข้อมูลบันทึกอาหารได้');
+                return;
+            }
+
+            allFoodLogs = logs || [];
+
+            if (allFoodLogs.length > 0) {
+                activeDate = allFoodLogs[0].date;
             }
         }
 
- // Get date range based on period
-function getDateRange(period) {
-    const today = new Date(); // ใช้วันที่ปกติของเครื่อง โดยไม่คิด 04:00 ใหม่
+        const filteredLogs = allFoodLogs.filter(
+            log => log.date === activeDate
+        );
 
-    let start, end;
+        console.log(`Active date (from DB): ${activeDate}`);
+        console.log(`Total logs: ${allFoodLogs.length}, Filtered logs: ${filteredLogs.length}`);
 
-    switch (period) {
-        case 'daily':
-            start = new Date(today);
-            end = new Date(today);
-            break;
+        updateStatistics(filteredLogs);
+        updateFoodLogsList(filteredLogs);
 
-        case 'weekly':
-            // Start of week (Sunday = index 0)
-            const dayOfWeek = today.getDay();
-            start = new Date(today);
-            start.setDate(today.getDate() - dayOfWeek);
-            end = new Date(start);
-            end.setDate(start.getDate() + 6);
-            break;
-
-        case 'monthly':
-            start = new Date(today.getFullYear(), today.getMonth(), 1);
-            end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-            break;
+    } catch (error) {
+        console.error('Error loading food logs:', error);
+        showError('ไม่สามารถโหลดข้อมูลบันทึกอาหารได้');
     }
-
-    // Format date YYYY-MM-DD
-    const formatDate = (date) => {
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-    };
-
-    return {
-        start: formatDate(start),
-        end: formatDate(end)
-    };
 }
+
 
         // Update statistics cards
         function updateStatistics(logs) {
@@ -1016,6 +980,7 @@ function smoothGo(url) {
   
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a583a5147632731',t:'MTc2NDMxNTczOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
