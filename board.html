@@ -450,16 +450,14 @@
         <div id="media-slider-track" class="media-slider-track">
         </div>
        
-<!-- 🔊 Tap to unmute (Top Right) -->
-<div id="sound-hint"
-     class="absolute top-16 right-4 z-40">
+<!-- 🔊 Sound toggle -->
+<div id="sound-hint" class="absolute top-16 right-4 z-40">
   <button
-    onclick="unmuteActiveVideo()"
-    class="bg-black/60 text-white px-3 py-2 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm">
-    🔊 เปิดเสียง
+    onclick="toggleSound()"
+    class="bg-black/60 text-white p-3 rounded-full backdrop-blur-sm">
+    <i id="sound-icon" class="fi fi-rr-volume-slash"></i>
   </button>
 </div>
-
        
       <!-- Slide Count -->
 <div id="slide-counter"
@@ -1264,10 +1262,14 @@ async function openMediaView(index) {
   currentSlideIndex = 0;
   const post = allPosts[index];
 
-   // reset sound hint on new post
   const hint = document.getElementById('sound-hint');
-  if (hint) hint.style.display = 'flex';
-  soundUnlocked = false;
+if (hint) hint.style.display = 'block';
+
+const icon = document.getElementById('sound-icon');
+if (icon) icon.className = 'fi fi-rr-volume-slash';
+
+soundUnlocked = false;
+
 
 
   // Load save count
@@ -1511,22 +1513,28 @@ function renderSavedGrid() {
   });
 }
 
-   // ===============================
-let soundUnlocked = false;
+  let soundUnlocked = false;
 
-function unmuteActiveVideo() {
-  if (soundUnlocked) return;
-
+function toggleSound() {
   const activeVideo = document.querySelector('#media-slider-track video');
   if (!activeVideo) return;
 
-  activeVideo.muted = false;
-  activeVideo.volume = 1;
-  soundUnlocked = true;
+  if (!soundUnlocked) {
+    // 🔊 เปิดเสียง
+    activeVideo.muted = false;
+    activeVideo.volume = 1;
+    soundUnlocked = true;
 
-  // ซ่อนปุ่มหลังเปิดเสียง
-  const hint = document.getElementById('sound-hint');
-  if (hint) hint.style.display = 'none';
+    document.getElementById('sound-icon').className =
+      'fi fi-rr-volume-down';
+  } else {
+    // 🔇 ปิดเสียง
+    activeVideo.muted = true;
+    soundUnlocked = false;
+
+    document.getElementById('sound-icon').className =
+      'fi fi-rr-volume-slash';
+  }
 }
 
    
@@ -1572,6 +1580,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
