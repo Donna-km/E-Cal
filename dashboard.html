@@ -472,29 +472,26 @@ if (!userProfile || !userProfile.tdee || !userProfile.weight || !userProfile.goa
             }
         }
 
-        // Load food logs based on current period
-        async function loadFoodLogs() {
-            try {
-                // Check if we're in demo mode
-                if (!supabase) {
-                    // Use stored demo data
-                    const dateRange = getDateRange(currentPeriod);
-                    const filteredLogs = allFoodLogs.filter(log => {
-                        const logDate = log.date;
-                        return logDate >= dateRange.start && logDate <= dateRange.end;
-                    });
-
-                    console.log(`Demo Mode - Period: ${currentPeriod}, Date range: ${dateRange.start} to ${dateRange.end}`);
-                    console.log(`Total logs: ${allFoodLogs.length}, Filtered logs: ${filteredLogs.length}`);
-
-                    updateStatistics(filteredLogs);
-                    updateCharts(filteredLogs);
-                    updateFoodLogsList(filteredLogs);
-                    return;
-                }
-
-        async function loadFoodLogs() {
+       // Load food logs based on current period
+async function loadFoodLogs() {
     try {
+        // Check if we're in demo mode
+        if (!supabase) {
+            // Use stored demo data
+            const dateRange = getDateRange(currentPeriod);
+            const filteredLogs = allFoodLogs.filter(log => {
+                const logDate = log.date;
+                return logDate >= dateRange.start && logDate <= dateRange.end;
+            });
+
+            console.log(`Demo Mode - Period: ${currentPeriod}, Date range: ${dateRange.start} to ${dateRange.end}`);
+            console.log(`Total logs: ${allFoodLogs.length}, Filtered logs: ${filteredLogs.length}`);
+
+            updateStatistics(filteredLogs);
+            updateCharts(filteredLogs);
+            updateFoodLogsList(filteredLogs);
+            return;
+        }
 
         // For real Supabase connection
         if (allFoodLogs.length === 0) {
@@ -533,7 +530,6 @@ if (!userProfile || !userProfile.tdee || !userProfile.weight || !userProfile.goa
         showError('ไม่สามารถโหลดข้อมูลบันทึกอาหารได้');
     }
 }
-
 
         // Update statistics cards
         function updateStatistics(logs) {
@@ -980,6 +976,7 @@ function smoothGo(url) {
   
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a583a5147632731',t:'MTc2NDMxNTczOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
