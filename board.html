@@ -1664,8 +1664,7 @@ if (verticalEl) {
   });
 }
 
-   
-function goToNextPost() {
+ function goToNextPost() {
   if (currentMediaIndex === null) return;
   if (currentMediaIndex >= allPosts.length - 1) return;
   if (isAnimatingPost) return;
@@ -1673,24 +1672,40 @@ function goToNextPost() {
   isAnimatingPost = true;
 
   const slider = document.querySelector('.media-slider');
+
+  // เริ่ม animation เลื่อนขึ้น
+  slider.style.transition =
+    'transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1)';
   slider.style.transform = 'translateY(-100%)';
 
-  setTimeout(() => {
-    stopAllVideos();
-    openMediaView(currentMediaIndex + 1);
+  // 👉 รอให้ animation จบจริง
+  slider.addEventListener(
+    'transitionend',
+    function handler() {
+      slider.removeEventListener('transitionend', handler);
 
-    slider.style.transition = 'none';
-    slider.style.transform = 'translateY(0)';
+      stopAllVideos();
 
-    // force reflow
-    slider.offsetHeight;
+      // เปลี่ยนโพสต์ "หลัง animation จบ"
+      openMediaView(currentMediaIndex + 1);
 
-    slider.style.transition =
-      'transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1)';
+      // reset ตำแหน่งทันที (ไม่ animate)
+      slider.style.transition = 'none';
+      slider.style.transform = 'translateY(0)';
 
-    isAnimatingPost = false;
-  }, 300);
+      // force reflow
+      slider.offsetHeight;
+
+      // เปิด transition กลับ
+      slider.style.transition =
+        'transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1)';
+
+      isAnimatingPost = false;
+    },
+    { once: true }
+  );
 }
+  
 
 function goToPrevPost() {
   if (currentMediaIndex === null) return;
@@ -1700,23 +1715,40 @@ function goToPrevPost() {
   isAnimatingPost = true;
 
   const slider = document.querySelector('.media-slider');
+
+  // เริ่ม animation เลื่อนลง
+  slider.style.transition =
+    'transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1)';
   slider.style.transform = 'translateY(100%)';
 
-  setTimeout(() => {
-    stopAllVideos();
-    openMediaView(currentMediaIndex - 1);
+  // 👉 รอให้ animation จบจริง
+  slider.addEventListener(
+    'transitionend',
+    function handler() {
+      slider.removeEventListener('transitionend', handler);
 
-    slider.style.transition = 'none';
-    slider.style.transform = 'translateY(0)';
+      stopAllVideos();
 
-    slider.offsetHeight;
+      // เปลี่ยนโพสต์ "หลัง animation จบ"
+      openMediaView(currentMediaIndex - 1);
 
-    slider.style.transition =
-      'transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1)';
+      // reset ตำแหน่งทันที (ไม่ animate)
+      slider.style.transition = 'none';
+      slider.style.transform = 'translateY(0)';
 
-    isAnimatingPost = false;
-  }, 300);
+      // force reflow
+      slider.offsetHeight;
+
+      // เปิด transition กลับ
+      slider.style.transition =
+        'transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1)';
+
+      isAnimatingPost = false;
+    },
+    { once: true }
+  );
 }
+
 
 function pauseAllReelVideos() {
   document.querySelectorAll('#media-slider-track video').forEach(v => {
@@ -1744,6 +1776,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
