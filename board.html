@@ -578,6 +578,8 @@ let commentLikes = new Set();
 let currentComments = [];
 let currentMediaIndex = null;
 let currentSlideIndex = 0;
+let startY = 0;
+let verticalSwipeHandled = false;  
 let replyingToCommentId = null;
 
 // Emoji list
@@ -1574,12 +1576,64 @@ if (trackEl) {
   });
 }
 
+   // ===============================
+// Vertical Swipe (change post)
+// ===============================
+const verticalEl = document.querySelector('.media-slider');
+
+if (verticalEl) {
+  verticalEl.addEventListener('touchstart', (e) => {
+    startY = e.touches[0].clientY;
+    verticalSwipeHandled = false;
+  }, { passive: true });
+
+  verticalEl.addEventListener('touchmove', (e) => {
+    if (verticalSwipeHandled) return;
+
+    const currentY = e.touches[0].clientY;
+    const diffY = currentY - startY;
+    const threshold = Math.min(window.innerHeight * 0.15, 120);
+
+    // ⬆️ swipe up → next post
+    if (diffY < -threshold) {
+      goToNextPost();
+      verticalSwipeHandled = true;
+    }
+
+    // ⬇️ swipe down → prev post
+    if (diffY > threshold) {
+      goToPrevPost();
+      verticalSwipeHandled = true;
+    }
+  }, { passive: true });
+
+  verticalEl.addEventListener('touchend', () => {
+    verticalSwipeHandled = false;
+  });
+}
+function goToNextPost() {
+  if (currentMediaIndex === null) return;
+  if (currentMediaIndex >= allPosts.length - 1) return;
+
+  stopAllVideos();
+  openMediaView(currentMediaIndex + 1);
+}
+
+function goToPrevPost() {
+  if (currentMediaIndex === null) return;
+  if (currentMediaIndex <= 0) return;
+
+  stopAllVideos();
+  openMediaView(currentMediaIndex - 1);
+}
+
 
 // Initialize app
 initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
