@@ -383,6 +383,13 @@
   overscroll-behavior: none;
 }
 
+   /* ===== Reels Vertical Snap Animation ===== */
+.media-slider {
+  will-change: transform;
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+
 
 
   </style>
@@ -596,7 +603,8 @@ let currentComments = [];
 let currentMediaIndex = null;
 let currentSlideIndex = 0;
 let startY = 0;
-let verticalSwipeHandled = false;  
+let verticalSwipeHandled = false; 
+let isAnimatingPost = false;   
 let replyingToCommentId = null;
 
 // Emoji list
@@ -1635,17 +1643,54 @@ if (verticalEl) {
 function goToNextPost() {
   if (currentMediaIndex === null) return;
   if (currentMediaIndex >= allPosts.length - 1) return;
+  if (isAnimatingPost) return;
 
-  stopAllVideos();
-  openMediaView(currentMediaIndex + 1);
+  isAnimatingPost = true;
+
+  const slider = document.querySelector('.media-slider');
+  slider.style.transform = 'translateY(-100%)';
+
+  setTimeout(() => {
+    stopAllVideos();
+    openMediaView(currentMediaIndex + 1);
+
+    slider.style.transition = 'none';
+    slider.style.transform = 'translateY(0)';
+
+    // force reflow
+    slider.offsetHeight;
+
+    slider.style.transition =
+      'transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1)';
+
+    isAnimatingPost = false;
+  }, 300);
 }
 
 function goToPrevPost() {
   if (currentMediaIndex === null) return;
   if (currentMediaIndex <= 0) return;
+  if (isAnimatingPost) return;
 
-  stopAllVideos();
-  openMediaView(currentMediaIndex - 1);
+  isAnimatingPost = true;
+
+  const slider = document.querySelector('.media-slider');
+  slider.style.transform = 'translateY(100%)';
+
+  setTimeout(() => {
+    stopAllVideos();
+    openMediaView(currentMediaIndex - 1);
+
+    slider.style.transition = 'none';
+    slider.style.transform = 'translateY(0)';
+
+    slider.offsetHeight;
+
+    slider.style.transition =
+      'transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1)';
+
+    isAnimatingPost = false;
+  }, 300);
 }
 
 
@@ -1654,6 +1699,7 @@ initializeLiff();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
