@@ -389,7 +389,14 @@
   transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
+ .home-button {
+  display: none;
+}
 
+.page-gallery .home-button,
+.page-saved .home-button {
+  display: flex;
+}
 
 
   </style>
@@ -819,13 +826,30 @@ function getStorageUrl(path) {
   return `${SUPABASE_URL}/storage/v1/object/public/proof/${cleanPath}`;
 }
 
-// Navigation functions
 function navigateTo(pageId) {
+  // ซ่อนทุกหน้า
   document.querySelectorAll('.page').forEach(page => {
     page.classList.remove('active');
   });
+
+  // แสดงหน้าที่เลือก
   document.getElementById(pageId).classList.add('active');
+
+  // ⭐ คุมการแสดงปุ่ม Home
+  if (pageId === 'gallery-page') {
+    document.body.className = 'page-gallery';
+  } 
+  else if (pageId === 'saved-page') {
+    document.body.className = 'page-saved';
+  } 
+  else if (pageId === 'media-view-page') {
+    document.body.className = 'page-media';
+  } 
+  else if (pageId === 'comment-page') {
+    document.body.className = 'page-comment';
+  }
 }
+
 
 function navigateToTab(pageId) {
   navigateTo(pageId);
@@ -1812,7 +1836,7 @@ initializeLiff();
 </script>
   
 <a href="https://liff.line.me/2007859046-BpXDWpXe"
-   class="fixed bottom-20 right-6 
+   class="home-button fixed bottom-20 right-6 
           bg-[#cc1e0f] text-white 
           w-14 h-14 flex items-center justify-center 
           rounded-full shadow-md 
@@ -1821,9 +1845,9 @@ initializeLiff();
    <i class="fi fi-rr-home"></i>
 </a>
 
-
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
