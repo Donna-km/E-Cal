@@ -100,9 +100,13 @@
   </main>
 
   <script>
-    const supabaseUrl = 'https://lvtdqeerzxpznnayccmb.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    const SUPABASE_URL = 'https://lvtdqeerzxpznnayccmb.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM';
+
+const sb = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
 
     async function initApp() {
       try {
@@ -114,7 +118,12 @@
         const profile = await liff.getProfile();
         // ⭐ บันทึกโปรไฟล์ LINE ทันทีที่โหลดหน้า index
 await saveLineProfile(profile);
-        const { data: userPlan, error } = await supabase.from('user_plans').select('plan_type').eq('line_user_id', profile.userId).single();
+        const { data: userPlan, error } = await sb
+  .from('user_plans')
+  .select('plan_type')
+  .eq('line_user_id', profile.userId)
+  .single();
+
         let planType = 'free';
         if (!error && userPlan) planType = userPlan.plan_type;
 
@@ -179,9 +188,10 @@ async function saveLineProfile(profile) {
       updated_at: new Date().toISOString()
     };
 
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .upsert(payload);
+    const { data, error } = await sb
+  .from("user_profiles")
+  .upsert(payload);
+
 
     if (error) {
       console.error("❌ Error saving LINE profile:", error);
