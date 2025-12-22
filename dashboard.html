@@ -251,16 +251,24 @@
    </div>
   </main>
   <script>
-        // Configuration
-        const LIFF_ID = "2007859046-7NZV6xZG"; // Replace with your actual LIFF ID
-        const SUPABASE_URL = "https://lvtdqeerzxpznnayccmb.supabase.co"; // Replace with your Supabase URL
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM"; // Replace with your Supabase anon key
+   
+       // Configuration
+const LIFF_ID = "2007859046-7NZV6xZG";
+const SUPABASE_URL = "https://lvtdqeerzxpznnayccmb.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM";
 
-        // Initialize Supabase
-        let supabase = null;
-        if (SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY") {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        }
+// Initialize Supabase (SAFE – ไม่ชน window.supabase)
+let sb = null;
+if (
+  SUPABASE_URL !== "YOUR_SUPABASE_URL" &&
+  SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY"
+) {
+  sb = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+}
+
 
         // Global variables
         let currentUserId = null;
@@ -427,7 +435,7 @@ if (today.getHours() < 4) {
         // Load user profile data from Supabase
         async function loadUserData() {
             try {
-                const { data: profile, error: profileError } = await supabase
+                const { data: profile, error: profileError } = await sb
                     .from("tdee_form")
                     .select("tdee, weight, goal_calories")
                     .eq("line_user_id", currentUserId)
@@ -480,7 +488,7 @@ if (!userProfile || !userProfile.tdee || !userProfile.weight || !userProfile.goa
         async function loadFoodLogs() {
             try {
                 // Check if we're in demo mode
-                if (!supabase) {
+                if (!sb) {
                     // Use stored demo data
                     const dateRange = getDateRange(currentPeriod);
                     const filteredLogs = allFoodLogs.filter(log => {
@@ -500,7 +508,7 @@ if (!userProfile || !userProfile.tdee || !userProfile.weight || !userProfile.goa
                 // For real Supabase connection
                 if (allFoodLogs.length === 0) {
                     // Get all logs first time only
-                    const { data: logs, error: logsError } = await supabase
+                    const { data: logs, error: logsError } = await sb
                         .from("food_logs")
                         .select("date, food_name, calories, protein_g, fat_g, carbs_g, created_at")
                         .eq("line_userid", currentUserId)
@@ -922,7 +930,7 @@ function getDateRange(period) {
             // Confirm handler
             const confirmHandler = async () => {
                 try {
-                    if (!supabase) {
+                    if (!sb) {
                         // Demo mode - just remove from array
                         const originalIndex = allFoodLogs.findIndex(log => 
                             log.food_name === logToDelete.food_name && 
@@ -944,7 +952,7 @@ function getDateRange(period) {
                         }
                     } else {
                         // Real Supabase - delete from database
-                        const { error } = await supabase
+                        const { error } = await sb
                             .from('food_logs')
                             .delete()
                             .eq('line_userid', currentUserId)
@@ -1028,6 +1036,7 @@ function smoothGo(url) {
   
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a583a5147632731',t:'MTc2NDMxNTczOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
