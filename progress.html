@@ -305,6 +305,31 @@ a:hover { color: #C1272D !important; }
 
             try {
                 console.log('Loading user data for:', currentUser.userId);
+
+                // ✅ โหลด TDEE/goal จาก tdee_form ก่อน (ข้อ 1)
+const { data: tdeeRow, error: tdeeErr } = await supabaseClient
+  .from('tdee_form')
+  .select('goal_calories, tdee')
+  .eq('line_user_id', currentUser.userId)
+  .maybeSingle();
+
+if (tdeeErr) {
+  console.error('TDEE load error:', tdeeErr);
+}
+
+// ตั้งค่า userTDEE จาก DB (ใช้ goal_calories ก่อน ถ้าไม่มีค่อยใช้ tdee)
+const tdeeFromDB =
+  (tdeeRow && tdeeRow.goal_calories != null) ? parseInt(tdeeRow.goal_calories, 10) :
+  (tdeeRow && tdeeRow.tdee != null) ? parseInt(tdeeRow.tdee, 10) :
+  null;
+
+if (Number.isFinite(tdeeFromDB) && tdeeFromDB > 0) {
+  userTDEE = tdeeFromDB;
+  console.log('✅ userTDEE from tdee_form:', userTDEE);
+} else {
+  console.log('⚠️ No TDEE in tdee_form yet, fallback userTDEE:', userTDEE);
+}
+
                 
                 // Load all data from daily_calorie_summary table
                 const { data: calorieData, error: calorieError } = await supabaseClient
@@ -321,12 +346,7 @@ a:hover { color: #C1272D !important; }
                     foodData = {};
                     
                     // Get the most recent goal_calories as default TDEE
-                    const latestRecord = calorieData.find(record => record.goal_calories && record.goal_calories > 0);
-                    if (latestRecord && latestRecord.goal_calories) {
-                        userTDEE = latestRecord.goal_calories;
-                        console.log('Updated userTDEE to:', userTDEE);
-                    }
-                    
+                                        
                     calorieData.forEach(record => {
                         const dateStr = record.date; // ใช้วันจาก DB ตรง ๆ
                         
