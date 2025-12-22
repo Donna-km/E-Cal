@@ -772,7 +772,7 @@ if (post.proof_media && post.proof_media.length > 0) {
     console.log('✅ Final allPosts to display:', allPosts.length);
     
     // Load saved posts
-    const { data: saves, error: savesError } = await supabase
+    const { data: saves, error: savesError } = await sb
       .from('proof_saves')
       .select('proof_id')
       .eq('saver_line_user_id', currentUser.lineUserId);
@@ -784,7 +784,7 @@ if (post.proof_media && post.proof_media.length > 0) {
     console.log('💾 Saved posts:', savedPosts);
     
     // Load liked posts
-    const { data: likes, error: likesError } = await supabase
+    const { data: likes, error: likesError } = await sb
       .from('proof_likes')
       .select('proof_id')
       .eq('liker_line_user_id', currentUser.lineUserId);
@@ -859,7 +859,7 @@ async function toggleSave() {
   try {
     if (savedPosts.has(post.id)) {
       // Unsave
-      const { error } = await supabase
+      const { error } = await sb
         .from('proof_saves')
         .delete()
         .eq('proof_id', post.id)
@@ -879,7 +879,7 @@ async function toggleSave() {
 
     } else {
       // Save
-      const { error } = await supabase
+      const { error } = await sb
         .from('proof_saves')
         .insert({
           proof_id: post.id,
@@ -918,7 +918,7 @@ async function toggleLike() {
   try {
     if (likedPosts.has(post.id)) {
       // Unlike
-      const { error } = await supabase
+      const { error } = await sb
         .from('proof_likes')
         .delete()
         .eq('proof_id', post.id)
@@ -930,7 +930,7 @@ async function toggleLike() {
       heartIcon.classList.remove('liked');
     } else {
       // Like
-      const { error } = await supabase
+      const { error } = await sb
         .from('proof_likes')
         .insert({
           proof_id: post.id,
@@ -954,7 +954,7 @@ async function toggleLike() {
 // Update like count
 async function updateLikeCount(proofId) {
   try {
-    const { count, error } = await supabase
+    const { count, error } = await sb
       .from('proof_likes')
       .select('*', { count: 'exact', head: true })
       .eq('proof_id', proofId);
@@ -974,7 +974,7 @@ async function toggleCommentLike(commentId, heartElement, countElement) {
     
     if (isLiked) {
       // Unlike comment
-      const { error } = await supabase
+      const { error } = await sb
         .from('comment_likes')
         .delete()
         .eq('comment_id', commentId)
@@ -986,7 +986,7 @@ async function toggleCommentLike(commentId, heartElement, countElement) {
       heartElement.classList.remove('liked');
     } else {
       // Like comment
-      const { error } = await supabase
+      const { error } = await sb
         .from('comment_likes')
         .insert({
           comment_id: commentId,
@@ -1000,7 +1000,7 @@ async function toggleCommentLike(commentId, heartElement, countElement) {
     }
     
     // Update count
-    const { count } = await supabase
+    const { count } = await sb
       .from('comment_likes')
       .select('*', { count: 'exact', head: true })
       .eq('comment_id', commentId);
@@ -1075,7 +1075,7 @@ async function loadComments() {
   
   try {
     // Get comments first
-    const { data: comments, error: commentsError } = await supabase
+    const { data: comments, error: commentsError } = await sb
       .from('proof_comments')
       .select('*')
       .eq('proof_id', post.id)
@@ -1087,7 +1087,7 @@ async function loadComments() {
     const commenterIds = [...new Set(comments.map(c => c.commenter_line_user_id))];
     
     // Get commenter profiles from user_profiles
-    const { data: profiles, error: profilesError } = await supabase
+    const { data: profiles, error: profilesError } = await sb
       .from('user_profiles')
       .select('line_user_id, display_name, profile_picture_url')
       .in('line_user_id', commenterIds);
@@ -1107,7 +1107,7 @@ async function loadComments() {
     }));
     
     // Load comment likes for current user
-const { data: commentLikesData } = await supabase
+const { data: commentLikesData } = await sb
   .from('comment_likes')
   .select('comment_id')
   .eq('liker_line_user_id', currentUser.lineUserId)
@@ -1158,7 +1158,7 @@ async function renderComments() {
     const timeAgo = getTimeAgo(createdAt);
     
     // Get like count for this comment
-    const { count: likeCount } = await supabase
+    const { count: likeCount } = await sb
       .from('comment_likes')
       .select('*', { count: 'exact', head: true })
       .eq('comment_id', comment.id);
@@ -1208,7 +1208,7 @@ async function postComment(event) {
   
   try {
     // Insert the comment
-    const { data: newComment, error } = await supabase
+    const { data: newComment, error } = await sb
       .from('proof_comments')
       .insert({
         proof_id: post.id,
@@ -1222,7 +1222,7 @@ async function postComment(event) {
     if (error) throw error;
     
     // Get commenter profile from user_profiles
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await sb
       .from('user_profiles')
       .select('line_user_id, display_name, profile_picture_url')
       .eq('line_user_id', currentUser.lineUserId)
@@ -1307,7 +1307,7 @@ soundUnlocked = false;
 
 
   // Load save count
-  const { count } = await supabase
+  const { count } = await sb
     .from('proof_saves')
     .select('*', { count: 'exact', head: true })
     .eq('proof_id', post.id);
@@ -1842,6 +1842,7 @@ initializeLiff();
 
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
