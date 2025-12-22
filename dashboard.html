@@ -432,32 +432,35 @@ if (today.getHours() < 4) {
             return logs.sort((a, b) => new Date(b.date) - new Date(a.date));
         }
 
-        // Load user profile data from Supabase
-        async function loadUserData() {
-            try {
-                const { data: profile, error: profileError } = await sb
-                    .from("tdee_form")
-                    .select("tdee, weight, goal_calories")
-                    .eq("line_user_id", currentUserId)
-                    .single();
+       // Load user profile data from Supabase
+async function loadUserData() {
+  try {
+    const { data: profile, error: profileError } = await sb
+      .from("tdee_form")
+      .select("tdee, weight, goal_calories")
+      .eq("line_user_id", currentUserId)
+      .maybeSingle(); // เปลี่ยนจาก single()
 
-                if (profileError) {
-                    console.error('Profile error:', profileError);
-                    // Set default values if no profile found
-                    userProfile = {
-                        tdee: 2000,
-                        weight: 70,
-                        goal_calories: 2000
-                    };
-                } else {
-                    userProfile = profile;
-                 }
-                // ❗ ถ้าข้อมูล TDEE หรือข้อมูลร่างกายยังไม่ครบ → หยุดและแจ้งเตือน
-if (!userProfile || !userProfile.tdee || !userProfile.weight || !userProfile.goal_calories) {
-    alert("ก่อนดู Dashboard ต้องกรอกข้อมูลร่างกายก่อนนะคะ ❤️");
-    window.location.href = "https://liff.line.me/2007859046-AM0LQo0g"; 
-    return;
-}
+    // ❌ ยังไม่มี record ใน DB เลย
+    if (!profile) {
+      alert("ก่อนดู Dashboard ต้องกรอกข้อมูลร่างกายก่อนนะคะ ❤️");
+      window.location.href = "https://liff.line.me/2007859046-AM0LQo0g";
+      return;
+    }
+
+    // ❌ มี record แต่ข้อมูลยังไม่ครบ (auto-created case)
+    if (
+      profile.tdee == null ||
+      profile.weight == null ||
+      profile.goal_calories == null
+    ) {
+      alert("ก่อนดู Dashboard ต้องกรอกข้อมูลร่างกายก่อนนะคะ ❤️");
+      window.location.href = "https://liff.line.me/2007859046-AM0LQo0g";
+      return;
+    }
+
+    // ✅ เทียบเท่า else เดิมของคุณ
+    userProfile = profile;
 
                 // Calculate nutrition goals based on body weight and TDEE
                 const calories = userProfile.goal_calories || userProfile.tdee;
@@ -1036,6 +1039,7 @@ function smoothGo(url) {
   
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a583a5147632731',t:'MTc2NDMxNTczOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
