@@ -1103,6 +1103,34 @@ function goToSlide(index) {
   updateSliderControls();
 }
 
+function bindHorizontalSwipe() {
+  const trackEl = document.getElementById('media-slider-track');
+  if (!trackEl) return;
+
+  let startX = 0;
+  let handled = false;
+
+  trackEl.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    handled = false;
+  }, { passive: true });
+
+  trackEl.addEventListener('touchmove', (e) => {
+    if (handled) return;
+
+    const diff = e.touches[0].clientX - startX;
+    const threshold = Math.min(window.innerWidth * 0.15, 120);
+
+    if (diff < -threshold) {
+      goToSlide(currentSlideIndex + 1);
+      handled = true;
+    } else if (diff > threshold) {
+      goToSlide(currentSlideIndex - 1);
+      handled = true;
+    }
+  }, { passive: true });
+}
+   
 function updateSliderControls() {
   if (currentMediaIndex === null) return;
 
@@ -1488,6 +1516,8 @@ requestAnimationFrame(() => {
   loadComments();
   updateLikeCount(post.id);
   goToSlide(0);
+  bindHorizontalSwipe();
+
 
  // 🔥 Auto play / pause Reels
 pauseAllReelVideos();
@@ -1911,6 +1941,7 @@ initializeLiff();
 
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
