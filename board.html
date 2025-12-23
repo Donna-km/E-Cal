@@ -1740,7 +1740,7 @@ if (trackEl) {
    // ===============================
 // Vertical Swipe (change post)
 // ===============================
-const verticalEl = document.querySelector('.media-slider');
+const verticalEl = document.getElementById('media-slider-viewport');
 
 if (verticalEl) {
   verticalEl.addEventListener('touchstart', (e) => {
@@ -1765,7 +1765,7 @@ if (verticalEl) {
 
     // ✅ vertical → เปลี่ยน post
     if (swipeAxisLocked === 'vertical') {
-      e.preventDefault(); // 🔑 กัน scroll เฉพาะแนวตั้ง
+      e.preventDefault(); // 🔑 จำเป็นมากใน LIFF
 
       const threshold = Math.min(window.innerHeight * 0.15, 120);
 
@@ -1778,13 +1778,15 @@ if (verticalEl) {
       }
     }
 
-    // 👉 horizontal → ปล่อย event ผ่าน (slider รูปจะทำงาน)
+    // 👉 horizontal → ปล่อยผ่านให้ track จัดการ
   }, { passive: false });
 
   verticalEl.addEventListener('touchend', () => {
     swipeAxisLocked = null;
   });
 }
+
+  
 
   function goToNextPost() {
   if (currentMediaIndex === null) return;
@@ -1910,6 +1912,7 @@ initializeLiff();
 
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
