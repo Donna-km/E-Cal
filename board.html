@@ -616,7 +616,8 @@ let currentComments = [];
 let currentMediaIndex = null;
 let currentSlideIndex = 0;
 let startY = 0;
-let verticalSwipeHandled = false; 
+let startX = 0;
+let swipeAxisLocked = null;
 let isAnimatingPost = false;   
 let replyingToCommentId = null;
 
@@ -1741,41 +1742,55 @@ if (trackEl) {
 // Vertical Swipe (change post)
 // ===============================
 const verticalEl = document.querySelector('.media-slider');
+let startX = 0;
+let startY = 0;
+let swipeAxisLocked = null; // 'vertical' | 'horizontal'
 
 if (verticalEl) {
   verticalEl.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
-    verticalSwipeHandled = false;
+    swipeAxisLocked = null;
   }, { passive: true });
 
   verticalEl.addEventListener('touchmove', (e) => {
-    e.preventDefault(); // 🔑 สำคัญมากใน LIFF
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
 
-    if (verticalSwipeHandled) return;
+    // 🔒 lock แกนครั้งแรก
+    if (!swipeAxisLocked) {
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
 
-    const currentY = e.touches[0].clientY;
-    const diffY = currentY - startY;
-    const threshold = Math.min(window.innerHeight * 0.15, 120);
-
-    // ⬆️ swipe up → next post
-    if (diffY < -threshold) {
-      goToNextPost();
-      verticalSwipeHandled = true;
+      swipeAxisLocked =
+        Math.abs(dy) > Math.abs(dx)
+          ? 'vertical'
+          : 'horizontal';
     }
 
-    // ⬇️ swipe down → prev post
-    if (diffY > threshold) {
-      goToPrevPost();
-      verticalSwipeHandled = true;
+    // ✅ vertical → เปลี่ยน post
+    if (swipeAxisLocked === 'vertical') {
+      e.preventDefault(); // 🔑 กัน scroll เฉพาะแนวตั้ง
+
+      const threshold = Math.min(window.innerHeight * 0.15, 120);
+
+      if (dy < -threshold) {
+        goToNextPost();
+        swipeAxisLocked = 'locked';
+      } else if (dy > threshold) {
+        goToPrevPost();
+        swipeAxisLocked = 'locked';
+      }
     }
-  }, { passive: false }); // 🔑 ต้องเป็น false
+
+    // 👉 horizontal → ปล่อย event ผ่าน (slider รูปจะทำงาน)
+  }, { passive: false });
 
   verticalEl.addEventListener('touchend', () => {
-    verticalSwipeHandled = false;
+    swipeAxisLocked = null;
   });
 }
 
-function goToNextPost() {
+  function goToNextPost() {
   if (currentMediaIndex === null) return;
   if (currentMediaIndex >= allPosts.length - 1) return;
   if (isAnimatingPost) return;
@@ -1819,34 +1834,33 @@ function goToPrevPost() {
 
   isAnimatingPost = true;
   const slider = document.querySelector('.media-slider');
+  const viewport = document.getElementById('media-slider-viewport');
 
+  // animate ลง
   slider.style.transition =
     'transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1)';
   slider.style.transform = 'translateY(100%)';
 
-  slider.addEventListener(
-    'transitionend',
-    function handler() {
-      slider.removeEventListener('transitionend', handler);
+  slider.addEventListener('transitionend', () => {
+    stopAllVideos();
 
-      stopAllVideos();
+    // 🔥 เคลียร์ viewport ก่อน (กันภาพเก่า)
+    viewport.innerHTML = `
+      <div id="media-slider-track" class="media-slider-track"></div>
+    `;
 
-      slider.style.transition = 'none';
-      slider.style.opacity = '0';
-      slider.style.transform = 'translateY(0)';
+    slider.style.transition = 'none';
+    slider.style.transform = 'translateY(0)';
 
-      openMediaView(currentMediaIndex - 1);
+    // rebuild post ใหม่
+    openMediaView(currentMediaIndex - 1);
 
-      slider.offsetHeight;
+    viewport.offsetHeight; // force repaint
 
-      slider.style.transition = 'opacity 0.12s ease-out';
-      slider.style.opacity = '1';
-
-      isAnimatingPost = false;
-    },
-    { once: true }
-  );
+    isAnimatingPost = false;
+  }, { once: true });
 }
+
 
 
 
@@ -1900,6 +1914,7 @@ initializeLiff();
 
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
