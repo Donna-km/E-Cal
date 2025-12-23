@@ -723,10 +723,20 @@ async function loadData() {
       throw postsError;
     }
 
-   // 🔹 โหลดโพสต์ pending ของ "ฉัน"
-let myPendingPosts = [];
+  const allPostsMap = new Map();
 
-if (currentUserId) {
+(posts || []).forEach(p => allPostsMap.set(p.id, { ...p, _pending: false }));
+(myPendingPosts || []).forEach(p => {
+  if (!allPostsMap.has(p.id)) allPostsMap.set(p.id, { ...p, _pending: true });
+});
+
+allPosts = Array.from(allPostsMap.values());
+console.log('📦 Final allPosts:', allPosts.length);
+
+   
+   let myPendingPosts = [];
+
+if (currentUser?.userId) {
   const { data: pendingData, error: pendingError } = await sb
     .from('user_challenges_proof')
     .select(`
@@ -738,19 +748,17 @@ if (currentUserId) {
         thumbnail_url
       )
     `)
-    .eq('line_user_id', currentUserId)
+    .eq('line_user_id', currentUser.userId)
     .eq('share_consent', true)
     .eq('is_verified', false)
     .order('proof_date', { ascending: false });
 
-  if (pendingError) {
-    console.error('❌ Error loading pending posts:', pendingError);
-  }
-
+  if (pendingError) console.error('❌ Error loading pending posts:', pendingError);
   myPendingPosts = pendingData || [];
 }
 
 console.log('🕒 myPendingPosts:', myPendingPosts.length);
+
 
     
     console.log('📦 Raw posts data:', posts);
@@ -1493,6 +1501,13 @@ function renderGallery() {
     const firstMedia = post.media[0];
     const mediaCount = post.media.length;
 
+   // ✅ Pending badge (วางตรงนี้)
+  const pendingBadge = post._pending
+    ? `<div class="absolute top-2 left-2 bg-yellow-400 text-black text-xs px-2 py-1 rounded-full font-semibold z-10">
+         🕒 กำลังตรวจสอบ
+       </div>`
+    : '';
+
     // -----------------------------
     // Video Thumbnail Version
     // -----------------------------
@@ -1526,11 +1541,13 @@ function renderGallery() {
     // Image Version
     // -----------------------------
     else if (firstMedia) {
-      div.innerHTML = `
-        <div class="relative" style="border-radius: 12px; overflow: hidden;">
-          <img src="${firstMedia.url}" 
-               alt="Gallery image" 
-               class="w-full h-auto block object-cover">
+  div.innerHTML = `
+    <div class="relative" style="border-radius: 12px; overflow: hidden;">
+      ${pendingBadge}
+      <img src="${firstMedia.url}" 
+           alt="Gallery image" 
+           class="w-full h-auto block object-cover">
+
 
           ${mediaCount > 1 ? `<div class="media-count-badge">1/${mediaCount}</div>` : ''}
         </div>
@@ -1605,13 +1622,14 @@ function renderSavedGrid() {
 
     // ===== IMAGE =====
     else if (firstMedia) {
-      div.innerHTML = `
-        <div class="relative" style="border-radius:12px; overflow:hidden;">
-          <img
-            src="${firstMedia.url}"
-            alt="Saved image"
-            class="w-full h-auto block object-cover"
-          />
+  div.innerHTML = `
+    <div class="relative" style="border-radius:12px; overflow:hidden;">
+      ${pendingBadge}
+      <img
+        src="${firstMedia.url}"
+        alt="Saved image"
+        class="w-full h-auto block object-cover"
+      />
 
           <div class="saved-badge">
             <i class="fi fi-sr-bookmark"></i>
@@ -1873,6 +1891,7 @@ initializeLiff();
 
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
