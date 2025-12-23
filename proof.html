@@ -184,6 +184,8 @@
     let urlParams = {};
     let liffProfile = null;
     let isLoading = false;
+    let successMessageFromDB = null;
+
     
     const encouragementMessages = [
       "โห วันนี้เล่นใหญ่!! เดี๋ยวแคลแอบบอกเพื่อนนะว่าเธอมุ่งมั่นมาก 😏🔥",
@@ -569,7 +571,19 @@ for (const file of selectedFiles) {
     }
 
     // ⬆️⬆️⬆️ จบส่วนใหม่ ⬆️⬆️⬆️
-    
+// 🔹 ดึงข้อความแสดงความยินดีจาก user_mission_logs
+const { data: missionLog } = await supabaseClient
+  .from('user_mission_logs')
+  .select('proof_message')
+  .eq('line_user_id', urlParams.line_user_id)
+  .eq('challenge_name', urlParams.challenge_name)
+  .eq('day_number', parseInt(urlParams.day))
+  .order('sent_at', { ascending: false })
+  .limit(1)
+  .maybeSingle();
+
+successMessageFromDB = missionLog?.proof_message || null;
+   
     isLoading = false;
     currentPage = 'success';
     render();
@@ -818,11 +832,16 @@ for (const file of selectedFiles) {
       `;
     }
     
-    function renderSuccessPage() {
-      const app = document.getElementById('app');
-      const randomMessage = encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
-      const customFont = config.font_family || defaultConfig.font_family;
-      const baseSize = config.font_size || defaultConfig.font_size;
+   function renderSuccessPage() {
+  const app = document.getElementById('app');
+
+  const message =
+    successMessageFromDB ||
+    encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+
+  const customFont = config.font_family || defaultConfig.font_family;
+  const baseSize = config.font_size || defaultConfig.font_size;
+
       
       app.innerHTML = `
         <div class="max-w-2xl mx-auto fade-in" style="font-family: ${customFont}, 'Noto Sans Thai', sans-serif;">
@@ -833,7 +852,8 @@ for (const file of selectedFiles) {
             </h1>
             <div class="glass-card rounded-xl p-6 mb-6" style="background: rgba(193, 39, 45, 0.1);">
               <p class="text-lg leading-relaxed" style="font-size: ${baseSize * 1.125}px; color: ${config.text_color || defaultConfig.text_color};">
-                ${randomMessage}
+                ${message}
+
               </p>
             </div>
             <div class="mb-6">
@@ -1127,6 +1147,7 @@ function addEmoji(emoji) {
   </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a15ec9250bc7b50',t:'MTc2MzYyMDQ5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
