@@ -1,56 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>Payment Success - E-Cal</title>
+  <title>E-Cal Premium</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-green-50 flex items-center justify-center min-h-screen">
-  <div class="bg-white shadow-lg rounded-xl p-8 text-center max-w-md transition-all">
-    <div class="text-6xl mb-4" id="emoji">✅</div>
-    <h1 id="title" class="text-2xl font-bold text-green-600 mb-2">Payment Successful!</h1>
-    <p id="message" class="text-gray-600 mb-6">
-      Thank you for your payment. Your event has been confirmed 🎉
+
+<body class="bg-black flex items-center justify-center min-h-screen">
+
+  <div class="bg-black border border-zinc-800 rounded-2xl p-8 text-center max-w-md w-full shadow-2xl">
+
+    <!-- E-Cal Sticker -->
+    <img
+      src="https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/e-cal%20sticker6.png"
+      alt="E-Cal"
+      class="w-36 mx-auto mb-5"
+    />
+
+    <h1 class="text-2xl font-semibold text-red-600 mb-3 tracking-wide">
+      สมัคร Premium แล้วนะ 👑
+    </h1>
+
+    <p class="text-zinc-300 mb-7 leading-relaxed">
+      ต่อจากนี้จะกิน จะเผลอ<br>
+      <span class="text-white font-medium">อีแคลเห็นหมดนะจ๊ะ</span> 😏
     </p>
-    <a id="button"
-       href="https://e-calbot.com/community/"
-       class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition">
-       Back to Community
+
+    <a
+      href="https://liff.line.me/2007859046-BpXDWpXe"
+      class="block bg-red-700 hover:bg-red-800 text-white px-6 py-3 rounded-xl font-medium transition"
+    >
+      เข้าอีแคลเลย
     </a>
+
+    <p class="text-xs text-zinc-500 mt-4">
+      * ไม่ต้องรีบ เดี๋ยวอีแคลคุมให้เอง
+    </p>
+
   </div>
 
-  <script>
-    const type = new URLSearchParams(window.location.search).get("type");
-
-    const title = document.getElementById("title");
-    const message = document.getElementById("message");
-    const button = document.getElementById("button");
-    const emoji = document.getElementById("emoji");
-
-    if (type === "premium") {
-      document.body.classList.replace("bg-green-50", "bg-pink-50");
-      emoji.textContent = "👑";
-      title.textContent = "Welcome to E-Cal Premium!";
-      title.classList.replace("text-green-600", "text-pink-600");
-      message.textContent = "Your account has been upgraded to Premium 🎉 Enjoy unlimited access!";
-      button.textContent = "Go to home";
-      button.href = "https://liff.line.me/2007859046-BpXDWpXe";
-      button.classList.replace("bg-green-500", "bg-pink-500");
-      button.classList.replace("hover:bg-green-600", "hover:bg-pink-600");
-    } else {
-      // Default = event
-      emoji.textContent = "✅";
-      title.textContent = "Payment Successful!";
-      message.textContent = "Thank you for your payment. Your event has been confirmed 🎉";
-      button.textContent = "Back to Community";
-      button.href = "https://e-calbot.com/community/";
-    }
-  </script>
 </body>
 </html>
-
-
 
 
 
