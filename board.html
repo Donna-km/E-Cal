@@ -1298,7 +1298,7 @@ if (commentLikesData && commentLikesData.length > 0) {
 async function renderComments() {
   const commentsList = document.getElementById('comments-list');
   commentsList.innerHTML = '';
-  
+
   if (currentComments.length === 0) {
     commentsList.innerHTML = `
       <div class="text-center py-10">
@@ -1307,95 +1307,108 @@ async function renderComments() {
     `;
     return;
   }
-  
-  for (const comment of currentComments) {
-    const commentDiv = document.createElement('div');
 
-    // 🔹 ตัด flex ออกชั้นนอก → จัดระยะเหมือน IG
-    commentDiv.className = 'comment-item mb-5';
+  // แยกคอมเมนต์หลัก / reply
+  const parentComments = currentComments.filter(c => !c.parent_comment_id);
+  const replies = currentComments.filter(c => c.parent_comment_id);
 
-    const commenterData = comment.commenter_profile;
-    const profilePic =
-      commenterData?.profile_picture_url || 'https://via.placeholder.com/36';
-    const displayName =
-      commenterData?.display_name || 'ผู้ใช้งาน';
-    
-    const createdAt = new Date(comment.created_at);
-    const timeAgo = getTimeAgo(createdAt);
-    
-    // Get like count
-    const { count: likeCount } = await sb
-      .from('comment_likes')
-      .select('*', { count: 'exact', head: true })
-      .eq('comment_id', comment.id);
-    
-    const isLiked = commentLikes.has(comment.id);
-    
-    commentDiv.innerHTML = `
-      <div class="flex gap-3">
-        <!-- Avatar -->
-        <img
-          src="${profilePic}"
-          class="w-9 h-9 rounded-full object-cover flex-shrink-0"
-          alt="Profile"
-        >
+  // render คอมเมนต์หลัก + reply ใต้แม่
+  for (const comment of parentComments) {
+    await renderOneComment(comment, false);
 
-        <!-- Content -->
-        <div class="flex-1">
-          <!-- name + time -->
-          <div class="flex items-center gap-2">
-            <span class="font-semibold text-white text-sm">
-              ${displayName}
-            </span>
-            <span class="text-gray-500 text-xs">
-              ${timeAgo}
-            </span>
-          </div>
-
-          <!-- comment text -->
-          <p class="text-white text-sm mt-1 leading-snug">
-            ${escapeHtml(comment.comment_text)}
-          </p>
-
-          <!-- action row -->
-          <div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
-            <button
-              onclick="toggleCommentLike(
-                '${comment.id}',
-                this.querySelector('.heart-icon'),
-                this.querySelector('span')
-              )"
-              class="flex items-center gap-1 hover:text-white transition-colors"
-            >
-              <svg
-                class="w-4 h-4 heart-icon ${isLiked ? 'liked' : ''}"
-                fill="${isLiked ? '#C1272D' : 'none'}"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
-              </svg>
-              <span>${likeCount || ''}</span>
-            </button>
-
-            <button
-              onclick="showReplyInput('${comment.id}')"
-              class="hover:text-white transition-colors font-medium"
-            >
-              ตอบกลับ
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-    
-    commentsList.appendChild(commentDiv);
+    const childReplies = replies.filter(r => r.parent_comment_id === comment.id);
+    for (const reply of childReplies) {
+      await renderOneComment(reply, true);
+    }
   }
+}
+
+/* ============================= */
+/* render comment / reply 1 อัน  */
+/* ============================= */
+async function renderOneComment(comment, isReply) {
+  const commentsList = document.getElementById('comments-list');
+  const commentDiv = document.createElement('div');
+
+  commentDiv.className = 'comment-item mb-5';
+  if (isReply) commentDiv.style.marginLeft = '36px';
+
+  const commenterData = comment.commenter_profile;
+  const profilePic =
+    commenterData?.profile_picture_url || 'https://via.placeholder.com/36';
+  const displayName =
+    commenterData?.display_name || 'ผู้ใช้งาน';
+
+  const createdAt = new Date(comment.created_at);
+  const timeAgo = getTimeAgo(createdAt);
+
+  const { count: likeCount } = await sb
+    .from('comment_likes')
+    .select('*', { count: 'exact', head: true })
+    .eq('comment_id', comment.id);
+
+  const isLiked = commentLikes.has(comment.id);
+
+  commentDiv.innerHTML = `
+    <div class="flex gap-3">
+      <img
+        src="${profilePic}"
+        class="w-9 h-9 rounded-full object-cover flex-shrink-0"
+      >
+
+      <div class="flex-1">
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-white text-sm">
+            ${displayName}
+          </span>
+          <span class="text-gray-500 text-xs">
+            ${timeAgo}
+          </span>
+        </div>
+
+        <p class="text-white text-sm mt-1 leading-snug">
+          ${escapeHtml(comment.comment_text)}
+        </p>
+
+        ${!isReply ? `
+        <div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
+          <button
+            onclick="toggleCommentLike(
+              '${comment.id}',
+              this.querySelector('.heart-icon'),
+              this.querySelector('span')
+            )"
+            class="flex items-center gap-1 hover:text-white transition-colors"
+          >
+            <svg
+              class="w-4 h-4 heart-icon ${isLiked ? 'liked' : ''}"
+              fill="${isLiked ? '#C1272D' : 'none'}"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
+            <span>${likeCount || ''}</span>
+          </button>
+
+          <button
+            onclick="showReplyInput('${comment.id}')"
+            class="hover:text-white transition-colors font-medium"
+          >
+            ตอบกลับ
+          </button>
+        </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+
+  commentsList.appendChild(commentDiv);
 }
 
 
@@ -2080,6 +2093,7 @@ initializeLiff();
 
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
