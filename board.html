@@ -1469,24 +1469,28 @@ async function postComment(event) {
 
 // Helper function: Get time ago
 function getTimeAgo(date) {
+  // แปลง UTC → ไทย (+7)
+  const thaiDate = new Date(date.getTime() + 7 * 60 * 60 * 1000);
   const now = new Date();
-  const seconds = Math.floor((now - date) / 1000);
-  
+
+  const seconds = Math.floor((now - thaiDate) / 1000);
+
   if (seconds < 60) return 'เมื่อสักครู่';
-  
+
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes} นาทีที่แล้ว`;
-  
+
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours} ชั่วโมงที่แล้ว`;
-  
+
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days} วันที่แล้ว`;
-  
-  const weeks = Math.floor(days / 7);
-  if (weeks < 4) return `${weeks} สัปดาห์ที่แล้ว`;
-  
-  return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+
+  return thaiDate.toLocaleDateString('th-TH', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
 }
 
 // Helper function: Escape HTML
@@ -2076,6 +2080,7 @@ initializeLiff();
 
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
