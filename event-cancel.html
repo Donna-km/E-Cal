@@ -1,54 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
   <meta charset="UTF-8">
   <title>Payment Cancelled - E-Cal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-red-50 flex items-center justify-center min-h-screen">
-  <div class="bg-white shadow-lg rounded-xl p-8 text-center max-w-md transition-all">
-    <div id="emoji" class="text-6xl mb-4">❌</div>
-    <h1 id="title" class="text-2xl font-bold text-red-600 mb-2">Payment Cancelled</h1>
-    <p id="message" class="text-gray-600 mb-6">
-      You cancelled the payment. No worries, you can try again anytime.
+
+<body class="bg-black flex items-center justify-center min-h-screen">
+
+  <div class="bg-black border border-zinc-800 rounded-2xl p-8 text-center max-w-md w-full shadow-2xl">
+
+    <!-- E-Cal Cry Sticker -->
+    <img
+      src="https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/e-cal%20sticker%20cry.png"
+      alt="E-Cal sad"
+      class="w-36 mx-auto mb-5"
+    />
+
+    <h1 class="text-2xl font-semibold text-red-600 mb-3 tracking-wide">
+      ยังไม่เอาก็ได้ 😌
+    </h1>
+
+    <p class="text-zinc-300 mb-7 leading-relaxed">
+      เค้กยังอยู่ตรงนั้น<br>
+      แต่วันนี้เธอเลือกจะเข้มแข็งเอง<br>
+      <span class="text-white font-medium">อีแคลเข้าใจนะ</span>
     </p>
-    <a id="button"
-       href="https://e-calbot.com/community/"
-       class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition">
-       Back to Community
+
+    <a
+      href="https://liff.line.me/2007859046-BpXDWpXe"
+      class="block bg-red-700 hover:bg-red-800 text-white px-6 py-3 rounded-xl font-medium transition"
+    >
+      กลับไปคิดอีกรอบก็ได้
     </a>
+
+    <p class="text-xs text-zinc-500 mt-4">
+      * เมื่อไหร่พร้อม อีแคลก็ยังอยู่ตรงนี้
+    </p>
+
   </div>
 
-  <script>
-    const type = new URLSearchParams(window.location.search).get("type");
-
-    const title = document.getElementById("title");
-    const message = document.getElementById("message");
-    const button = document.getElementById("button");
-    const emoji = document.getElementById("emoji");
-
-    if (type === "premium") {
-      // เปลี่ยนสีและข้อความสำหรับ Premium
-      document.body.classList.replace("bg-red-50", "bg-pink-50");
-      emoji.textContent = "💳";
-      title.textContent = "Premium Payment Cancelled";
-      title.classList.replace("text-red-600", "text-pink-600");
-      message.textContent =
-        "You cancelled the Premium upgrade. You can upgrade anytime to unlock unlimited features 💪";
-      button.textContent = "Back to Home";
-      button.href = "https://liff.line.me/2007859046-BpXDWpXe";
-      button.classList.replace("bg-red-500", "bg-pink-500");
-      button.classList.replace("hover:bg-red-600", "hover:bg-pink-600");
-    } else {
-      // Default = Event
-      emoji.textContent = "❌";
-      title.textContent = "Payment Cancelled";
-      message.textContent = "You cancelled the event payment. No worries, you can join another event anytime 🎈";
-      button.textContent = "Back to Community";
-      button.href = "https://e-calbot.com/community/";
-    }
-  </script>
 </body>
 </html>
+
 
