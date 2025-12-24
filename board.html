@@ -469,7 +469,7 @@
     </div>
    </div>
    
-   <!-- PAGE 3: Comments -->
+ <!-- PAGE 3: Comments -->
 <div id="comments-page" class="comments-sheet">
   <div style="height: 100%; display: flex; flex-direction: column; background: #000;">
     
@@ -496,6 +496,15 @@
       </div>
     </div>
 
+    <!-- COMMENTS CONTAINER (วางตรงนี้) -->
+    <div id="comments-container" style="flex:1; overflow-y:auto; padding:16px; padding-bottom:140px;">
+      <div id="comments-list"></div>
+    </div>
+
+  </div>
+</div>
+
+
      
      <!-- Comments list -->
      <div style="flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 160px;" id="comments-container">
@@ -503,43 +512,65 @@
       </div>
      </div>
    
- <!-- Comment input - ABSOLUTE POSITION (FIX WHITE SCREEN) -->
-<div style="position: absolute; bottom: 0; left: 0; right: 0;
-            background: #000; border-top: 1px solid #374151;
-            z-index: 30; flex-shrink: 0;">
-  
+ <!-- Comment input - ABSOLUTE (ต้องเป็น absolute เท่านั้น) -->
+<div style="
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #000;
+  border-top: 1px solid #374151;
+  z-index: 30;
+  flex-shrink: 0;
+">
   <div style="padding: 16px; position: relative;">
-    
+
     <!-- Emoji Picker -->
     <div id="emoji-picker" class="emoji-picker"></div>
 
-    <div style="display: flex; align-items: center; gap: 12px;
-                background: #3D3D3D; border-radius: 9999px;
-                padding: 14px 20px;
-                box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);">
-      
-      <button id="emoji-trigger" onclick="toggleEmojiPicker()"
-        style="padding: 4px; background: transparent; border: none;
-               cursor: pointer; font-size: 20px;">
+    <div style="
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #3D3D3D;
+      border-radius: 9999px;
+      padding: 14px 20px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+    ">
+      <button
+        id="emoji-trigger"
+        onclick="toggleEmojiPicker()"
+        style="padding: 4px; background: transparent; border: none; cursor: pointer; font-size: 20px;">
         😊
       </button>
 
-      <input type="text" id="comment-input" placeholder="เพิ่มคอมเมนต์..."
-        style="flex: 1; background: transparent; color: white;
-               outline: none; border: none; font-size: 15px;"
-        onkeypress="if(event.key === 'Enter') postComment(event)">
+      <input
+        type="text"
+        id="comment-input"
+        placeholder="เพิ่มคอมเมนต์..."
+        style="flex: 1; background: transparent; color: white; outline: none; border: none; font-size: 15px;"
+        onkeypress="if(event.key === 'Enter') postComment(event)"
+      >
 
-      <button onclick="postComment(event)"
-        style="padding: 8px; background: #C1272D; border: none;
-               cursor: pointer; display: flex; align-items: center;
-               justify-content: center; border-radius: 50%;
-               width: 36px; height: 36px; transition: all 0.2s;">
-        <svg style="width: 20px; height: 20px; color: white; fill: white;"
-             viewBox="0 0 24 24">
+      <button
+        onclick="postComment(event)"
+        style="
+          padding: 8px;
+          background: #C1272D;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          width: 36px;
+          height: 36px;
+          transition: all 0.2s;
+        ">
+        <svg style="width: 20px; height: 20px; fill: white;" viewBox="0 0 24 24">
           <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
         </svg>
       </button>
-
     </div>
   </div>
 </div>
@@ -2090,6 +2121,7 @@ initializeLiff();
 
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
