@@ -399,6 +399,19 @@
   overflow: hidden;
   background: black;
 }
+.comment-item + .comment-item {
+  margin-top: 4px;
+}
+
+.heart-icon.liked {
+  fill: #C1272D;
+  stroke: #C1272D;
+  transform: scale(1.1);
+}
+
+.comment-item p {
+  word-break: break-word;
+}
 
 
 
@@ -1219,7 +1232,7 @@ if (commentLikesData && commentLikesData.length > 0) {
   }
 }
 
-// Render comments
+// Render comments (IG-style, minimal change)
 async function renderComments() {
   const commentsList = document.getElementById('comments-list');
   commentsList.innerHTML = '';
@@ -1235,16 +1248,20 @@ async function renderComments() {
   
   for (const comment of currentComments) {
     const commentDiv = document.createElement('div');
-    commentDiv.className = 'comment-item flex gap-3 mb-6';
-    
+
+    // 🔹 ตัด flex ออกชั้นนอก → จัดระยะเหมือน IG
+    commentDiv.className = 'comment-item mb-5';
+
     const commenterData = comment.commenter_profile;
-    const profilePic = commenterData?.profile_picture_url || 'https://via.placeholder.com/32';
-    const displayName = commenterData?.display_name || 'ผู้ใช้งาน';
+    const profilePic =
+      commenterData?.profile_picture_url || 'https://via.placeholder.com/36';
+    const displayName =
+      commenterData?.display_name || 'ผู้ใช้งาน';
     
     const createdAt = new Date(comment.created_at);
     const timeAgo = getTimeAgo(createdAt);
     
-    // Get like count for this comment
+    // Get like count
     const { count: likeCount } = await sb
       .from('comment_likes')
       .select('*', { count: 'exact', head: true })
@@ -1253,23 +1270,64 @@ async function renderComments() {
     const isLiked = commentLikes.has(comment.id);
     
     commentDiv.innerHTML = `
-      <img src="${profilePic}" class="w-8 h-8 rounded-full flex-shrink-0" alt="Profile">
-      <div class="flex-1">
-        <div class="flex items-center gap-2 mb-1">
-          <span class="font-semibold text-white text-sm">${displayName}</span>
-          <span class="text-gray-500 text-xs">${timeAgo}</span>
-        </div>
-        <p class="text-white text-sm mb-2">${escapeHtml(comment.comment_text)}</p>
-        <div class="flex items-center gap-4">
-          <button onclick="toggleCommentLike('${comment.id}', this.querySelector('.heart-icon'), this.querySelector('span'))" class="flex items-center gap-1 text-gray-400 hover:text-white transition-colors text-xs">
-            <svg class="w-4 h-4 heart-icon ${isLiked ? 'liked' : ''}" fill="${isLiked ? '#C1272D' : 'none'}" stroke="${isLiked ? '#C1272D' : 'currentColor'}" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-            </svg>
-            <span>${likeCount || 0}</span>
-          </button>
-          <button onclick="showReplyInput('${comment.id}')" class="text-gray-400 hover:text-white transition-colors text-xs font-semibold">
-            ตอบกลับ
-          </button>
+      <div class="flex gap-3">
+        <!-- Avatar -->
+        <img
+          src="${profilePic}"
+          class="w-9 h-9 rounded-full object-cover flex-shrink-0"
+          alt="Profile"
+        >
+
+        <!-- Content -->
+        <div class="flex-1">
+          <!-- name + time -->
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-white text-sm">
+              ${displayName}
+            </span>
+            <span class="text-gray-500 text-xs">
+              ${timeAgo}
+            </span>
+          </div>
+
+          <!-- comment text -->
+          <p class="text-white text-sm mt-1 leading-snug">
+            ${escapeHtml(comment.comment_text)}
+          </p>
+
+          <!-- action row -->
+          <div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
+            <button
+              onclick="toggleCommentLike(
+                '${comment.id}',
+                this.querySelector('.heart-icon'),
+                this.querySelector('span')
+              )"
+              class="flex items-center gap-1 hover:text-white transition-colors"
+            >
+              <svg
+                class="w-4 h-4 heart-icon ${isLiked ? 'liked' : ''}"
+                fill="${isLiked ? '#C1272D' : 'none'}"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
+              <span>${likeCount || ''}</span>
+            </button>
+
+            <button
+              onclick="showReplyInput('${comment.id}')"
+              class="hover:text-white transition-colors font-medium"
+            >
+              ตอบกลับ
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -1277,6 +1335,7 @@ async function renderComments() {
     commentsList.appendChild(commentDiv);
   }
 }
+
 
 // Post new comment
 async function postComment(event) {
@@ -1941,6 +2000,7 @@ initializeLiff();
 
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab37200d3a2d336',t:'MTc2NTI3MjIyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
