@@ -776,10 +776,36 @@ async function saveToDatabase() {
       setTimeout(() => t.classList.remove("show"), 2600);
     }
 
-    window.onload = () => {
-      initializeLIFF();
-      showPage("cameraPage");
-    };
+    window.onload = async () => {
+  // ❌ เปิดจากเว็บ → block ทันที
+  if (typeof liff === "undefined" || !liff.isInClient()) {
+    document.body.innerHTML = `
+      <div style="
+        height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:black;
+        color:white;
+        text-align:center;
+        padding:24px;
+      ">
+        <div>
+          <h1 style="font-size:20px;">🚫 ใช้งานผ่าน LINE เท่านั้น</h1>
+          <p style="color:#9CA3AF; margin-top:8px;">
+            ฟีเจอร์นี้ใช้ได้เฉพาะใน LINE
+          </p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // ✅ LIFF จริง → ใช้ logic เดิมของคุณ
+  await initializeLIFF();
+  showPage("cameraPage");
+};
+
   </script>
 
   <!-- ปุ่ม HOME -->
@@ -823,6 +849,7 @@ async function saveToDatabase() {
 
 </body>
 </html>
+
 
 
 
