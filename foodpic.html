@@ -328,7 +328,7 @@
 <body>
   <div class="container" id="rootContainer">
     <!-- CAMERA PAGE -->
-    <div id="cameraPage">
+    <div id="cameraPage" class="hidden">
       <div class="text-center mb-6">
         <h1 style="text-align:center; color:#FFFFFF;">
           Smart Scan
@@ -456,6 +456,13 @@
     let analysisResult = null;
     let currentUser = null;
 
+    // ⭐ Supabase client (GLOBAL – ใช้ทั้งไฟล์)
+const sb = window.supabase.createClient(
+  "https://lvtdqeerzxpznnayccmb.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM"
+);
+
+
     // LIFF init
     async function initializeLIFF() {
       try {
@@ -472,7 +479,7 @@
       }
     }
 
-    async function checkPremium(lineUserId) {
+  async function checkPremium(lineUserId) {
   const { data, error } = await sb
     .from("user_plans")
     .select("plan_type")
@@ -480,9 +487,9 @@
     .single();
 
   if (error || !data) return false;
-
   return data.plan_type === "premium";
 }
+
 
 
     function showPage(id) {
@@ -760,12 +767,7 @@ async function saveToDatabase() {
             created_at: new Date().toISOString() // PK ตอนนี้เป็น id แล้ว, ใช้ created_at ได้ปกติ
         };
 
-        // ⭐ Supabase Client
-        const sb = window.supabase.createClient(
-            "https://lvtdqeerzxpznnayccmb.supabase.co",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM"
-        );
-
+       
         const { data, error } = await sb
             .from('food_logs')
             .insert([foodLog]);
@@ -847,6 +849,7 @@ async function saveToDatabase() {
 
 </body>
 </html>
+
 
 
 
