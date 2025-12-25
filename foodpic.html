@@ -472,6 +472,19 @@
       }
     }
 
+    async function checkPremium(lineUserId) {
+  const { data, error } = await supabase
+    .from("user_plans")
+    .select("plan_type")
+    .eq("line_user_id", lineUserId)
+    .single();
+
+  if (error || !data) return false;
+
+  return data.plan_type === "premium";
+}
+
+
     function showPage(id) {
       ["cameraPage", "loadingPage", "resultPage", "successPage"].forEach(
         (page) => {
@@ -776,11 +789,23 @@ async function saveToDatabase() {
       setTimeout(() => t.classList.remove("show"), 2600);
     }
 
-    window.onload = () => {
-      initializeLIFF();
-      showPage("cameraPage");
-    };
-  </script>
+   window.onload = async () => {
+  // 1️⃣ ต้องผ่าน LIFF ก่อน
+  await initializeLIFF();
+
+  // 2️⃣ เช็คสิทธิ์ Premium
+  const isPremium = await checkPremium(currentUser.userId);
+
+  // 3️⃣ ถ้าไม่ใช่ Premium → ไปหน้า Upgrade
+  if (!isPremium) {
+    window.location.href = "https://liff.line.me/2007859046-jqRLglRW";
+    return; // ⛔ หยุดการทำงานทั้งหมด
+  }
+
+  // 4️⃣ เป็น Premium → ใช้งาน Smart Scan ได้
+  showPage("cameraPage");
+};
+
 
   <!-- ปุ่ม HOME -->
  <a href="https://liff.line.me/2007859046-BpXDWpXe"
@@ -823,6 +848,7 @@ async function saveToDatabase() {
 
 </body>
 </html>
+
 
 
 
