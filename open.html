@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>E-Cal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    .box {
+      max-width: 320px;
+      padding: 24px;
+    }
+    .error {
+      color: #ef4444;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+    .muted {
+      color: #aaa;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="box" id="app">
+    <div class="muted">กำลังตรวจสอบลิงก์…</div>
+  </div>
+
+  <script>
+    // 🔑 ใส่ของจริงของคุณ
+    const SUPABASE_URL = "https://lvtdqeerzxpznnayccmb.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_PUBLIC_ANON_KEY";
+
+    const supabase = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+    const app = document.getElementById("app");
+
+    function showExpired() {
+      app.innerHTML = `
+        <div class="error">⛔ ลิงก์หมดอายุแล้ว</div>
+        <div class="muted">
+          ลิงก์นี้มีอายุ 24 ชั่วโมง<br/>
+          กรุณาขอลิงก์ใหม่จาก E-Cal
+        </div>
+      `;
+    }
+
+    function showInvalid() {
+      app.innerHTML = `
+        <div class="error">⚠️ ลิงก์ไม่ถูกต้อง</div>
+        <div class="muted">
+          กรุณาเปิดลิงก์จาก LINE อีกครั้ง
+        </div>
+      `;
+    }
+
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+
+      if (!token) {
+        showInvalid();
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("temp_links")
+        .select("target_url, expires_at")
+        .eq("token", token)
+        .single();
+
+      if (error || !data) {
+        showInvalid();
+        return;
+      }
+
+      const now = new Date();
+      const expiresAt = new Date(data.expires_at);
+
+      if (now > expiresAt) {
+        showExpired();
+        return;
+      }
+
+      // ✅ ยังไม่หมดอายุ → redirect
+      window.location.replace(data.target_url);
+    })();
+  </script>
+</body>
+</html>
