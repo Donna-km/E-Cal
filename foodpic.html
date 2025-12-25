@@ -456,15 +456,6 @@
     let analysisResult = null;
     let currentUser = null;
 
-const SUPABASE_URL = "https://lvtdqeerzxpznnayccmb.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM"; // key เดิมที่คุณใช้
-
-const supabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-);
-
-
     // LIFF init
     async function initializeLIFF() {
       try {
@@ -482,7 +473,7 @@ const supabase = window.supabase.createClient(
     }
 
     async function checkPremium(lineUserId) {
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from("user_plans")
     .select("plan_type")
     .eq("line_user_id", lineUserId)
@@ -856,6 +847,7 @@ async function saveToDatabase() {
 
 </body>
 </html>
+
 
 
 
