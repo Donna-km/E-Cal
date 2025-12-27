@@ -1,437 +1,319 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ติดต่อทีมงาน | แจ้งปัญหาการใช้งาน</title>
-    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.4.2/uicons-regular-rounded/css/uicons-regular-rounded.css">
 
-<style>
-/* ===== Weight Style for Contact Us ===== */
-body {
-  background-color: #000000 !important;
-  color: #FFFFFF !important;
-  font-family: 'Inter', sans-serif;
-  box-sizing: border-box;
-}
-.container, .w-full.max-w-md, .bg-white {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-radius: 20px !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  backdrop-filter: blur(12px);
-}
-h1, h2, h3, h4, h5, h6, p, span, label, div, a {
-  color: #FFFFFF !important;
-}
-input, select, textarea {
-  background-color: #000000 !important;
-  border: 1px solid #C1272D !important;
-  color: #FFFFFF !important;
-  border-radius: 0.75rem !important;
-}
-input::placeholder, textarea::placeholder {
-  color: rgba(255, 255, 255, 0.6);
-}
-button, .btn, [type="button"], [type="submit"], a.button, .custom-pink {
-  background-color: #C1272D !important;
-  color: #FFFFFF !important;
-  border: none !important;
-  border-radius: 0.75rem !important;
-  transition: all 0.25s ease;
-}
-button:hover, .btn:hover, [type="button"]:hover, [type="submit"]:hover, a.button:hover {
-  background-color: #a01f24 !important;
-}
-.text-gray-600, .text-gray-700, .text-gray-800 {
-  color: #FFFFFF !important;
-}
-.border-gray-200, .border-gray-300 {
-  border-color: #C1272D !important;
-}
-.radio-label {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: #FFFFFF !important;
-}
-.radio-label:hover {
-  border-color: #C1272D !important;
-}
-.radio-dot {
-  background-color: #C1272D !important;
-}
-.custom-pink-text, .text-pink-500 {
-  color: #FFFFFF !important;
-}
-.bg-green-100 {
-  background-color: rgba(255,255,255,0.08) !important;
-  border: 1px solid #C1272D !important;
-}
-.text-green-500 {
-  color: #FFFFFF !important;
-}
-.success-animation {
-  color: #FFFFFF !important;
-}
-#homeButton, .fixed.bottom-6.right-6 {
-  background-color: #C1272D !important;
-  color: #FFFFFF !important;
-}
-#homeButton:hover, .fixed.bottom-6.right-6:hover {
-  background-color: #a01f24 !important;
+  <title>Contact Us • E-Cal</title>
+
+  <style>
+    :root{
+      --bg:#050505;
+      --card:#0e0e0f;
+      --card2:#121214;
+      --red:#C1272D;
+      --red2:#ff3b30;
+      --text:#f5f5f7;
+      --muted:#a9abb3;
+      --line:#22c55e;
+      --stroke: rgba(255,255,255,.08);
+      --shadow: 0 20px 60px rgba(0,0,0,.55);
+      --radius: 22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Thai", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background:
+        radial-gradient(900px 600px at 20% -10%, rgba(193,39,45,.35), transparent 55%),
+        radial-gradient(700px 500px at 90% 10%, rgba(255,59,48,.18), transparent 60%),
+        radial-gradient(900px 650px at 60% 120%, rgba(193,39,45,.22), transparent 60%),
+        var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .wrap{
+      width:min(560px, 100%);
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:999px;background:var(--red);
+      box-shadow: 0 0 0 6px rgba(193,39,45,.18);
+    }
+    .title{
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .close{
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.2s;
+    }
+    .close:hover{transform:translateY(-1px); border-color: rgba(255,255,255,.16)}
+    .close:active{transform:translateY(0px); opacity:.9}
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(500px 200px at 20% 0%, rgba(193,39,45,.35), transparent 60%),
+        radial-gradient(420px 220px at 90% 30%, rgba(255,59,48,.18), transparent 55%);
+      pointer-events:none;
+      opacity:.9;
+    }
+    .inner{
+      position:relative;
+      padding:18px 18px 16px;
+      display:grid;
+      gap:14px;
+    }
+
+    .hero{
+      background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.55));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      overflow:hidden;
+      display:grid;
+      grid-template-columns: 120px 1fr;
+      gap:14px;
+      padding:14px;
+      align-items:center;
+    }
+    .hero img{
+      width:120px; height:120px;
+      object-fit:cover;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background:#0b0b0c;
+    }
+    .hero h1{
+      margin:0;
+      font-size:18px;
+      line-height:1.15;
+      font-weight:900;
+    }
+    .hero p{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.55;
+    }
+
+    .msg{
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding:14px;
+    }
+    .msg .lead{
+      font-size:15px;
+      line-height:1.6;
+      margin:0;
+    }
+    .msg .sub{
+      margin:10px 0 0;
+      color:var(--muted);
+      font-size:13.5px;
+      line-height:1.6;
+    }
+
+    .cta{
+      display:grid;
+      gap:10px;
+      align-items:center;
+      justify-items:center;
+      padding:6px 0 2px;
+    }
+
+    .hint{
+      color:var(--muted);
+      font-size:12.5px;
+      text-align:center;
+      line-height:1.5;
+    }
+
+    .lineBtnWrap{
+      width:100%;
+      display:flex;
+      justify-content:center;
+    }
+    /* ทำให้ปุ่ม LINE ดูเข้าธีม */
+    .lineBtnWrap a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(34,197,94,.18), rgba(34,197,94,.08));
+      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+      transition: .2s;
+      text-decoration:none;
+    }
+    .lineBtnWrap a:hover{ transform: translateY(-1px); border-color: rgba(34,197,94,.35);}
+    .lineBtnWrap a:active{ transform: translateY(0px); opacity:.9;}
+    .lineBtnWrap img{
+      display:block;
+      height:36px;
+    }
+
+    .footer{
+      margin-top:12px;
+      text-align:center;
+      color:rgba(255,255,255,.35);
+      font-size:12px;
+    }
+
+    /* มือถือ */
+    @media (max-width: 420px){
+      .hero{ grid-template-columns: 1fr; text-align:center;}
+      .hero img{ margin:0 auto; width:132px; height:132px;}
+    }
+      .ecal-home-btn{
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(180deg, #ff4d6d, #c1272d);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  box-shadow: 0 12px 30px rgba(193,39,45,.55);
+  font-size: 28px;
+  z-index: 9999;
+  text-decoration: none;
+  transition: all .2s ease;
 }
 
-/* ===== Hide LINE Profile Box (after login) ===== */
-.bg-white.rounded-xl.p-3.mb-4.flex.items-center.shadow-sm {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
+.ecal-home-btn:hover{
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 16px 36px rgba(255,57,116,.65);
 }
 
-</style>
+.ecal-home-btn:active{
+  transform: scale(.96);
+  opacity: .9;
+}
 
+  </style>
 </head>
-<body class="min-h-full custom-cream font-sans">
-    <div class="min-h-full flex items-center justify-center p-4">
-        <div class="w-full max-w-md">
-            <!-- Header -->
-            <div class="text-center mb-8 fade-in">
-                <div class="inline-flex items-center justify-center w-16 h-16 custom-pink rounded-full mb-4">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                    </svg>
-                </div>
-                <h1 class="text-2xl font-bold custom-pink-text mb-2">ติดต่อทีมงาน</h1>
-                <p class="text-gray-600 text-sm">แจ้งปัญหาการใช้งานหรือสอบถามข้อมูล</p>
-            </div>
 
-            <!-- Contact Form -->
-            <div id="contactForm" class="bg-white rounded-2xl shadow-lg p-6 fade-in">
-                <form id="messageForm">
-                    <!-- Contact Type -->
-                    <div class="mb-6">
-                        <label for="contactType" class="block text-sm font-medium text-gray-700 mb-3">ประเภทการติดต่อ</label>
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-pink-200 transition-colors radio-label">
-                                <input type="radio" name="contactType" value="problem" class="sr-only" required>
-                                <div class="flex items-center">
-                                    <div class="w-5 h-5 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center radio-custom">
-                                        <div class="w-2 h-2 bg-pink-500 rounded-full hidden radio-dot"></div>
-                                    </div>
-                                    <div>
-                                        <div class="flex items-center mb-1">
-                                            <svg class="w-4 h-4 custom-pink-text mr-2 radio-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                                            </svg>
-                                            <span class="text-sm font-medium text-gray-700 radio-text">แจ้งปัญหา</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </label>
-                            <label class="flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-pink-200 transition-colors radio-label">
-                                <input type="radio" name="contactType" value="inquiry" class="sr-only" required>
-                                <div class="flex items-center">
-                                    <div class="w-5 h-5 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center radio-custom">
-                                        <div class="w-2 h-2 bg-pink-500 rounded-full hidden radio-dot"></div>
-                                    </div>
-                                    <div>
-                                        <div class="flex items-center mb-1">
-                                            <svg class="w-4 h-4 custom-pink-text mr-2 radio-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                            <span class="text-sm font-medium text-gray-700 radio-text">สอบถาม</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
+<body>
+  <div class="wrap">
 
-                    <!-- Name -->
-                    <div class="mb-4">
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">ชื่อ-นามสกุล</label>
-                        <input type="text" id="name" name="name" required 
-                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus transition-all duration-200"
-                               placeholder="กรุณาระบุชื่อ-นามสกุล">
-                    </div>
-
-                    <!-- Email -->
-                    <div class="mb-4">
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">อีเมล</label>
-                        <input type="email" id="email" name="email" required 
-                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus transition-all duration-200"
-                               placeholder="example@email.com">
-                    </div>
-
-                    <!-- Subject -->
-                    <div class="mb-4">
-                        <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">หัวข้อ</label>
-                        <input type="text" id="subject" name="subject" required 
-                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus transition-all duration-200"
-                               placeholder="หัวข้อที่ต้องการติดต่อ">
-                    </div>
-
-                    <!-- Message -->
-                    <div class="mb-6">
-                        <label for="message" class="block text-sm font-medium text-gray-700 mb-2">รายละเอียด</label>
-                        <textarea id="message" name="message" rows="4" required 
-                                  class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus transition-all duration-200 resize-none"
-                                  placeholder="กรุณาระบุรายละเอียดของปัญหาหรือข้อสอบถาม"></textarea>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" id="submitBtn" 
-                            class="w-full custom-pink text-white py-3 px-6 rounded-xl font-medium hover:opacity-90 transition-all duration-200 flex items-center justify-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                        </svg>
-                        ส่งข้อความ
-                    </button>
-                </form>
-            </div>
-
-            <!-- Success Message -->
-            <div id="successMessage" class="bg-white rounded-2xl shadow-lg p-6 text-center hidden">
-                <div class="success-animation">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                        <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                    </div>
-                    <h2 class="text-xl font-bold text-gray-800 mb-2">ส่งข้อความสำเร็จ!</h2>
-                    <p class="text-gray-600 mb-6">ทีมงานจะติดต่อกลับภายใน 24 ชั่วโมง</p>
-                    <button id="sendAnotherBtn" class="custom-pink text-white py-2 px-6 rounded-xl font-medium hover:opacity-90 transition-all duration-200">
-                        ส่งข้อความใหม่
-                    </button>
-                </div>
-            </div>
-        </div>
+    <div class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <div class="title">E-Cal Support</div>
+      </div>
+      <!-- ปุ่มปิด: ถ้าเปิดแบบ overlay/modal ในเว็บคุณ สามารถผูก event เองได้ -->
+      <button class="close" onclick="goBackOrClose()">ปิด</button>
     </div>
 
-    <script>
-        // LIFF Initialization
-        async function initializeLiff() {
-            try {
-                await liff.init({ liffId: "2007859046-0L6j9X6m" });
-                
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                    return;
-                }
-                
-                const profile = await liff.getProfile();
-                
-                // Auto-fill user information
-                document.getElementById('name').value = profile.displayName;
-                
-                // Show user info in header
-                const userInfoDiv = document.createElement('div');
-                userInfoDiv.className = 'bg-white rounded-xl p-3 mb-4 flex items-center shadow-sm';
-                userInfoDiv.innerHTML = `
-                    <img src="${profile.pictureUrl}" alt="Profile" class="w-10 h-10 rounded-full mr-3">
-                    <div>
-                        <p class="text-sm font-medium text-gray-800">${profile.displayName}</p>
-                        <p class="text-xs text-gray-500">เข้าสู่ระบบผ่าน LINE</p>
-                    </div>
-                `;
-                
-                const header = document.querySelector('.text-center.mb-8');
-                header.appendChild(userInfoDiv);
-                
-                console.log('LIFF initialized successfully');
-                console.log('User profile:', profile);
-                
-            } catch (error) {
-                console.error('LIFF initialization failed:', error);
-                // Continue without LIFF if initialization fails
-            }
-        }
-        
-        // Initialize LIFF when page loads
-        window.addEventListener('load', initializeLiff);
+    <div class="card">
+      <div class="inner">
 
-        // Radio button styling
-        document.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                // Reset all radio buttons
-                document.querySelectorAll('input[name="' + this.name + '"]').forEach(r => {
-                    const label = r.closest('label');
-                    const radioDot = label.querySelector('.radio-dot');
-                    const radioCustom = label.querySelector('.radio-custom');
-                    const radioText = label.querySelector('.radio-text');
-                    const radioIcon = label.querySelector('.radio-icon');
-                    
-                    if (r.checked) {
-                        label.classList.add('custom-pink-border', 'custom-pink');
-                        radioDot.classList.remove('hidden');
-                        radioCustom.classList.add('custom-pink-border');
-                        radioText.classList.remove('text-gray-700');
-                        radioText.classList.add('text-white');
-                        radioIcon.classList.remove('custom-pink-text');
-                        radioIcon.classList.add('text-white');
-                    } else {
-                        label.classList.remove('custom-pink-border', 'custom-pink');
-                        radioDot.classList.add('hidden');
-                        radioCustom.classList.remove('custom-pink-border');
-                        radioText.classList.remove('text-white');
-                        radioText.classList.add('text-gray-700');
-                        radioIcon.classList.remove('text-white');
-                        radioIcon.classList.add('custom-pink-text');
-                    }
-                });
-            });
-        });
+        <div class="hero">
+          <img
+            src="https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/e-cal%20help.png"
+            alt="E-Cal Help"
+          />
+          <div>
+            <h1>ติดต่อทีมงานอีแคล 💌</h1>
+            <p>
+              ถ้าต้องการติดต่อสอบถาม หรือมีปัญหาการใช้งาน
+              ติดต่อทีมงานอีแคลได้เลยค่ะ — ทีมงานจะรีบติดต่อกลับโดยเร็วที่สุด 💖
+            </p>
+          </div>
+        </div>
 
-        // Form submission
-        document.getElementById('messageForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const submitBtn = document.getElementById('submitBtn');
-            const originalText = submitBtn.innerHTML;
-            
-            // Show loading state
-            submitBtn.innerHTML = `
-                <svg class="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                กำลังส่ง...
-            `;
-            submitBtn.disabled = true;
+        <div class="msg">
+          <p class="lead">
+            ✅ กดปุ่มด้านล่างเพื่อแอด LINE ทีมงาน<br/>
+            แล้วพิมพ์รายละเอียดที่ต้องการให้ช่วยได้เลยค่ะ
+          </p>
+          <p class="sub">
+            แนะนำ: แนบรูปหน้าจอ/วิดีโอสั้น ๆ จะช่วยให้ทีมงานแก้ปัญหาได้ไวขึ้น ✨
+          </p>
+        </div>
 
-            // Get form data
-            const formData = new FormData(this);
-            const contactType = formData.get('contactType');
-            const name = formData.get('name');
-            const email = formData.get('email');
-            const subject = formData.get('subject');
-            const message = formData.get('message');
+        <div class="cta">
+          <div class="lineBtnWrap">
+            <a href="https://lin.ee/V32eEwW" target="_blank" rel="noopener noreferrer">
+              <img src="https://scdn.line-apps.com/n/line_add_friends/btn/th.png" alt="เพิ่มเพื่อน" height="36" border="0" />
+            </a>
+          </div>
 
-            // Send data to webhook
-            try {
-                // Replace with your actual webhook URL
-                const webhookUrl = "https://primary-production-49d9.up.railway.app/webhook/contactus";
+          <div class="hint">
+            *หากปุ่มไม่เปิด ให้คัดลอกลิงก์นี้ไปเปิดใน LINE หรือ Browser<br/>
+            <span style="color:rgba(255,255,255,.55)">https://lin.ee/V32eEwW</span>
+          </div>
+        </div>
 
-                // Get LINE profile if available
-                let lineProfile = null;
-                try {
-                    if (typeof liff !== 'undefined' && liff.isLoggedIn()) {
-                        lineProfile = await liff.getProfile();
-                    }
-                } catch (error) {
-                    console.log('Could not get LINE profile:', error);
-                }
+      </div>
+    </div>
 
-                // Prepare data to send
-                const dataToSend = {
-                    contactType: contactType,
-                    name: name,
-                    email: email,
-                    subject: subject,
-                    message: message,
-                    timestamp: new Date().toLocaleString('th-TH'),
-                    lineProfile: lineProfile ? {
-                        userId: lineProfile.userId,
-                        displayName: lineProfile.displayName,
-                        pictureUrl: lineProfile.pictureUrl
-                    } : null
-                };
+    <div class="footer">© 2026 E-Calbot • make your fat cry.</div>
+  </div>
 
-                // Send to webhook
-                const response = await fetch(webhookUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(dataToSend)
-                });
+  <script>
+    function goBackOrClose() {
+      // ถ้ามี history ให้ย้อนกลับ (เหมาะกับ LIFF)
+      if (window.history.length > 1) {
+        window.history.back();
+        return;
+      }
+      // ถ้าอยู่ใน LIFF และอยากปิดหน้าต่าง:
+      // if (window.liff && liff.closeWindow) { liff.closeWindow(); return; }
 
-                if (!response.ok) {
-                    throw new Error('Failed to send message');
-                }
-                
-                // Show success message
-                document.getElementById('contactForm').classList.add('hidden');
-                document.getElementById('successMessage').classList.remove('hidden');
-                
-                // Reset form
-                this.reset();
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-                
-                // Reset radio button styles
-                document.querySelectorAll('input[type="radio"]').forEach(radio => {
-                    const label = radio.closest('label');
-                    const radioDot = label.querySelector('.radio-dot');
-                    const radioCustom = label.querySelector('.radio-custom');
-                    const radioText = label.querySelector('.radio-text');
-                    const radioIcon = label.querySelector('.radio-icon');
-                    
-                    label.classList.remove('custom-pink-border', 'custom-pink');
-                    radioDot.classList.add('hidden');
-                    radioCustom.classList.remove('custom-pink-border');
-                    radioText.classList.remove('text-white');
-                    radioText.classList.add('text-gray-700');
-                    radioIcon.classList.remove('text-white');
-                    radioIcon.classList.add('custom-pink-text');
-                });
-                
-                console.log('Message sent successfully!');
-                
-            } catch (error) {
-                console.error('Error sending message:', error);
-                
-                // Show error message but still reset form
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-                
-                // Create inline error message instead of alert
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mt-4';
-                errorDiv.innerHTML = `
-                    <div class="flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        เกิดข้อผิดพลาดในการส่งข้อความ กรุณาลองใหม่อีกครั้ง
-                    </div>
-                `;
-                
-                // Remove existing error messages
-                const existingError = document.querySelector('.bg-red-100');
-                if (existingError) {
-                    existingError.remove();
-                }
-                
-                // Add error message
-                document.getElementById('contactForm').appendChild(errorDiv);
-                
-                // Remove error message after 5 seconds
-                setTimeout(() => {
-                    errorDiv.remove();
-                }, 5000);
-            }
-        });
-
-        // Send another message
-        document.getElementById('sendAnotherBtn').addEventListener('click', function() {
-            document.getElementById('successMessage').classList.add('hidden');
-            document.getElementById('contactForm').classList.remove('hidden');
-        });
-    </script>
+      // fallback
+      window.location.href = "https://www.e-calbot.com/";
+    }
+  </script>
+    <!-- Floating Home Button -->
 <a href="https://liff.line.me/2007859046-BpXDWpXe"
-   class="fixed bottom-6 right-6 bg-[#FF3974] text-white 
-          w-14 h-14 flex items-center justify-center 
-          rounded-full shadow-md hover:bg-pink-600 text-3xl z-50 transition">
+   class="ecal-home-btn"
+   aria-label="Go to Home">
    <i class="fi fi-rr-home"></i>
 </a>
-    
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9918d55a52d72715',t:'MTc2MDk2NjY0NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
-</html>
 
+</body>
+</html>
 
 
 
