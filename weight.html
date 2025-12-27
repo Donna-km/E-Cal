@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Weight Tracker</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script src="/_sdk/data_sdk.js"></script>
-  <script src="/_sdk/element_sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css">
@@ -215,22 +213,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
             { __backendId: 'demo5', line_user_id: 'demo_user', record_date: '2024-01-29', weight: 68.5, note: 'เป้าหมายสำเร็จ!', created_at: '2024-01-29T10:00:00Z' }
         ];
 
-        // Supabase Integration
-        function initializeSupabase() {
-            if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
-                console.warn('Supabase credentials not configured, using demo mode');
-                isDemoMode = true;
-                return;
-            }
-            
-            try {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('Supabase initialized successfully');
-            } catch (error) {
-                console.error('Failed to initialize Supabase:', error);
-                isDemoMode = true;
-            }
-        }
+       
 
         // Supabase Storage Functions
         async function uploadImageToStorage(file) {
@@ -478,25 +461,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
             }
         };
 
-        async function initializeDataSDK() {
-            if (isDemoMode) {
-                // Demo mode - use demo data
-                weightRecords = [...demoData].sort((a, b) => new Date(b.record_date) - new Date(a.record_date));
-                renderWeightList();
-                renderChart();
-                return;
-            }
-
-            try {
-                const result = await window.dataSdk.init(dataHandler);
-                if (!result.isOk) {
-                    console.error('Data SDK initialization failed:', result.error);
-                }
-            } catch (error) {
-                console.error('Data SDK error:', error);
-            }
-        }
-
+       
         // UI Functions
         function showMainContent() {
             document.getElementById('loading-state').classList.add('hidden');
@@ -843,7 +808,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                 const result = await saveWeightRecord(newRecord);
                 
                 if (result.success) {
-                    showToast(isDemoMode ? 'บันทึกน้ำหนักเรียบร้อย! (โหมดเดโม)' : 'บันทึกน้ำหนักเรียบร้อย!', 'success');
+                    showToast('บันทึกน้ำหนักเรียบร้อย!', 'success');
+
                 } else {
                     showToast('เกิดข้อผิดพลาดในการบันทึก: ' + (result.error || 'Unknown error'), 'error');
                     return;
@@ -856,19 +822,20 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
             } catch (error) {
                 console.error('Error adding weight:', error);
                 showToast('เกิดข้อผิดพลาดในการบันทึก', 'error');
-            } finally {
-                isLoading = false;
-                submitBtn.disabled = false;
-                const config = window.elementSdk?.config || defaultConfig;
-                submitBtn.innerHTML = `
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                    </svg>
-                    ${config.add_button_text || defaultConfig.add_button_text}
-                `;
-                submitBtn.style.backgroundColor = '#C1272D';
-                submitBtn.style.color = '#ffffff';
-            }
+           } finally {
+  isLoading = false;
+  submitBtn.disabled = false;
+
+  submitBtn.innerHTML = `
+    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+    </svg>
+    ${defaultConfig.add_button_text}
+  `;
+  submitBtn.style.backgroundColor = '#C1272D';
+  submitBtn.style.color = '#ffffff';
+}
+
         }
 
         async function deleteWeight(recordId) {
@@ -1026,24 +993,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
             ]);
         }
 
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Initialize Supabase
-            initializeSupabase();
-
-            // Initialize Element SDK
-            if (window.elementSdk) {
-                await window.elementSdk.init({
-                    defaultConfig,
-                    onConfigChange,
-                    mapToCapabilities,
-                    mapToEditPanelValues
-                });
-            }
-
-            // Initialize Data SDK (for demo mode fallback)
-            await initializeDataSDK();
-
+        
             // Initialize LIFF
             await initializeLIFF();
 
@@ -1102,6 +1052,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 </a>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99c6e85654cad017',t:'MTc2Mjc5MTk0NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
