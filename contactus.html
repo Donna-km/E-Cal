@@ -11,24 +11,22 @@
     :root{
       --bg:#050505;
       --card:#0e0e0f;
-      --card2:#121214;
       --red:#C1272D;
-      --red2:#ff3b30;
       --text:#f5f5f7;
       --muted:#a9abb3;
-      --line:#22c55e;
       --stroke: rgba(255,255,255,.08);
       --shadow: 0 20px 60px rgba(0,0,0,.55);
       --radius: 22px;
     }
+
     *{box-sizing:border-box}
+
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Thai", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans Thai", sans-serif;
       background:
         radial-gradient(900px 600px at 20% -10%, rgba(193,39,45,.35), transparent 55%),
         radial-gradient(700px 500px at 90% 10%, rgba(255,59,48,.18), transparent 60%),
-        radial-gradient(900px 650px at 60% 120%, rgba(193,39,45,.22), transparent 60%),
         var(--bg);
       color:var(--text);
       min-height:100vh;
@@ -39,156 +37,95 @@
     }
 
     .wrap{
-      width:min(560px, 100%);
+      width:min(560px,100%);
     }
 
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .dot{
-      width:10px;height:10px;border-radius:999px;background:var(--red);
-      box-shadow: 0 0 0 6px rgba(193,39,45,.18);
-    }
-    .title{
-      font-weight:800;
-      letter-spacing:.2px;
-    }
-    .close{
-      border:1px solid var(--stroke);
-      background:rgba(255,255,255,.03);
-      color:var(--text);
-      padding:10px 12px;
-      border-radius:12px;
-      cursor:pointer;
-      transition:.2s;
-    }
-    .close:hover{transform:translateY(-1px); border-color: rgba(255,255,255,.16)}
-    .close:active{transform:translateY(0px); opacity:.9}
-
+    /* ===== Card ===== */
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
       border:1px solid var(--stroke);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      overflow:hidden;
-      position:relative;
-    }
-    .card::before{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background:
-        radial-gradient(500px 200px at 20% 0%, rgba(193,39,45,.35), transparent 60%),
-        radial-gradient(420px 220px at 90% 30%, rgba(255,59,48,.18), transparent 55%);
-      pointer-events:none;
-      opacity:.9;
-    }
-    .inner{
-      position:relative;
-      padding:18px 18px 16px;
-      display:grid;
-      gap:14px;
+      padding:22px;
     }
 
+    /* ===== Hero (ไม่มีกรอบแล้ว) ===== */
     .hero{
-      background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.55));
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 18px;
-      overflow:hidden;
-      display:grid;
-      grid-template-columns: 120px 1fr;
-      gap:14px;
-      padding:14px;
-      align-items:center;
+      text-align:center;
+      margin-bottom:18px;
     }
+
     .hero img{
-      width:120px; height:120px;
-      object-fit:cover;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.10);
-      background:#0b0b0c;
+      width:150px;
+      height:150px;
+      object-fit:contain;
+      margin-bottom:12px;
     }
+
     .hero h1{
       margin:0;
-      font-size:18px;
-      line-height:1.15;
+      font-size:20px;
       font-weight:900;
     }
+
     .hero p{
       margin:8px 0 0;
-      color:var(--muted);
       font-size:14px;
-      line-height:1.55;
+      color:var(--muted);
+      line-height:1.6;
     }
 
+    /* ===== Message ===== */
     .msg{
       background: rgba(0,0,0,.28);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 18px;
+      border:1px solid var(--stroke);
+      border-radius:18px;
       padding:14px;
-    }
-    .msg .lead{
-      font-size:15px;
+      font-size:14px;
       line-height:1.6;
-      margin:0;
-    }
-    .msg .sub{
-      margin:10px 0 0;
-      color:var(--muted);
-      font-size:13.5px;
-      line-height:1.6;
+      margin-top:14px;
     }
 
+    /* ===== CTA ===== */
     .cta{
-      display:grid;
-      gap:10px;
-      align-items:center;
-      justify-items:center;
-      padding:6px 0 2px;
-    }
-
-    .hint{
-      color:var(--muted);
-      font-size:12.5px;
-      text-align:center;
-      line-height:1.5;
-    }
-
-    .lineBtnWrap{
-      width:100%;
+      margin-top:22px;
       display:flex;
       justify-content:center;
     }
-    /* ทำให้ปุ่ม LINE ดูเข้าธีม */
-    .lineBtnWrap a{
-      display:inline-flex;
+
+    /* ปุ่ม LINE แนวนอน ยาวขึ้น */
+    .line-btn{
+      width:100%;
+      max-width:420px;
+      display:flex;
       align-items:center;
       justify-content:center;
-      gap:10px;
-      padding:12px 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: linear-gradient(180deg, rgba(34,197,94,.18), rgba(34,197,94,.08));
+      padding:16px 20px;
+      border-radius:18px;
+      background: linear-gradient(180deg, #22c55e, #16a34a);
       box-shadow: 0 12px 30px rgba(0,0,0,.35);
-      transition: .2s;
+      transition:.2s;
       text-decoration:none;
     }
-    .lineBtnWrap a:hover{ transform: translateY(-1px); border-color: rgba(34,197,94,.35);}
-    .lineBtnWrap a:active{ transform: translateY(0px); opacity:.9;}
-    .lineBtnWrap img{
-      display:block;
-      height:36px;
+
+    .line-btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 16px 36px rgba(34,197,94,.45);
     }
 
+    .line-btn img{
+      height:42px;
+    }
+
+    .hint{
+      margin-top:12px;
+      font-size:12px;
+      text-align:center;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    /* ===== Footer ===== */
     .footer{
       margin-top:12px;
       text-align:center;
@@ -196,122 +133,82 @@
       font-size:12px;
     }
 
-    /* มือถือ */
-    @media (max-width: 420px){
-      .hero{ grid-template-columns: 1fr; text-align:center;}
-      .hero img{ margin:0 auto; width:132px; height:132px;}
+    /* ===== Floating Home ===== */
+    .ecal-home-btn{
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(180deg, #ff4d6d, #c1272d);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      box-shadow: 0 12px 30px rgba(193,39,45,.55);
+      font-size: 28px;
+      z-index: 9999;
+      text-decoration: none;
+      transition: all .2s ease;
     }
-      .ecal-home-btn{
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(180deg, #ff4d6d, #c1272d);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  box-shadow: 0 12px 30px rgba(193,39,45,.55);
-  font-size: 28px;
-  z-index: 9999;
-  text-decoration: none;
-  transition: all .2s ease;
-}
 
-.ecal-home-btn:hover{
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 16px 36px rgba(255,57,116,.65);
-}
+    .ecal-home-btn:hover{
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 16px 36px rgba(255,57,116,.65);
+    }
 
-.ecal-home-btn:active{
-  transform: scale(.96);
-  opacity: .9;
-}
-
+    .ecal-home-btn:active{
+      transform: scale(.96);
+      opacity: .9;
+    }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-
-    <div class="topbar">
-      <div class="brand">
-        <span class="dot"></span>
-        <div class="title">E-Cal Support</div>
-      </div>
-      <!-- ปุ่มปิด: ถ้าเปิดแบบ overlay/modal ในเว็บคุณ สามารถผูก event เองได้ -->
-      <button class="close" onclick="goBackOrClose()">ปิด</button>
-    </div>
-
     <div class="card">
-      <div class="inner">
 
-        <div class="hero">
-          <img
-            src="https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/e-cal%20help.png"
-            alt="E-Cal Help"
-          />
-          <div>
-            <h1>ติดต่อทีมงานอีแคล 💌</h1>
-            <p>
-              ถ้าต้องการติดต่อสอบถาม หรือมีปัญหาการใช้งาน
-              ติดต่อทีมงานอีแคลได้เลยค่ะ — ทีมงานจะรีบติดต่อกลับโดยเร็วที่สุด 💖
-            </p>
-          </div>
-        </div>
-
-        <div class="msg">
-          <p class="lead">
-            ✅ กดปุ่มด้านล่างเพื่อแอด LINE ทีมงาน<br/>
-            แล้วพิมพ์รายละเอียดที่ต้องการให้ช่วยได้เลยค่ะ
-          </p>
-          <p class="sub">
-            แนะนำ: แนบรูปหน้าจอ/วิดีโอสั้น ๆ จะช่วยให้ทีมงานแก้ปัญหาได้ไวขึ้น ✨
-          </p>
-        </div>
-
-        <div class="cta">
-          <div class="lineBtnWrap">
-            <a href="https://lin.ee/V32eEwW" target="_blank" rel="noopener noreferrer">
-              <img src="https://scdn.line-apps.com/n/line_add_friends/btn/th.png" alt="เพิ่มเพื่อน" height="36" border="0" />
-            </a>
-          </div>
-
-          <div class="hint">
-            *หากปุ่มไม่เปิด ให้คัดลอกลิงก์นี้ไปเปิดใน LINE หรือ Browser<br/>
-            <span style="color:rgba(255,255,255,.55)">https://lin.ee/V32eEwW</span>
-          </div>
-        </div>
-
+      <div class="hero">
+        <img
+          src="https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/e-cal%20help.png"
+          alt="E-Cal Help"
+        />
+        <h1>ติดต่อทีมงานอีแคล 💌</h1>
+        <p>
+          หากต้องการติดต่อสอบถาม หรือมีปัญหาการใช้งาน<br>
+          ติดต่อทีมงานอีแคลได้เลยค่ะ ทีมงานจะรีบติดต่อกลับโดยเร็วที่สุด 💖
+        </p>
       </div>
+
+      <div class="msg">
+        ✅ กดปุ่มด้านล่างเพื่อแอด LINE ทีมงาน<br>
+        แล้วพิมพ์รายละเอียดที่ต้องการให้ช่วยได้เลยค่ะ<br><br>
+        ✨ แนะนำ: แนบรูปหน้าจอหรือวิดีโอ จะช่วยให้แก้ปัญหาได้ไวขึ้น
+      </div>
+
+      <div class="cta">
+        <a class="line-btn" href="https://lin.ee/V32eEwW" target="_blank" rel="noopener noreferrer">
+          <img src="https://scdn.line-apps.com/n/line_add_friends/btn/th.png" alt="เพิ่มเพื่อน">
+        </a>
+      </div>
+
+      <div class="hint">
+        หากปุ่มไม่เปิด ให้เปิดลิงก์นี้ใน LINE หรือ Browser<br>
+        https://lin.ee/V32eEwW
+      </div>
+
     </div>
 
     <div class="footer">© 2026 E-Calbot • make your fat cry.</div>
   </div>
 
-  <script>
-    function goBackOrClose() {
-      // ถ้ามี history ให้ย้อนกลับ (เหมาะกับ LIFF)
-      if (window.history.length > 1) {
-        window.history.back();
-        return;
-      }
-      // ถ้าอยู่ใน LIFF และอยากปิดหน้าต่าง:
-      // if (window.liff && liff.closeWindow) { liff.closeWindow(); return; }
-
-      // fallback
-      window.location.href = "https://www.e-calbot.com/";
-    }
-  </script>
-    <!-- Floating Home Button -->
-<a href="https://liff.line.me/2007859046-BpXDWpXe"
-   class="ecal-home-btn"
-   aria-label="Go to Home">
-   <i class="fi fi-rr-home"></i>
-</a>
-
+  <!-- Floating Home Button -->
+  <a href="https://liff.line.me/2007859046-BpXDWpXe"
+     class="ecal-home-btn"
+     aria-label="Go to Home">
+     <i class="fi fi-rr-home"></i>
+  </a>
 </body>
 </html>
 
