@@ -210,60 +210,73 @@
             { __backendId: 'demo5', line_user_id: 'demo_user', record_date: '2024-01-29', weight: 68.5, note: 'เป้าหมายสำเร็จ!', created_at: '2024-01-29T10:00:00Z' }
         ];
 
-        // Supabase Integration
-        function initializeSupabase() {
-            if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
-                console.warn('Supabase credentials not configured, using demo mode');
-                isDemoMode = true;
-                return;
-            }
-            
-            try {
-                sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('Supabase initialized successfully');
-            } catch (error) {
-                console.error('Failed to initialize Supabase:', error);
-                isDemoMode = true;
-            }
+        // ===============================
+// Supabase Integration
+// ===============================
+function initializeSupabase() {
+    if (
+        SUPABASE_URL === 'YOUR_SUPABASE_URL' ||
+        SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY'
+    ) {
+        console.warn('Supabase credentials not configured, using demo mode');
+        isDemoMode = true;
+        return;
+    }
+
+    try {
+        sb = window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
+        console.log('Supabase initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize Supabase:', error);
+        isDemoMode = true;
+    }
+}
+
+// ===============================
+// Supabase Storage Functions
+// ===============================
+async function uploadImageToStorage(file) {
+    // ✅ FIX: ใช้ sb แทน supabase
+    if (!sb || isDemoMode) {
+        // Demo mode - return Base64 data URL
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    try {
+        const fileName = `${currentUser.userId}/${Date.now()}_${file.name}`;
+
+        const { data, error } = await sb.storage
+            .from('weight')
+            .upload(fileName, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
+
+        if (error) {
+            console.error('Storage upload error:', error);
+            throw error;
         }
 
-        // Supabase Storage Functions
-        async function uploadImageToStorage(file) {
-            if (!supabase || isDemoMode) {
-                // Demo mode - return Base64 data URL
-                return new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result);
-                    reader.readAsDataURL(file);
-                });
-            }
+        // Get public URL
+        const { data: { publicUrl } } = sb.storage
+            .from('weight')
+            .getPublicUrl(fileName);
 
-            try {
-                const fileName = `${currentUser.userId}/${Date.now()}_${file.name}`;
-                
-                const { data, error } = await sb.storage
-                    .from('weight')
-                    .upload(fileName, file, {
-                        cacheControl: '3600',
-                        upsert: false
-                    });
+        return publicUrl;
 
-                if (error) {
-                    console.error('Storage upload error:', error);
-                    throw error;
-                }
+    } catch (error) {
+        console.error('Error uploading image:', error);
+        throw error;
+    }
+}
 
-                // Get public URL
-                const { data: { publicUrl } } = sb.storage
-                    .from('weight')
-                    .getPublicUrl(fileName);
-
-                return publicUrl;
-            } catch (error) {
-                console.error('Error uploading image:', error);
-                throw error;
-            }
-        }
 
         async function deleteImageFromStorage(imageUrl) {
             if (!supabase || isDemoMode || !imageUrl || imageUrl.startsWith('data:')) {
@@ -290,48 +303,55 @@
             }
         }
 
-        // Supabase Database Functions
-        async function loadWeightRecords() {
-            if (isDemoMode || !supabase || !currentUser) {
-                weightRecords = [...demoData].sort((a, b) => new Date(b.record_date) - new Date(a.record_date));
-                renderWeightList();
-                renderChart();
-                return;
-            }
+        // ===============================
+// Supabase Database Functions
+// ===============================
+async function loadWeightRecords() {
+    // ✅ FIX: ใช้ sb แทน supabase
+    if (isDemoMode || !sb || !currentUser) {
+        weightRecords = [...demoData].sort(
+            (a, b) => new Date(b.record_date) - new Date(a.record_date)
+        );
+        renderWeightList();
+        renderChart();
+        return;
+    }
 
-            try {
-                const { data, error } = await supabase
-                    .from('user_weight_log')
-                    .select('*')
-                    .eq('line_user_id', currentUser.userId)
-                    .order('record_date', { ascending: false });
+    try {
+        const { data, error } = await sb
+            .from('user_weight_log')
+            .select('*')
+            .eq('line_user_id', currentUser.userId)
+            .order('record_date', { ascending: false });
 
-                if (error) {
-                    console.error('Error loading weight records:', error);
-                    showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
-                    return;
-                }
-
-                weightRecords = data.map(record => ({
-                    __backendId: record.id.toString(),
-                    line_user_id: record.line_user_id,
-                    record_date: record.record_date,
-                    weight: parseFloat(record.weight),
-                    note: record.note,
-                    image_url: record.image_url,
-                    created_at: record.created_at
-                }));
-
-                renderWeightList();
-                renderChart();
-            } catch (error) {
-                console.error('Error loading weight records:', error);
-                showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
-            }
+        if (error) {
+            console.error('Error loading weight records:', error);
+            showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
+            return;
         }
 
+        weightRecords = data.map(record => ({
+            __backendId: record.id.toString(),
+            line_user_id: record.line_user_id,
+            record_date: record.record_date,
+            weight: parseFloat(record.weight),
+            note: record.note,
+            image_url: record.image_url,
+            created_at: record.created_at
+        }));
+
+        renderWeightList();
+        renderChart();
+
+    } catch (error) {
+        console.error('Error loading weight records:', error);
+        showToast('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
+    }
+}
+
+
         async function saveWeightRecord(recordData) {
-            if (isDemoMode || !supabase) {
+            if (isDemoMode || !sb) {
                 // Demo mode - add to local array
                 const newRecord = {
                     ...recordData,
@@ -344,7 +364,7 @@
             }
 
             try {
-                const { data, error } = await supabase
+                const { data, error } = await sb
                     .from('user_weight_log')
                     .insert([{
                         line_user_id: recordData.line_user_id,
@@ -370,7 +390,7 @@
         }
 
         async function deleteWeightRecord(recordId) {
-            if (isDemoMode || !supabase) {
+            if (isDemoMode || !sb) {
                 // Demo mode - remove from local array
                 weightRecords = weightRecords.filter(r => r.__backendId !== recordId);
                 renderWeightList();
@@ -382,7 +402,7 @@
                 // Find the record to get image URL before deleting
                 const record = weightRecords.find(r => r.__backendId === recordId);
                 
-                const { error } = await supabase
+                const { error } = await sb
                     .from('user_weight_log')
                     .delete()
                     .eq('id', parseInt(recordId));
@@ -1021,55 +1041,65 @@
             ]);
         }
 
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Initialize Supabase
-            initializeSupabase();
+        // ===============================
+// Event Listeners
+// ===============================
+document.addEventListener('DOMContentLoaded', async () => {
 
-            // Initialize Element SDK
-            if (window.elementSdk) {
-                await window.elementSdk.init({
-                    defaultConfig,
-                    onConfigChange,
-                    mapToCapabilities,
-                    mapToEditPanelValues
-                });
+    // 1️⃣ Initialize Supabase
+    initializeSupabase();
+
+    // 2️⃣ Initialize Element SDK (คงไว้เหมือนเดิม)
+    if (window.elementSdk) {
+        await window.elementSdk.init({
+            defaultConfig,
+            onConfigChange,
+            mapToCapabilities,
+            mapToEditPanelValues
+        });
+    }
+
+    // 3️⃣ Initialize LIFF (ต้องมาก่อน เพื่อให้ได้ currentUser)
+    await initializeLIFF();
+
+    // 4️⃣ Initialize Data SDK → เฉพาะตอน demo เท่านั้น
+    if (isDemoMode && window.dataSdk) {
+        await initializeDataSDK();
+    }
+
+    // ===== event handlers เดิม =====
+    document.getElementById('weight-form')
+        .addEventListener('submit', addWeight);
+
+    document.getElementById('photo-upload-btn')
+        .addEventListener('click', () => {
+            document.getElementById('photo-upload').click();
+        });
+
+    document.getElementById('photo-upload')
+        .addEventListener('change', handlePhotoUpload);
+
+    document.getElementById('remove-photo')
+        .addEventListener('click', clearPhotoPreview);
+
+    document.getElementById('retry-btn')
+        .addEventListener('click', () => location.reload());
+
+    document.getElementById('nav-home')
+        .addEventListener('click', () => showPage('home'));
+
+    document.getElementById('nav-gallery')
+        .addEventListener('click', () => showPage('gallery'));
+
+    document.getElementById('close-modal')
+        .addEventListener('click', closeImageModal);
+
+    document.getElementById('image-modal')
+        .addEventListener('click', (e) => {
+            if (e.target === document.getElementById('image-modal')) {
+                closeImageModal();
             }
-
-            // Initialize Data SDK (for demo mode fallback)
-            await initializeDataSDK();
-
-            // Initialize LIFF
-            await initializeLIFF();
-
-            // Form submission
-            document.getElementById('weight-form').addEventListener('submit', addWeight);
-
-            // Photo upload handlers
-            document.getElementById('photo-upload-btn').addEventListener('click', () => {
-                document.getElementById('photo-upload').click();
-            });
-            
-            document.getElementById('photo-upload').addEventListener('change', handlePhotoUpload);
-            
-            document.getElementById('remove-photo').addEventListener('click', clearPhotoPreview);
-
-            // Retry button
-            document.getElementById('retry-btn').addEventListener('click', () => {
-                location.reload();
-            });
-
-            // Navigation event listeners
-            document.getElementById('nav-home').addEventListener('click', () => showPage('home'));
-            document.getElementById('nav-gallery').addEventListener('click', () => showPage('gallery'));
-
-            // Image modal event listeners
-            document.getElementById('close-modal').addEventListener('click', closeImageModal);
-            document.getElementById('image-modal').addEventListener('click', (e) => {
-                if (e.target === document.getElementById('image-modal')) {
-                    closeImageModal();
-                }
-            });
+        });
 
             // Keyboard navigation
             document.addEventListener('keydown', (e) => {
@@ -1097,6 +1127,7 @@
 </a>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99c6e85654cad017',t:'MTc2Mjc5MTk0NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
