@@ -189,9 +189,11 @@
         };
 
         // Supabase Configuration
-        const SUPABASE_URL = 'https://lvtdqeerzxpznnayccmb.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM';
-        let supabase = null;
+        const sb = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
 
         let currentUser = null;
         let weightRecords = [];
@@ -241,7 +243,7 @@
             try {
                 const fileName = `${currentUser.userId}/${Date.now()}_${file.name}`;
                 
-                const { data, error } = await supabase.storage
+                const { data, error } = await sb.storage
                     .from('weight')
                     .upload(fileName, file, {
                         cacheControl: '3600',
@@ -278,7 +280,7 @@
 
                 const filePath = urlParts.slice(bucketIndex + 1).join('/');
                 
-                const { error } = await supabase.storage
+                const { error } = await sb.storage
                     .from('weight')
                     .remove([filePath]);
 
@@ -300,7 +302,7 @@
             }
 
             try {
-                const { data, error } = await supabase
+                const { data, error } = await sb.storage
                     .from('user_weight_log')
                     .select('*')
                     .eq('line_user_id', currentUser.userId)
@@ -344,7 +346,7 @@
             }
 
             try {
-                const { data, error } = await supabase
+                const { data, error } = await sb.storage
                     .from('user_weight_log')
                     .insert([{
                         line_user_id: recordData.line_user_id,
@@ -382,7 +384,7 @@
                 // Find the record to get image URL before deleting
                 const record = weightRecords.find(r => r.__backendId === recordId);
                 
-                const { error } = await supabase
+                const { error } = await sb.storage
                     .from('user_weight_log')
                     .delete()
                     .eq('id', parseInt(recordId));
@@ -1097,5 +1099,6 @@
 </a>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99c6e85654cad017',t:'MTc2Mjc5MTk0NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
