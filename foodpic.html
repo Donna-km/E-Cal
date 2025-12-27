@@ -417,12 +417,35 @@
     </div>
 
     <!-- SUCCESS PAGE -->
-    <div id="successPage" class="hidden text-center">
-      <h2 class="text-xl text-red-600 font-bold mt-6">Saved Successfully</h2>
-      <p class="text-white mt-2 mb-4">Your food data has been recorded</p>
-      <button class="btn btn-red" onclick="goHome()">Back to Home</button>
-    </div>
+   <div id="successPage" class="hidden text-center">
+  <h2 class="text-xl text-red-600 font-bold mt-6">
+    Saved Successfully
+  </h2>
+
+  <p class="text-white mt-2 mb-6">
+    Your food data has been recorded
+  </p>
+
+  <!-- wrapper คุมความกว้าง -->
+  <div class="flex flex-col items-center gap-3">
+
+    <!-- Daily Intake -->
+    <a href="https://liff.line.me/2007859046-7NZV6xZG"
+       class="btn btn-outline"
+       style="width:100%; max-width:320px;">
+      📊 “ไปดูแคลวันนี้กันต่อ 😏”
+    </a>
+
+    <!-- Back to Home -->
+    <button class="btn btn-red"
+            style="width:100%; max-width:320px;"
+            onclick="goHome()">
+      Back to Home
+    </button>
+
   </div>
+</div>
+
 
   <!-- EDIT MODAL -->
   <div id="editModal" class="modal-backdrop">
@@ -850,6 +873,7 @@ async function saveToDatabase() {
 
 </body>
 </html>
+
 
 
 
