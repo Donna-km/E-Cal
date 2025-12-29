@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>แก้ชื่อเมนู | E-Cal</title>
 
+  <!-- LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
   <style>
     /* 🔑 กันล้ำกรอบทั่วทั้งหน้า */
     * {
@@ -45,12 +48,10 @@
       line-height: 1.5;
     }
 
-    /* 🔧 input + button ใช้ rule เดียวกัน */
     input,
     button {
       width: 100%;
       max-width: 100%;
-      box-sizing: border-box;
       font-family: inherit;
     }
 
@@ -108,6 +109,7 @@
       id="foodName"
       type="text"
       placeholder="พิมพ์ชื่อเมนูที่ถูกต้อง 🍽"
+      autofocus
     />
 
     <button class="btn btn-save" onclick="saveFoodName()">
@@ -122,6 +124,18 @@
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const draftId = urlParams.get("draft_id");
+    let isLiff = false;
+
+    async function initLiff() {
+      try {
+        await liff.init({ liffId: "2007859046-6O1SnwgA" });
+        isLiff = liff.isInClient();
+      } catch (err) {
+        console.warn("LIFF init failed", err);
+      }
+    }
+
+    initLiff();
 
     async function saveFoodName() {
       const foodName = document.getElementById("foodName").value.trim();
@@ -130,19 +144,31 @@
         return;
       }
 
-      await fetch("https://ecal.ai/api/update-food-name", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          draft_id: draftId,
-          food_name: foodName
-        })
-      });
+      try {
+        await fetch("https://ecal.ai/api/update-food-name", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            draft_id: draftId,
+            food_name: foodName
+          })
+        });
 
-      alert("โอเค! เดี๋ยวอีแคลไปจัดการต่อให้ 💪");
-      window.close();
+        alert("โอเค! เดี๋ยวอีแคลไปจัดการต่อให้ 💪");
+
+        // ✅ ปิดหน้ากลับ LINE ถ้าเป็น LIFF
+        if (isLiff) {
+          liff.closeWindow();
+        } else {
+          window.close();
+        }
+
+      } catch (err) {
+        alert("อุ๊ปส์ มีอะไรสะดุดนิดนึง ลองใหม่อีกทีนะ 😅");
+        console.error(err);
+      }
     }
   </script>
 
