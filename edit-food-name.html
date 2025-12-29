@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>แก้ชื่อเมนู | E-Cal</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f6fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #C1272D;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      border-radius: 12px;
+      border: 2px solid #eee;
+      outline: none;
+      text-align: center;
+    }
+
+    input:focus {
+      border-color: #C1272D;
+    }
+
+    .btn {
+      margin-top: 20px;
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-save {
+      background: #C1272D;
+      color: #fff;
+    }
+
+    .hint {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #888;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <div class="title">ช่วยอีแคลหน่อย 🥺</div>
+    <div class="subtitle">
+      วันนี้เบลอไปนิด เดาผิดใช่มั้ย<br>
+      แก้ชื่อเมนูให้หน่อยน้าา 🙏
+    </div>
+
+    <input
+      id="foodName"
+      type="text"
+      placeholder="พิมพ์ชื่อเมนูที่ถูกต้อง 🍽"
+    />
+
+    <button class="btn btn-save" onclick="saveFoodName()">
+      บันทึกให้เลย 🔥
+    </button>
+
+    <div class="hint">
+      * แค่ชื่อเมนู เดี๋ยวอีแคลจัดการแคลให้เอง
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const draftId = urlParams.get("draft_id");
+
+    async function saveFoodName() {
+      const foodName = document.getElementById("foodName").value.trim();
+      if (!foodName) {
+        alert("ขอชื่อเมนูนิดนึงน้า 😅");
+        return;
+      }
+
+      // 🔗 เรียก backend / webhook
+      await fetch("https://ecal.ai/api/update-food-name", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          draft_id: draftId,
+          food_name: foodName
+        })
+      });
+
+      // ปิดหน้า (กลับ LINE)
+      alert("โอเค! เดี๋ยวอีแคลไปจัดการต่อให้ 💪");
+      window.close();
+    }
+  </script>
+
+</body>
+</html>
