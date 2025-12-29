@@ -150,10 +150,11 @@
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            draft_id: draftId,
-            food_name: foodName
-          })
+         body: JSON.stringify({
+  id: draftId,        // 👈 ต้องชื่อ id
+  food_name: foodName
+})
+
         });
 
         alert("โอเค! เดี๋ยวอีแคลไปจัดการต่อให้ 💪");
@@ -174,4 +175,5 @@
 
 </body>
 </html>
+
 
