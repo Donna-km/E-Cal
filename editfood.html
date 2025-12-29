@@ -9,10 +9,7 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
-    /* 🔑 กันล้ำกรอบทั่วทั้งหน้า */
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -48,10 +45,8 @@
       line-height: 1.5;
     }
 
-    input,
-    button {
+    input, button {
       width: 100%;
-      max-width: 100%;
       font-family: inherit;
     }
 
@@ -76,7 +71,6 @@
       border: none;
       cursor: pointer;
       font-weight: bold;
-      display: block;
     }
 
     .btn-save {
@@ -123,7 +117,7 @@
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get("id");
+    const id = urlParams.get("id");   // 👈 id จาก DB
     let isLiff = false;
 
     async function initLiff() {
@@ -134,7 +128,6 @@
         console.warn("LIFF init failed", err);
       }
     }
-
     initLiff();
 
     async function saveFoodName() {
@@ -150,16 +143,14 @@
           headers: {
             "Content-Type": "application/json"
           },
-         body: JSON.stringify({
-  id,
-  food_name
-})
-
+          body: JSON.stringify({
+            id: id,
+            food_name: foodName   // ✅ ถูกต้องตรงนี้
+          })
         });
 
         alert("โอเค! เดี๋ยวอีแคลไปจัดการต่อให้ 💪");
 
-        // ✅ ปิดหน้ากลับ LINE ถ้าเป็น LIFF
         if (isLiff) {
           liff.closeWindow();
         } else {
@@ -175,6 +166,3 @@
 
 </body>
 </html>
-
-
-
