@@ -123,7 +123,7 @@
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const draftId = urlParams.get("draft_id");
+    const id = urlParams.get("id");
     let isLiff = false;
 
     async function initLiff() {
@@ -151,8 +151,8 @@
             "Content-Type": "application/json"
           },
          body: JSON.stringify({
-  id: draftId,        // 👈 ต้องชื่อ id
-  food_name: foodName
+  id,
+  food_name
 })
 
         });
@@ -175,5 +175,6 @@
 
 </body>
 </html>
+
 
 
