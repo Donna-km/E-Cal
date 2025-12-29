@@ -6,6 +6,11 @@
   <title>แก้ชื่อเมนู | E-Cal</title>
 
   <style>
+    /* 🔑 กันล้ำกรอบทั่วทั้งหน้า */
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -37,10 +42,19 @@
       font-size: 14px;
       color: #666;
       margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    /* 🔧 input + button ใช้ rule เดียวกัน */
+    input,
+    button {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      font-family: inherit;
     }
 
     input {
-      width: 100%;
       padding: 14px;
       font-size: 18px;
       border-radius: 12px;
@@ -55,18 +69,22 @@
 
     .btn {
       margin-top: 20px;
-      width: 100%;
       padding: 14px;
       font-size: 18px;
       border-radius: 14px;
       border: none;
       cursor: pointer;
       font-weight: bold;
+      display: block;
     }
 
     .btn-save {
       background: #C1272D;
       color: #fff;
+    }
+
+    .btn-save:active {
+      transform: scale(0.98);
     }
 
     .hint {
@@ -112,7 +130,6 @@
         return;
       }
 
-      // 🔗 เรียก backend / webhook
       await fetch("https://ecal.ai/api/update-food-name", {
         method: "POST",
         headers: {
@@ -124,7 +141,6 @@
         })
       });
 
-      // ปิดหน้า (กลับ LINE)
       alert("โอเค! เดี๋ยวอีแคลไปจัดการต่อให้ 💪");
       window.close();
     }
