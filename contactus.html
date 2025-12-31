@@ -161,6 +161,14 @@
       transform: scale(.96);
       opacity: .9;
     }
+    /* เอากรอบออก เฉพาะหน้า contact */
+.card {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
   </style>
 </head>
 
@@ -186,26 +194,28 @@
         ✨ แนะนำ: แนบรูปหน้าจอหรือวิดีโอ จะช่วยให้แก้ปัญหาได้ไวขึ้น
       </div>
 
-      <div class="cta">
+      <div class="cta" style="margin-top:32px;">
   <a href="https://lin.ee/V32eEwW"
      target="_blank"
      rel="noopener noreferrer"
-     style="display:block; width:100%; max-width:420px;">
+     style="display:flex; justify-content:center;">
      
     <img
       src="https://lvtdqeerzxpznnayccmb.supabase.co/storage/v1/object/public/test-pics/Green%20Organic%20Coming%20Soon%20Instagram%20Post.png"
-      alt="Add LINE Friend"
+      alt="ติดต่อทีมงาน"
       style="
+        max-width:420px;
         width:100%;
-        border-radius:18px;
-        box-shadow: 0 12px 30px rgba(0,0,0,.25);
-        transition: transform .2s ease, box-shadow .2s ease;
+        height:auto;
+        border-radius:999px;
+        background:none;
+        box-shadow:none;
+        display:block;
       "
-      onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 16px 36px rgba(0,0,0,.35)'"
-      onmouseout="this.style.transform='none'; this.style.boxShadow='0 12px 30px rgba(0,0,0,.25)'"
     />
   </a>
 </div>
+
 
 
       <div class="hint">
