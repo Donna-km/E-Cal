@@ -189,7 +189,7 @@
         selectedPlan === "monthly" ? "premium_monthly" : "premium_yearly";
 
       const res = await fetch(
-        "https://primary-production-49d9.up.railway.app/webhook/create-premium-session",
+        "https://primary-production-49d9.up.railway.app/webhook/create-session",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -226,4 +226,5 @@
 
 </body>
 </html>
+
 
