@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>E-Cal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    .box {
+      max-width: 320px;
+      padding: 24px;
+    }
+    .muted {
+      color: #aaa;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="box">
+    <div class="muted">กำลังกลับไปที่ LINE…</div>
+  </div>
+
+  <script>
+    // 🔑 ใส่ LIFF ID ของคุณ
+    const LIFF_ID = "YOUR_LIFF_ID";
+
+    liff.init({ liffId: LIFF_ID })
+      .then(() => {
+        // ถ้าเปิดใน LINE → ปิดหน้าต่างได้เลย
+        if (liff.isInClient()) {
+          liff.closeWindow();
+        } else {
+          // ถ้าเปิดใน browser → กลับเข้า LIFF
+          window.location.href = "https://liff.line.me/" + LIFF_ID;
+        }
+      })
+      .catch(() => {
+        // fallback กันพลาด
+        window.location.href = "https://liff.line.me/" + LIFF_ID;
+      });
+  </script>
+</body>
+</html>
