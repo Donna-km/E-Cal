@@ -323,6 +323,20 @@
       padding: 0 !important;
       margin: 0 !important;
     }
+
+    /* Premium lock style (เหมือน index) */
+.locked-premium {
+  opacity: 0.6 !important;
+  pointer-events: none !important; /* ✅ กดไม่ได้จริง */
+  filter: grayscale(100%) !important;
+}
+
+.crown-icon {
+  color: #FFD700 !important;
+  margin-left: 6px;
+  filter: drop-shadow(0 0 4px rgba(255,215,0,0.6));
+  font-size: 18px;
+}
   </style>
 </head>
 <body>
@@ -417,7 +431,7 @@
     </div>
 
     <!-- SUCCESS PAGE -->
-  <div id="successPage" class="hidden text-center">
+<div id="successPage" class="hidden text-center">
   <h2 class="text-xl text-red-600 font-bold mt-6">
     Saved Successfully
   </h2>
@@ -429,12 +443,13 @@
   <!-- wrapper คุมความกว้าง -->
   <div class="flex flex-col items-center gap-3">
 
-    <!-- Daily Intake (แดง / ขาว) -->
-    <a href="https://liff.line.me/2007859046-7NZV6xZG"
+    <!-- Daily Intake (Premium only) -->
+    <a id="btnDailyIntake"
+       href="https://liff.line.me/2007859046-7NZV6xZG"
        class="btn btn-red flex items-center justify-center gap-2"
        style="width:100%; max-width:320px;">
       <i class="fi fi-rr-calendar-clock text-lg"></i>
-      ส่องแคลวันนี้
+      <span id="btnDailyIntakeLabel">ส่องแคลวันนี้</span>
     </a>
 
     <!-- Back to Home -->
@@ -785,6 +800,7 @@ async function saveToDatabase() {
 
         console.log("Food log saved:", foodLog);
         showPage('successPage');
+        await applyDailyIntakeLock();
         showToast('บันทึกข้อมูลสำเร็จ!', 'success');
 
     } catch (error) {
@@ -792,7 +808,66 @@ async function saveToDatabase() {
         showToast("บันทึกล้มเหลว", "error");
     }
 }
+// ✅ วาง applyDailyIntakeLock "ตรงนี้เลย"
+async function applyDailyIntakeLock() {
+  const btn = document.getElementById("btnDailyIntake");
+  const label = document.getElementById("btnDailyIntakeLabel");
+  if (!btn || !label) return;
 
+  const lineUserId = currentUser?.userId || currentUser?.lineUserId;
+  if (!lineUserId) return;
+
+  try {
+    const { data, error } = await sb
+      .from("user_plans")
+      .select("plan_type, expired_at")
+      .eq("line_user_id", lineUserId)
+      .single();
+
+    let planType = "free";
+    if (!error && data?.plan_type) planType = (data.plan_type || "free").toLowerCase();
+
+    if (planType === "premium" && data?.expired_at) {
+      const exp = new Date(data.expired_at);
+      if (!isNaN(exp) && exp.getTime() <= Date.now()) planType = "free";
+    }
+
+    if (planType === "free") {
+      btn.classList.add("locked-premium");
+      btn.removeAttribute("href");
+
+      if (!label.querySelector(".crown-icon")) {
+        const crown = document.createElement("span");
+        crown.className = "crown-icon";
+        crown.innerHTML = "&#128081;";
+        label.appendChild(crown);
+      }
+    } else {
+      btn.classList.remove("locked-premium");
+      btn.setAttribute("href", "https://liff.line.me/2007859046-7NZV6xZG");
+
+      const crown = label.querySelector(".crown-icon");
+      if (crown) crown.remove();
+    }
+  } catch (e) {
+    console.error("applyDailyIntakeLock error:", e);
+    btn.classList.add("locked-premium");
+    btn.removeAttribute("href");
+    if (!label.querySelector(".crown-icon")) {
+      const crown = document.createElement("span");
+      crown.className = "crown-icon";
+      crown.innerHTML = "&#128081;";
+      label.appendChild(crown);
+    }
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2600);
+}
     function showToast(msg) {
       const t = document.getElementById("toast");
       t.textContent = msg;
@@ -845,6 +920,7 @@ async function saveToDatabase() {
 </a>
 
  <script>
+   
   function toggleHomeButton(pageId) {
     const homeBtn = document.getElementById('homeButton');
     if (!homeBtn) return;
@@ -874,6 +950,7 @@ async function saveToDatabase() {
 
 </body>
 </html>
+
 
 
 
