@@ -494,6 +494,10 @@
     let selectedImage = null;
     let analysisResult = null;
     let currentUser = null;
+    const sb = window.supabase.createClient(
+  "https://lvtdqeerzxpznnayccmb.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM"
+);
 
     // LIFF init
     async function initializeLIFF() {
@@ -786,13 +790,7 @@ async function saveToDatabase() {
             created_at: new Date().toISOString() // PK ตอนนี้เป็น id แล้ว, ใช้ created_at ได้ปกติ
         };
 
-        // ⭐ Supabase Client
-        const sb = window.supabase.createClient(
-            "https://lvtdqeerzxpznnayccmb.supabase.co",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dGRxZWVyenhwem5uYXljY21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTAxMjksImV4cCI6MjA2ODk4NjEyOX0.Uai-3_YSJpsYmSSTbHtrSNBoCG5f8WxoUcqyvcV3yUM"
-        );
-
-        const { data, error } = await sb
+       const { data, error } = await sb
             .from('food_logs')
             .insert([foodLog]);
 
@@ -801,7 +799,7 @@ async function saveToDatabase() {
         console.log("Food log saved:", foodLog);
         showPage('successPage');
         await applyDailyIntakeLock();
-        showToast('บันทึกข้อมูลสำเร็จ!', 'success');
+        showToast('บันทึกข้อมูลสำเร็จ!');
 
     } catch (error) {
         console.error("Save error:", error);
@@ -950,6 +948,7 @@ function showToast(msg) {
 
 </body>
 </html>
+
 
 
 
