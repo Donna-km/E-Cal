@@ -684,6 +684,126 @@
       }
     }
 
+    // ===== Select page state =====
+let selectItems = []; // {name,kcal,protein,fat,carbs,selected,qty}
+
+// แตกเมนูจาก out.dish (ตอนนี้ backend ส่งมาเป็น string)
+// รองรับ comma, /, |, "และ"
+function splitDishNames(dish){
+  return String(dish||"")
+    .split(/[,\/\|]|และ|&/g)
+    .map(s=>s.trim())
+    .filter(Boolean);
+}
+
+// สร้าง items แบบ "เฉลี่ยค่า" จากยอดรวม (ชั่วคราว)
+// ถ้าอยากเป๊ะ -> ให้ backend ส่ง items[] มา (ดูท้ายข้อความ)
+function buildSelectItemsFromOut(out){
+  const names = splitDishNames(out.dish);
+  if (names.length <= 1) return [];
+
+  const totalK = Number(out.calories||0);
+  const totalP = Number(out.protein||0);
+  const totalF = Number(out.fat||0);
+  const totalC = Number(out.carbs||0);
+  const n = names.length;
+
+  return names.map(name => ({
+    name,
+    kcal: Math.round(totalK / n),
+    protein: Math.round(totalP / n),
+    fat: Math.round(totalF / n),
+    carbs: Math.round(totalC / n),
+    selected: true,
+    qty: 1
+  }));
+}
+
+function openSelectPage(out){
+  const preview = document.getElementById("previewImage");
+  const selImg = document.getElementById("selectPreviewImage");
+  if (preview?.src) selImg.src = preview.src;
+
+  selectItems = buildSelectItemsFromOut(out);
+  renderSelectPage();
+  showPage("selectPage");
+}
+
+function renderSelectPage(){
+  const wrap = document.getElementById("selectItemsWrap");
+  wrap.innerHTML = "";
+
+  selectItems.forEach((x,i)=>{
+    const div = document.createElement("div");
+    div.className = "select-item";
+    div.innerHTML = `
+      <div class="select-left">
+        <div class="select-name">${escapeHtml(x.name)}</div>
+        <div class="select-sub">${x.kcal} kcal • P ${x.protein}g • F ${x.fat}g • C ${x.carbs}g</div>
+      </div>
+      <div style="display:flex;align-items:center;">
+        <div class="qty-wrap">
+          <button class="qty-btn" onclick="decQty(${i})">-</button>
+          <div class="qty">${x.qty}</div>
+          <button class="qty-btn" onclick="incQty(${i})">+</button>
+        </div>
+        <button class="toggle-btn ${x.selected?'on':''}" onclick="toggleItem(${i})">
+          ${x.selected?'✓':'+'}
+        </button>
+      </div>
+    `;
+    wrap.appendChild(div);
+  });
+
+  updateSelectSummary();
+}
+
+function toggleItem(i){ selectItems[i].selected = !selectItems[i].selected; renderSelectPage(); }
+function incQty(i){ selectItems[i].qty = Math.min(99, selectItems[i].qty + 1); renderSelectPage(); }
+function decQty(i){ selectItems[i].qty = Math.max(1, selectItems[i].qty - 1); renderSelectPage(); }
+
+function calcTotals(){
+  return selectItems.reduce((a,x)=>{
+    if(!x.selected) return a;
+    const q = x.qty || 1;
+    a.kcal += x.kcal*q; a.p += x.protein*q; a.f += x.fat*q; a.c += x.carbs*q;
+    return a;
+  },{kcal:0,p:0,f:0,c:0});
+}
+
+function updateSelectSummary(){
+  const t = calcTotals();
+  document.getElementById("selectTotalCal").textContent = `${Math.round(t.kcal)} Cal`;
+  document.getElementById("selectTotalP").textContent = Math.round(t.p);
+  document.getElementById("selectTotalF").textContent = Math.round(t.f);
+  document.getElementById("selectTotalC").textContent = Math.round(t.c);
+}
+
+function confirmSelection(){
+  const picked = selectItems.filter(x=>x.selected);
+  if(!picked.length){ showToast("เลือกอย่างน้อย 1 เมนูก่อนดิ 😈"); return; }
+
+  const t = calcTotals();
+  const names = picked.map(x=>x.name).slice(0,4);
+  const more = picked.length>4 ? ` +${picked.length-4}` : "";
+
+  // out ที่หน้า result ใช้อยู่ -> เราอัปเดตให้เป็นยอดรวมจากที่เลือก
+  if (!analysisResult) analysisResult = {};
+  analysisResult.calories = Math.round(t.kcal);
+  analysisResult.protein  = Math.round(t.p);
+  analysisResult.fat      = Math.round(t.f);
+  analysisResult.carbs    = Math.round(t.c);
+  analysisResult.dish     = `มื้อแชร์: ${names.join(", ")}${more}`;
+
+  // tip เดิมต่อท้ายว่าคัดเลือกแล้ว
+  analysisResult.tip_th = (analysisResult.tip_th || "") + `\n\n(คัดเลือก ${picked.length} เมนูจากรูปนี้แล้วนะ 😉)`;
+
+  displayResult(); // ✅ ไปหน้า Result เดิม (ดีไซน์เดิม)
+}
+
+function escapeHtml(s){
+  return String(s||"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+}
     function displayResult() {
       const out = analysisResult.output || analysisResult;
       const preview = document.getElementById("previewImage");
@@ -767,7 +887,15 @@
       analysisResult.date = new Date().toISOString().split("T")[0];
     }
 
-    displayResult();
+    // ✅ ถ้า dish มีหลายเมนู -> ไปหน้า select ก่อน
+const out = analysisResult.output || analysisResult;
+const names = splitDishNames(out.dish);
+
+if (names.length > 1) {
+  openSelectPage(out);
+} else {
+  displayResult();
+}
 
   } catch (err) {
     console.error(err);
@@ -997,6 +1125,7 @@ function showToast(msg) {
 
 </body>
 </html>
+
 
 
 
