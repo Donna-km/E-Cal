@@ -214,15 +214,17 @@
         
         const urlSearchParams = new URLSearchParams(window.location.search);
         urlParams = {
-          line_user_id: urlSearchParams.get('line_user_id') || liffProfile.userId,
-          day: urlSearchParams.get('day') || '1',
-          challenge_name: decodeURIComponent(urlSearchParams.get('challenge_name') || 'Challenge'),
-          mission_id: urlSearchParams.get('mission_id') || '1',
-          mission_text: decodeURIComponent(urlSearchParams.get('mission_text') || 'Complete Mission'),
-          emoji: decodeURIComponent(urlSearchParams.get('emoji') || '🎯'),
-          date: urlSearchParams.get('date') || new Date().toISOString().split('T')[0]
-        };
-        
+  page: urlSearchParams.get('page') || 'upload',
+  line_user_id: urlSearchParams.get('line_user_id') || liffProfile.userId,
+  day: urlSearchParams.get('day') || '1',
+  challenge_name: decodeURIComponent(urlSearchParams.get('challenge_name') || 'Challenge'),
+  mission_id: urlSearchParams.get('mission_id') || '1',
+  mission_text: decodeURIComponent(urlSearchParams.get('mission_text') || 'Complete Mission'),
+  emoji: decodeURIComponent(urlSearchParams.get('emoji') || '🎯'),
+  date: urlSearchParams.get('date') || new Date().toISOString().split('T')[0]
+};
+
+       currentPage = (urlParams.page === 'leaderboard') ? 'leaderboard' : 'upload';
         return true;
       } catch (error) {
         console.error('LIFF Init Error:', error);
@@ -1178,6 +1180,7 @@ function addEmoji(emoji) {
   </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a15ec9250bc7b50',t:'MTc2MzYyMDQ5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
