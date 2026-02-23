@@ -349,6 +349,9 @@
           <br>
           <i class="fi fi-tr-camera-viewfinder" style="font-size:64px; color:#FFFFFF; margin-top:18px; display:block;"></i>
         </h1>
+        <div id="quotaBanner"
+     class="text-center text-sm mt-3 mb-2 text-red-500 font-semibold hidden">
+</div>
       </div>
 
       <input type="file" id="cameraInput" class="hidden"
@@ -873,6 +876,27 @@ function showToast(msg) {
       setTimeout(() => t.classList.remove("show"), 2600);
     }
 
+    async function showFreeQuota() {
+
+  const lineUserId = currentUser?.userId;
+  if (!lineUserId) return;
+
+  const { data, error } = await sb
+    .from("user_plans")
+    .select("plan_type, scan_daily_quota")
+    .eq("line_user_id", lineUserId)
+    .single();
+
+  if (error || !data) return;
+
+  if (data.plan_type === "free") {
+    const banner = document.getElementById("quotaBanner");
+    banner.innerText =
+      `แพ็กเกจฟรี: ${data.scan_daily_quota} ครั้ง/วัน`;
+    banner.classList.remove("hidden");
+  }
+}
+
     window.onload = async () => {
   // ❌ เปิดจากเว็บ → block ทันที
   if (typeof liff === "undefined" || !liff.isInClient()) {
@@ -901,6 +925,7 @@ function showToast(msg) {
   // ✅ LIFF จริง → ใช้ logic เดิมของคุณ
   await initializeLIFF();
   showPage("cameraPage");
+  await showFreeQuota();    
 };
 
   </script>
@@ -948,6 +973,7 @@ function showToast(msg) {
 
 </body>
 </html>
+
 
 
 
