@@ -158,7 +158,7 @@ await saveLineProfile(profile);
         allButtons.forEach((btn) => {
           const text = btn.textContent.trim().toLowerCase();
           if (planType === 'free') {
-            if (!text.includes('profile') && !text.includes('smart scan') && !text.includes('contact')) {
+            if (!text.includes('profile') && !text.includes('smart scan') && !text.includes('leaderboard') && !text.includes('contact')) {
               btn.style.opacity = '0.6';
               btn.style.pointerEvents = 'none';
               btn.style.filter = 'grayscale(100%)';
