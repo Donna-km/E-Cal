@@ -892,7 +892,7 @@ function showToast(msg) {
   if (data.plan_type === "free") {
     const banner = document.getElementById("quotaBanner");
     banner.innerText =
-      `แพ็กเกจฟรี: ${data.scan_daily_quota} ครั้ง/วัน`;
+      `Scan ฟรี ของคุณเหลือ: ${data.scan_daily_quota} ครั้ง สำหรับวันนี้`;
     banner.classList.remove("hidden");
   }
 }
@@ -973,6 +973,7 @@ function showToast(msg) {
 
 </body>
 </html>
+
 
 
 
