@@ -888,14 +888,31 @@ function showToast(msg) {
     .eq("line_user_id", lineUserId)
     .single();
 
-  if (error || !data) return;
+  const banner = document.getElementById("quotaBanner");
 
-  if (data.plan_type === "free") {
-    const banner = document.getElementById("quotaBanner");
-    banner.innerText =
-      `🔥 วันนี้คุณสแกนฟรีได้อีก: ${data.scan_daily_quota} ครั้ง`;
-    banner.classList.remove("hidden");
+  if (error || !data) {
+    banner.classList.add("hidden");
+    return;
   }
+
+  // ✅ ไม่ใช่ free → ไม่โชว์
+  if (data.plan_type !== "free") {
+    banner.classList.add("hidden");
+    return;
+  }
+
+  const remaining = Number(data.scan_daily_quota) || 0;
+
+  // ✅ ถ้า <= 0 → โชว์ “ครบแล้ว”
+  if (remaining <= 0) {
+    banner.innerText = "🚫 วันนี้ใช้สิทธิ์สแกนครบแล้ว";
+    banner.classList.remove("hidden");
+    return;
+  }
+
+  // ✅ ถ้ายังเหลือ → โชว์จำนวนคงเหลือ
+  banner.innerText = `🔥 วันนี้คุณสแกนฟรีได้อีก ${remaining} ครั้ง`;
+  banner.classList.remove("hidden");
 }
 
     window.onload = async () => {
@@ -974,6 +991,7 @@ function showToast(msg) {
 
 </body>
 </html>
+
 
 
 
